@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-main: #080810;
+  --bg-card: #13131F;
+  --bg-input: #0D0D18;
+  --bg-hover: #1E1E2E;
+  --border: #2A2A3E;
+  --primary: #6022EC;
+  --primary-light: #8B5CF6;
+  --text-main: #EEEEF2;
+  --text-muted: #6B6B8A;
+  --scrollbar-track: #13131F;
+  --scrollbar-thumb: #2A2A3E;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Rubik", sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 3px;
+}
