@@ -170,22 +170,42 @@ const Settings = () => {
 
   return (
     <DashboardLayout>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-text-main">{t("settings.title")} ⚙️</h1>
-        <p className="text-text-muted text-sm mt-1">Administra tu perfil y preferencias</p>
+      <div className="mb-5 sm:mb-8">
+        <h1 className="text-xl sm:text-2xl font-bold text-text-main">{t("settings.title")} ⚙️</h1>
+        <p className="text-text-muted text-xs sm:text-sm mt-0.5">Administra tu perfil y preferencias</p>
       </div>
 
       {success && (
-        <div className="bg-green-500/10 border border-green-500/20 text-green-400 text-sm px-4 py-3 rounded-xl mb-5">✅ {success}</div>
+        <div className="bg-green-500/10 border border-green-500/20 text-green-400 text-sm px-4 py-3 rounded-xl mb-4">✅ {success}</div>
       )}
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl mb-5">❌ {error}</div>
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl mb-4">❌ {error}</div>
       )}
 
-      <div className="grid grid-cols-4 gap-6">
+      {/* ── Tabs: scroll horizontal en mobile, sidebar vertical en desktop ── */}
+      <div className="md:hidden mb-4 -mx-4 px-4">
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+          {TABS.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium border flex-shrink-0 transition
+                ${activeTab === tab.id
+                  ? "bg-primary/20 text-primary-light border-primary/30"
+                  : "bg-bg-card text-text-muted border-border"
+                }`}
+            >
+              <span>{tab.icon}</span>
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
-        {/* Sidebar tabs */}
-        <div className="col-span-1 space-y-1">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
+
+        {/* Sidebar tabs — solo desktop */}
+        <div className="hidden md:block md:col-span-1 space-y-1">
           {TABS.map(tab => (
             <button
               key={tab.id}
@@ -202,33 +222,36 @@ const Settings = () => {
           ))}
         </div>
 
-        <div className="col-span-3">
+        <div className="col-span-1 md:col-span-3">
 
           {/* PERFIL */}
           {activeTab === "perfil" && (
             <div className={cardClass}>
-              <h2 className="text-text-main font-semibold mb-6">{t("settings.profile")}</h2>
-              <div className="flex items-center gap-5 mb-8">
-                <div className="relative">
+              <h2 className="text-text-main font-semibold mb-5">{t("settings.profile")}</h2>
+
+              {/* Avatar + nombre */}
+              <div className="flex items-center gap-4 mb-6">
+                <div className="relative flex-shrink-0">
                   {avatarPreview ? (
-                    <img src={avatarPreview} alt="Avatar" className="w-20 h-20 rounded-2xl object-cover" />
+                    <img src={avatarPreview} alt="Avatar" className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover" />
                   ) : (
-                    <div className="w-20 h-20 rounded-2xl bg-primary flex items-center justify-center text-white font-bold text-2xl">
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-primary flex items-center justify-center text-white font-bold text-xl sm:text-2xl">
                       {getInitials()}
                     </div>
                   )}
-                  <label className="absolute -bottom-2 -right-2 w-7 h-7 bg-primary rounded-full flex items-center justify-center cursor-pointer hover:bg-primary-light transition">
+                  <label className="absolute -bottom-2 -right-2 w-7 h-7 bg-primary rounded-full flex items-center justify-center cursor-pointer hover:bg-primary-light transition shadow-lg">
                     <span className="text-white text-xs">✏️</span>
                     <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
                   </label>
                 </div>
-                <div>
-                  <p className="text-text-main font-semibold">{perfil.nombre || "Sin nombre"}</p>
-                  <p className="text-text-muted text-sm">{user?.email}</p>
+                <div className="min-w-0">
+                  <p className="text-text-main font-semibold truncate">{perfil.nombre || "Sin nombre"}</p>
+                  <p className="text-text-muted text-sm truncate">{user?.email}</p>
                   <p className="text-text-muted/60 text-xs mt-0.5">{perfil.cargo || "Sin cargo"}</p>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs text-text-muted uppercase tracking-wider mb-1.5">{t("settings.name")}</label>
                   <input type="text" value={perfil.nombre} onChange={e => setPerfil({ ...perfil, nombre: e.target.value })} placeholder="Tu nombre" className={inputClass} />
@@ -245,16 +268,16 @@ const Settings = () => {
                   <label className="block text-xs text-text-muted uppercase tracking-wider mb-1.5">Teléfono</label>
                   <input type="text" value={perfil.telefono} onChange={e => setPerfil({ ...perfil, telefono: e.target.value })} placeholder="+1 809 000 0000" className={inputClass} />
                 </div>
-                <div className="col-span-2">
+                <div className="sm:col-span-2">
                   <label className="block text-xs text-text-muted uppercase tracking-wider mb-1.5">Website</label>
                   <input type="text" value={perfil.website} onChange={e => setPerfil({ ...perfil, website: e.target.value })} placeholder="https://tuweb.com" className={inputClass} />
                 </div>
-                <div className="col-span-2">
+                <div className="sm:col-span-2">
                   <label className="block text-xs text-text-muted uppercase tracking-wider mb-1.5">Bio</label>
                   <textarea value={perfil.bio} onChange={e => setPerfil({ ...perfil, bio: e.target.value })} placeholder="Cuéntanos sobre ti..." rows={3} className={`${inputClass} resize-none`} />
                 </div>
               </div>
-              <button onClick={handleSavePerfil} disabled={loading} className="mt-6 bg-primary text-white font-medium px-6 py-2.5 rounded-xl hover:bg-primary-light transition text-sm shadow-lg shadow-primary/30 disabled:opacity-50">
+              <button onClick={handleSavePerfil} disabled={loading} className="mt-5 w-full sm:w-auto bg-primary text-white font-medium px-6 py-2.5 rounded-xl hover:bg-primary-light transition text-sm shadow-lg shadow-primary/30 disabled:opacity-50">
                 {loading ? t("common.loading") : t("settings.save")}
               </button>
             </div>
@@ -265,7 +288,7 @@ const Settings = () => {
             <div className={cardClass}>
               <h2 className="text-text-main font-semibold mb-2">{t("settings.appearance")}</h2>
               <p className="text-text-muted text-sm mb-6">Elige el tema que más te guste</p>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {Object.values(THEMES).map(th => (
                   <button
                     key={th.id}
@@ -348,7 +371,7 @@ const Settings = () => {
                   </div>
                 ))}
               </div>
-              <button onClick={handleSaveNotificaciones} disabled={loading} className="mt-6 bg-primary text-white font-medium px-6 py-2.5 rounded-xl hover:bg-primary-light transition text-sm shadow-lg shadow-primary/30 disabled:opacity-50">
+              <button onClick={handleSaveNotificaciones} disabled={loading} className="mt-6 w-full sm:w-auto bg-primary text-white font-medium px-6 py-2.5 rounded-xl hover:bg-primary-light transition text-sm shadow-lg shadow-primary/30 disabled:opacity-50">
                 {loading ? t("common.loading") : t("settings.save")}
               </button>
             </div>
@@ -372,22 +395,22 @@ const Settings = () => {
                   <input type="password" value={seguridad.passwordConfirm} onChange={e => setSeguridad({ ...seguridad, passwordConfirm: e.target.value })} placeholder="••••••••" className={inputClass} />
                 </div>
               </div>
-              <button onClick={handleCambiarPassword} disabled={loading} className="mt-6 bg-primary text-white font-medium px-6 py-2.5 rounded-xl hover:bg-primary-light transition text-sm shadow-lg shadow-primary/30 disabled:opacity-50">
+              <button onClick={handleCambiarPassword} disabled={loading} className="mt-6 w-full sm:w-auto bg-primary text-white font-medium px-6 py-2.5 rounded-xl hover:bg-primary-light transition text-sm shadow-lg shadow-primary/30 disabled:opacity-50">
                 {loading ? t("common.loading") : t("settings.change_password")}
               </button>
-              <div className="mt-8 bg-bg-input border border-border rounded-xl p-4">
+              <div className="mt-6 bg-bg-input border border-border rounded-xl p-4">
                 <p className="text-text-muted text-xs uppercase tracking-wider mb-3">{t("settings.account_info")}</p>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-text-muted text-sm">{t("settings.email")}</span>
-                    <span className="text-text-main text-sm">{user?.email}</span>
+                <div className="space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5">
+                    <span className="text-text-muted text-xs sm:text-sm">{t("settings.email")}</span>
+                    <span className="text-text-main text-sm font-medium truncate">{user?.email}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-text-muted text-sm">UID</span>
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5">
+                    <span className="text-text-muted text-xs sm:text-sm">UID</span>
                     <span className="text-text-muted/60 text-xs font-mono">{user?.uid?.slice(0, 16)}...</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-text-muted text-sm">{t("settings.provider")}</span>
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5">
+                    <span className="text-text-muted text-xs sm:text-sm">{t("settings.provider")}</span>
                     <span className="text-text-main text-sm">{user?.providerData?.[0]?.providerId === "google.com" ? "Google" : "Email"}</span>
                   </div>
                 </div>
@@ -401,14 +424,14 @@ const Settings = () => {
               <h2 className="text-text-main font-semibold mb-6">{t("settings.current_plan")}</h2>
               <div className="bg-bg-input border border-border rounded-xl p-5 mb-6">
                 <p className="text-text-muted text-xs uppercase tracking-wider mb-4">{t("settings.current_plan")}</p>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div>
                     <p className="text-text-main font-bold text-lg">{t("dashboard.free_plan")}</p>
                     <p className="text-text-muted text-sm mt-0.5">{t("settings.free_access")}</p>
                   </div>
                   <button
                     onClick={() => navigate("/subscription")}
-                    className="bg-primary text-white font-medium px-5 py-2 rounded-xl hover:bg-primary-light transition text-sm shadow-lg shadow-primary/30"
+                    className="w-full sm:w-auto bg-primary text-white font-medium px-5 py-2.5 rounded-xl hover:bg-primary-light transition text-sm shadow-lg shadow-primary/30"
                   >
                     {t("settings.upgrade")}
                   </button>

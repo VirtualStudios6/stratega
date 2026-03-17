@@ -273,25 +273,66 @@ const Feed = () => {
     <DashboardLayout>
 
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-text-main">Feed Preview 📱</h1>
-          <p className="text-text-muted text-sm mt-1">
+          <h1 className="text-xl sm:text-2xl font-bold text-text-main">Feed Preview 📱</h1>
+          <p className="text-text-muted text-xs sm:text-sm mt-0.5">
             {feeds.length} {feeds.length === 1 ? "cuenta" : "cuentas"} conectadas
           </p>
         </div>
         <button
           onClick={() => { resetFeedForm(); setEditingFeed(null); setFeedModalOpen(true) }}
-          className="bg-primary text-white font-semibold px-5 py-2.5 rounded-xl hover:bg-primary-light transition shadow-lg shadow-primary/30 text-sm"
+          className="bg-primary text-white font-semibold px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl hover:bg-primary-light transition shadow-lg shadow-primary/30 text-sm flex-shrink-0"
         >
-          + Nuevo feed
+          + Nuevo
         </button>
       </div>
 
-      <div className="grid grid-cols-4 gap-6">
+      {/* ── Cuentas: horizontal scroll en mobile ── */}
+      <div className="md:hidden mb-4">
+        <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-none -mx-4 px-4">
+          <button
+            onClick={() => { resetFeedForm(); setEditingFeed(null); setFeedModalOpen(true) }}
+            className="flex flex-col items-center gap-1.5 flex-shrink-0"
+          >
+            <div className="w-14 h-14 rounded-full bg-primary/10 border-2 border-dashed border-primary/40 flex items-center justify-center">
+              <span className="text-primary-light text-2xl font-light">+</span>
+            </div>
+            <span className="text-[10px] text-text-muted">Nuevo</span>
+          </button>
+          {feeds.map(feed => {
+            const isActive = selectedFeed?.id === feed.id
+            return (
+              <button key={feed.id} onClick={() => setSelectedFeed(feed)} className="flex flex-col items-center gap-1.5 flex-shrink-0">
+                <div
+                  className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 transition"
+                  style={{
+                    padding: "2px",
+                    background: isActive
+                      ? "linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)"
+                      : "var(--border)",
+                  }}
+                >
+                  <div className="w-full h-full rounded-full overflow-hidden bg-bg-card">
+                    {feed.photoURL
+                      ? <img src={feed.photoURL} alt={feed.username} className="w-full h-full object-cover" />
+                      : <div className="w-full h-full bg-bg-hover flex items-center justify-center text-lg">👤</div>
+                    }
+                  </div>
+                </div>
+                <span className={`text-[10px] truncate w-16 text-center leading-tight ${isActive ? "text-primary-light font-semibold" : "text-text-muted"}`}>
+                  @{feed.username}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
 
-        {/* ── Sidebar: account list ── */}
-        <div className="col-span-1 space-y-2">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
+
+        {/* ── Sidebar desktop: account list ── */}
+        <div className="hidden md:block md:col-span-1 space-y-2">
           <p className="text-xs text-text-muted uppercase tracking-wider font-semibold mb-3">Mis cuentas</p>
 
           {feeds.length === 0 ? (
@@ -317,7 +358,6 @@ const Feed = () => {
                     isActive ? "bg-primary/10 border-primary/30" : "bg-bg-card border-border hover:bg-bg-hover"
                   }`}
                 >
-                  {/* Mini avatar */}
                   <div
                     className="w-9 h-9 rounded-full flex-shrink-0 overflow-hidden border-2 transition"
                     style={{ borderColor: isActive ? "var(--primary)" : "var(--border)" }}
@@ -327,8 +367,6 @@ const Feed = () => {
                       : <div className="w-full h-full bg-bg-hover flex items-center justify-center text-sm">👤</div>
                     }
                   </div>
-
-                  {/* Info */}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-text-main font-medium truncate">@{feed.username}</p>
                     {folder ? (
@@ -340,20 +378,8 @@ const Feed = () => {
                       <p className="text-[10px] text-text-muted/50 mt-0.5">Sin carpeta</p>
                     )}
                   </div>
-
-                  {/* Actions */}
-                  <button
-                    onClick={e => openEditFeed(feed, e)}
-                    className="opacity-0 group-hover:opacity-100 text-text-muted hover:text-primary-light transition text-xs"
-                  >
-                    ✏️
-                  </button>
-                  <button
-                    onClick={e => { e.stopPropagation(); handleDeleteFeed(feed) }}
-                    className="opacity-0 group-hover:opacity-100 text-text-muted hover:text-red-400 transition text-xs"
-                  >
-                    🗑️
-                  </button>
+                  <button onClick={e => openEditFeed(feed, e)} className="opacity-0 group-hover:opacity-100 text-text-muted hover:text-primary-light transition text-xs">✏️</button>
+                  <button onClick={e => { e.stopPropagation(); handleDeleteFeed(feed) }} className="opacity-0 group-hover:opacity-100 text-text-muted hover:text-red-400 transition text-xs">🗑️</button>
                 </div>
               )
             })
@@ -361,11 +387,11 @@ const Feed = () => {
         </div>
 
         {/* ── Main: feed content ── */}
-        <div className="col-span-3">
+        <div className="col-span-1 md:col-span-3">
           {!selectedFeed ? (
-            <div className="bg-bg-card border border-border rounded-2xl p-16 text-center">
+            <div className="bg-bg-card border border-border rounded-2xl p-10 sm:p-16 text-center">
               <span className="text-5xl mb-4 block">📱</span>
-              <p className="text-text-muted mb-4">Selecciona o crea un feed para empezar</p>
+              <p className="text-text-muted mb-4 text-sm sm:text-base">Selecciona o crea un feed para empezar</p>
               <button
                 onClick={() => { resetFeedForm(); setEditingFeed(null); setFeedModalOpen(true) }}
                 className="bg-primary text-white font-medium px-5 py-2.5 rounded-xl hover:bg-primary-light transition text-sm shadow-lg shadow-primary/30"
@@ -405,7 +431,7 @@ const Feed = () => {
               </div>
 
               {/* Profile header */}
-              <div className="px-6 py-5 border-b border-border flex items-center gap-5">
+              <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-border flex items-center gap-4 sm:gap-5">
                 <div className="relative flex-shrink-0 group">
                   <Avatar photoURL={selectedFeed.photoURL} size="md" />
                   <label className="absolute inset-0 rounded-full flex items-center justify-center bg-black/0 group-hover:bg-black/40 transition cursor-pointer">
@@ -436,19 +462,19 @@ const Feed = () => {
                       Editar perfil
                     </button>
                   </div>
-                  <div className="flex gap-5 text-sm mb-3">
-                    <span className="text-text-main">
-                      <span className="font-semibold">{items.length}</span>
-                      <span className="text-text-muted ml-1">publicaciones</span>
-                    </span>
-                    <span className="text-text-main">
-                      <span className="font-semibold">{(selectedFeed.followers || 0).toLocaleString()}</span>
-                      <span className="text-text-muted ml-1">seguidores</span>
-                    </span>
-                    <span className="text-text-main">
-                      <span className="font-semibold">{(selectedFeed.following || 0).toLocaleString()}</span>
-                      <span className="text-text-muted ml-1">siguiendo</span>
-                    </span>
+                  <div className="flex gap-3 sm:gap-5 text-xs sm:text-sm mb-3">
+                    <div className="text-center sm:text-left">
+                      <span className="block font-semibold text-text-main">{items.length}</span>
+                      <span className="text-text-muted">posts</span>
+                    </div>
+                    <div className="text-center sm:text-left">
+                      <span className="block font-semibold text-text-main">{(selectedFeed.followers || 0).toLocaleString()}</span>
+                      <span className="text-text-muted">seguidores</span>
+                    </div>
+                    <div className="text-center sm:text-left">
+                      <span className="block font-semibold text-text-main">{(selectedFeed.following || 0).toLocaleString()}</span>
+                      <span className="text-text-muted">siguiendo</span>
+                    </div>
                   </div>
                   {selectedFeed.nombre && (
                     <p className="text-sm font-semibold text-text-main leading-tight">{selectedFeed.nombre}</p>

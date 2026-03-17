@@ -550,35 +550,35 @@ const Quotes = () => {
     <DashboardLayout>
 
       {/* ── Header ── */}
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-5 flex items-start sm:items-center justify-between gap-3 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold text-text-main flex items-center gap-2">
-            <FileText size={22} className="text-primary-light" />Cotizaciones & Facturas
+          <h1 className="text-xl sm:text-2xl font-bold text-text-main flex items-center gap-2">
+            <FileText size={20} className="text-primary-light" />Cotizaciones & Facturas
           </h1>
-          <p className="text-text-muted text-sm mt-1">
+          <p className="text-text-muted text-xs sm:text-sm mt-0.5">
             {quotes.filter(q => !q.tipo || q.tipo === "cotizacion").length} cotizaciones · {quotes.filter(q => q.tipo === "factura").length} facturas
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-2 flex-shrink-0">
           <button
             onClick={() => { setCompanyDraft({ ...company }); setLogoPreview(company.logoBase64 || ""); setProfileOpen(true) }}
-            className="flex items-center gap-2 bg-bg-card border border-border text-text-muted text-sm px-4 py-2.5 rounded-xl hover:border-primary/40 hover:text-primary-light transition focus:outline-none"
+            className="flex items-center gap-1.5 bg-bg-card border border-border text-text-muted text-xs sm:text-sm px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl hover:border-primary/40 hover:text-primary-light transition focus:outline-none"
           >
-            <Building2 size={14} />Perfil empresa
+            <Building2 size={13} /><span className="hidden sm:inline">Perfil empresa</span><span className="sm:hidden">Empresa</span>
           </button>
           <button
             onClick={() => { resetForm(); setModalOpen(true) }}
-            className="bg-primary text-white font-semibold px-5 py-2.5 rounded-xl hover:bg-primary-light transition shadow-lg shadow-primary/30 text-sm focus:outline-none"
+            className="bg-primary text-white font-semibold px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl hover:bg-primary-light transition shadow-lg shadow-primary/30 text-xs sm:text-sm focus:outline-none"
           >
-            + Nueva cotización
+            + Nueva
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
 
         {/* ── Lista ── */}
-        <div className="col-span-1 space-y-3">
+        <div className={`sm:col-span-1 space-y-3 ${selectedQuote ? "hidden sm:block" : "block"}`}>
           <div className="flex bg-bg-hover border border-border rounded-xl p-1 gap-1">
             {[{ key: "cotizaciones", label: "Cotizaciones" }, { key: "facturas", label: "Facturas" }].map(tab => (
               <button
@@ -623,9 +623,19 @@ const Quotes = () => {
         </div>
 
         {/* ── Detalle ── */}
-        <div className="col-span-2">
+        <div className="col-span-1 sm:col-span-2">
+          {/* Mobile back button */}
+          {selectedQuote && (
+            <button
+              onClick={() => setSelectedQuote(null)}
+              className="sm:hidden flex items-center gap-2 text-text-muted text-sm mb-3 hover:text-text-main transition"
+            >
+              <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+              Cotizaciones
+            </button>
+          )}
           {!selectedQuote ? (
-            <div className="bg-bg-card border border-border rounded-2xl p-16 text-center">
+            <div className="hidden sm:flex bg-bg-card border border-border rounded-2xl p-16 text-center flex-col items-center justify-center">
               <div className="w-14 h-14 rounded-2xl bg-bg-hover border border-border flex items-center justify-center mx-auto mb-4">
                 <FileText size={24} className="text-text-muted" />
               </div>
@@ -633,7 +643,7 @@ const Quotes = () => {
             </div>
           ) : (
             <div className="bg-bg-card border border-border rounded-2xl p-6">
-              <div className="flex items-start justify-between mb-6 gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-6 gap-3">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <p className="text-text-muted text-xs font-mono">{selectedQuote.numero}</p>
@@ -645,7 +655,7 @@ const Quotes = () => {
                   {selectedQuote.email    && <p className="text-text-muted text-xs">{selectedQuote.email}</p>}
                   {selectedQuote.telefono && <p className="text-text-muted text-xs">{selectedQuote.telefono}</p>}
                 </div>
-                <div className="flex flex-col gap-2 items-end flex-shrink-0">
+                <div className="flex flex-col gap-2 items-start sm:items-end flex-shrink-0">
                   <div className="flex items-center gap-1 flex-wrap justify-end">
                     {(selectedQuote.tipo === "factura" ? ESTADOS_FACTURA : ESTADOS).map(e => (
                       <button

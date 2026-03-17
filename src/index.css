@@ -145,6 +145,58 @@ button {
   animation: scaleIn 0.25s ease both;
 }
 
+/* ── Mobile app-native feel ─────────────────────────────────────────────── */
+
+/* Elimina el delay de tap en móvil */
+* {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Scroll horizontal sin scrollbar visible */
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Evita que el contenido se quede pegado al borde en móvil */
+@media (max-width: 640px) {
+  /* Agrega padding seguro al body para notch/botones del sistema */
+  body {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Botones más fáciles de tocar en mobile */
+  button, [role="button"], label[for], label[class*="cursor-pointer"] {
+    min-height: 36px;
+  }
+
+  /* Inputs más grandes en mobile */
+  input, textarea, select {
+    font-size: 16px !important; /* Previene zoom en iOS */
+  }
+
+  /* Modales ocupan toda la pantalla en mobile */
+  .modal-mobile-full {
+    border-radius: 1.5rem 1.5rem 0 0 !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+}
+
+/* ── Active state para elementos táctiles ── */
+@media (hover: none) {
+  .group:active .group-hover\:opacity-100 { opacity: 1; }
+  button:active { opacity: 0.85; }
+}
+
 /* ─────────────────────────────────────────────────────────────────────────
    TEMAS CLAROS — colores semánticos accesibles sobre fondo blanco/claro
    Los colores -400 de Tailwind son para fondos oscuros; en light se

@@ -112,7 +112,7 @@ If asked something outside your area, redirect politely to marketing and social 
       {/* ── Peek tab cuando está oculto ── */}
       <button
         onClick={() => setHidden(false)}
-        className={`fixed right-0 bottom-28 z-50 flex items-center gap-1 bg-primary pl-2 pr-1 py-3 rounded-l-xl shadow-xl border-l border-t border-b border-primary-light/30 transition-all duration-500 ${
+        className={`fixed right-0 bottom-24 sm:bottom-28 z-50 flex items-center gap-1 bg-primary pl-2 pr-1 py-3 rounded-l-xl shadow-xl border-l border-t border-b border-primary-light/30 transition-all duration-500 ${
           hidden ? "translate-x-0 opacity-100" : "translate-x-full opacity-0 pointer-events-none"
         }`}
       >
@@ -122,16 +122,16 @@ If asked something outside your area, redirect politely to marketing and social 
 
       {/* ── Contenedor principal ── */}
       <div
-        className={`fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3 transition-all duration-500 ease-in-out ${
+        className={`fixed bottom-20 sm:bottom-6 right-3 sm:right-6 z-50 flex flex-col items-end gap-3 transition-all duration-500 ease-in-out ${
           hidden ? "translate-x-[140%]" : "translate-x-0"
         }`}
       >
 
         {/* ── Panel de chat ── */}
         <div
-          className={`w-96 bg-bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300 origin-bottom-right ${
+          className={`w-[calc(100vw-1.5rem)] sm:w-96 bg-bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300 origin-bottom-right ${
             open
-              ? "h-[560px] opacity-100 scale-100 pointer-events-auto"
+              ? "h-[70vh] sm:h-[560px] opacity-100 scale-100 pointer-events-auto"
               : "h-0 opacity-0 scale-95 pointer-events-none"
           }`}
         >

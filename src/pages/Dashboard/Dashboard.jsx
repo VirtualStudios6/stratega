@@ -49,11 +49,11 @@ const SparkLine = ({ data, positive }) => {
 const StatCard = ({ icon, label, value, sub, gradient, onClick, loading, sparkline, sparkPositive }) => (
   <div
     onClick={onClick}
-    className={`relative bg-bg-card border border-border rounded-2xl p-5 overflow-hidden transition
-      ${onClick ? "cursor-pointer hover:border-primary/30 hover:bg-bg-hover" : ""}`}
+    className={`relative bg-bg-card border border-border rounded-2xl p-4 sm:p-5 overflow-hidden transition
+      ${onClick ? "cursor-pointer hover:border-primary/30 hover:bg-bg-hover active:bg-bg-hover" : ""}`}
   >
-    <div className="flex items-start justify-between mb-3">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${gradient}`}>
+    <div className="flex items-start justify-between mb-2 sm:mb-3">
+      <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${gradient}`}>
         {icon}
       </div>
       {sparkline
@@ -61,15 +61,15 @@ const StatCard = ({ icon, label, value, sub, gradient, onClick, loading, sparkli
         : onClick && <span className="text-text-muted/30 text-xs mt-1">→</span>
       }
     </div>
-    <p className="text-text-muted text-[11px] uppercase tracking-widest mb-1 font-medium">{label}</p>
-    <p className="text-2xl font-bold text-text-main">
+    <p className="text-text-muted text-[10px] sm:text-[11px] uppercase tracking-widest mb-1 font-medium">{label}</p>
+    <p className="text-xl sm:text-2xl font-bold text-text-main">
       {loading
         ? <span className="inline-block w-14 h-6 bg-border/40 rounded-lg animate-pulse" />
         : value
       }
     </p>
     {sub && !loading && (
-      <p className="text-text-muted/70 text-[11px] mt-0.5">{sub}</p>
+      <p className="text-text-muted/70 text-[10px] sm:text-[11px] mt-0.5 truncate">{sub}</p>
     )}
   </div>
 )
@@ -425,8 +425,8 @@ const Dashboard = () => {
                         )}
                       </div>
 
-                      {/* Platform + format */}
-                      <div className="flex items-center gap-2 flex-shrink-0">
+                      {/* Platform + format — oculto en mobile, visible en sm+ */}
+                      <div className="hidden sm:flex items-center gap-2 flex-shrink-0">
                         {ev.formato && (
                           <span className="text-[10px] px-2 py-0.5 rounded-md bg-primary/10 border border-primary/20 text-primary-light font-medium whitespace-nowrap">
                             {ev.formato}
@@ -444,6 +444,10 @@ const Dashboard = () => {
                           <span className="text-[10px] text-text-muted whitespace-nowrap">🕐 {ev.hora}</span>
                         )}
                       </div>
+                      {/* Mobile: solo hora */}
+                      {ev.hora && (
+                        <span className="sm:hidden text-[10px] text-text-muted whitespace-nowrap flex-shrink-0">🕐 {ev.hora}</span>
+                      )}
                     </div>
                   )
                 })}
@@ -631,7 +635,7 @@ const Dashboard = () => {
             viewAllLabel="Ver contabilidad"
           />
           {loading ? (
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {[1,2,3].map(i => (
                 <div key={i} className="rounded-xl p-4 bg-bg-input border border-border space-y-2">
                   <Skel w="w-2/3" h="h-3" /><Skel w="w-full" h="h-6" />
@@ -681,19 +685,21 @@ const Dashboard = () => {
           <div className="relative bg-bg-card border border-primary/20 rounded-2xl p-5 overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-primary/8 via-transparent to-transparent pointer-events-none rounded-2xl" />
             <div className="absolute top-0 right-0 w-40 h-40 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-            <div className="relative flex items-center gap-5">
-              <div className="w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
-                <Crown size={20} className="text-primary-light" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-text-main font-bold text-sm mb-0.5">Plan gratuito activo</h3>
-                <p className="text-text-muted text-xs">Desbloquea equipos, IA ilimitada, reportes avanzados y más con el plan Pro.</p>
+            <div className="relative flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
+              <div className="flex items-center gap-3 sm:gap-5 flex-1 min-w-0">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
+                  <Crown size={18} className="text-primary-light" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-text-main font-bold text-sm mb-0.5">Plan gratuito activo</h3>
+                  <p className="text-text-muted text-xs">Desbloquea equipos, IA ilimitada, reportes avanzados y más con el plan Pro.</p>
+                </div>
               </div>
               <button
                 onClick={() => navigate("/subscription")}
-                className="flex-shrink-0 bg-primary text-white px-5 py-2.5 rounded-xl hover:bg-primary-light transition font-semibold text-sm shadow-lg shadow-primary/25"
+                className="w-full sm:w-auto flex-shrink-0 bg-primary text-white px-5 py-2.5 rounded-xl hover:bg-primary-light transition font-semibold text-sm shadow-lg shadow-primary/25"
               >
-                Ver planes
+                Ver planes →
               </button>
             </div>
           </div>

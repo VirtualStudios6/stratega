@@ -134,55 +134,55 @@ const Accounting = () => {
 
   return (
     <DashboardLayout>
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-5 flex items-start sm:items-center justify-between gap-3 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold text-text-main flex items-center gap-2">
-            <Wallet size={22} className="text-primary-light" />Contabilidad
+          <h1 className="text-xl sm:text-2xl font-bold text-text-main flex items-center gap-2">
+            <Wallet size={20} className="text-primary-light" />Contabilidad
           </h1>
-          <p className="text-text-muted text-sm mt-1">Control de ingresos y gastos</p>
+          <p className="text-text-muted text-xs sm:text-sm mt-0.5">Control de ingresos y gastos</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-2 flex-shrink-0">
           <button
             onClick={() => { setReporteMes(filtroMes); setReporteAnio(filtroAnio); setReporteOpen(true) }}
-            className="flex items-center gap-2 bg-bg-card border border-border text-text-muted hover:text-text-main hover:border-primary/30 px-4 py-2.5 rounded-xl transition text-sm"
+            className="flex items-center gap-1.5 bg-bg-card border border-border text-text-muted hover:text-text-main hover:border-primary/30 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl transition text-xs sm:text-sm"
           >
-            <FileBarChart2 size={15} />Reporte mensual
+            <FileBarChart2 size={14} /><span className="hidden sm:inline">Reporte mensual</span><span className="sm:hidden">Reporte</span>
           </button>
           <button
             onClick={() => { setEditingTrans(null); setModalOpen(true) }}
-            className="bg-primary text-white font-semibold px-5 py-2.5 rounded-xl hover:bg-primary-light transition shadow-lg shadow-primary/30 text-sm"
+            className="bg-primary text-white font-semibold px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl hover:bg-primary-light transition shadow-lg shadow-primary/30 text-xs sm:text-sm"
           >
-            + Registrar movimiento
+            + Registrar
           </button>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-5">
-          <p className="text-green-400 text-xs uppercase tracking-wider mb-1">Ingresos</p>
-          <p className="text-2xl font-bold text-green-400">+${fmt(ingresos)}</p>
+      <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-6">
+        <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-3 sm:p-5">
+          <p className="text-green-400 text-[10px] sm:text-xs uppercase tracking-wider mb-1">Ingresos</p>
+          <p className="text-lg sm:text-2xl font-bold text-green-400">+${fmt(ingresos)}</p>
         </div>
-        <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-5">
-          <p className="text-red-400 text-xs uppercase tracking-wider mb-1">Gastos</p>
-          <p className="text-2xl font-bold text-red-400">-${fmt(gastos)}</p>
+        <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-3 sm:p-5">
+          <p className="text-red-400 text-[10px] sm:text-xs uppercase tracking-wider mb-1">Gastos</p>
+          <p className="text-lg sm:text-2xl font-bold text-red-400">-${fmt(gastos)}</p>
         </div>
-        <div className={`${balance >= 0 ? "bg-primary/10 border-primary/20" : "bg-red-500/10 border-red-500/20"} border rounded-2xl p-5`}>
-          <p className="text-text-muted text-xs uppercase tracking-wider mb-1">Balance</p>
-          <p className={`text-2xl font-bold ${balance >= 0 ? "text-primary-light" : "text-red-400"}`}>${fmt(balance)}</p>
+        <div className={`${balance >= 0 ? "bg-primary/10 border-primary/20" : "bg-red-500/10 border-red-500/20"} border rounded-2xl p-3 sm:p-5`}>
+          <p className="text-text-muted text-[10px] sm:text-xs uppercase tracking-wider mb-1">Balance</p>
+          <p className={`text-lg sm:text-2xl font-bold ${balance >= 0 ? "text-primary-light" : "text-red-400"}`}>${fmt(balance)}</p>
         </div>
       </div>
 
       {/* Gráfica */}
-      <div className="bg-bg-card border border-border rounded-2xl p-6 mb-6">
-        <h2 className="text-text-main font-semibold mb-6">Últimos 6 meses</h2>
-        <ResponsiveContainer width="100%" height={220}>
+      <div className="bg-bg-card border border-border rounded-2xl p-4 sm:p-6 mb-6">
+        <h2 className="text-text-main font-semibold mb-4 sm:mb-6 text-sm sm:text-base">Últimos 6 meses</h2>
+        <ResponsiveContainer width="100%" height={180}>
           <BarChart data={graficaData} barGap={4}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-            <XAxis dataKey="mes" tick={{ fill: "var(--text-muted)", fontSize: 12 }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fill: "var(--text-muted)", fontSize: 12 }} axisLine={false} tickLine={false} />
+            <XAxis dataKey="mes" tick={{ fill: "var(--text-muted)", fontSize: 11 }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fill: "var(--text-muted)", fontSize: 11 }} axisLine={false} tickLine={false} width={40} />
             <Tooltip contentStyle={{ backgroundColor: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: "12px", color: "var(--text-main)" }} cursor={{ fill: "var(--border)" }} />
-            <Legend wrapperStyle={{ color: "var(--text-muted)", fontSize: 12 }} />
+            <Legend wrapperStyle={{ color: "var(--text-muted)", fontSize: 11 }} />
             <Bar dataKey="Ingresos" fill="#10B981" radius={[6, 6, 0, 0]} />
             <Bar dataKey="Gastos"   fill="#EF4444" radius={[6, 6, 0, 0]} />
           </BarChart>
@@ -190,69 +190,100 @@ const Accounting = () => {
       </div>
 
       {/* Filtro mes */}
-      <div className="flex items-center gap-3 mb-5">
-        <select value={filtroMes} onChange={e => setFiltroMes(parseInt(e.target.value))} className="bg-bg-card border border-border text-text-main rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+      <div className="flex items-center gap-2 sm:gap-3 mb-4 flex-wrap">
+        <select value={filtroMes} onChange={e => setFiltroMes(parseInt(e.target.value))} className="bg-bg-card border border-border text-text-main rounded-xl px-3 sm:px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
           {MESES_CORTO.map((m, i) => <option key={i} value={i}>{m}</option>)}
         </select>
-        <select value={filtroAnio} onChange={e => setFiltroAnio(parseInt(e.target.value))} className="bg-bg-card border border-border text-text-main rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+        <select value={filtroAnio} onChange={e => setFiltroAnio(parseInt(e.target.value))} className="bg-bg-card border border-border text-text-main rounded-xl px-3 sm:px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
           {[2024, 2025, 2026].map(a => <option key={a} value={a}>{a}</option>)}
         </select>
-        <span className="text-text-muted text-sm">{filtradas.length} transacciones</span>
+        <span className="text-text-muted text-xs sm:text-sm">{filtradas.length} transacciones</span>
       </div>
 
       {/* Lista transacciones */}
       <div className="bg-bg-card border border-border rounded-2xl overflow-hidden">
         {filtradas.length === 0 ? (
-          <div className="p-16 text-center">
+          <div className="p-10 sm:p-16 text-center">
             <div className="w-14 h-14 rounded-2xl bg-bg-hover border border-border flex items-center justify-center mx-auto mb-4">
               <Wallet size={24} className="text-text-muted" />
             </div>
-            <p className="text-text-muted">No hay transacciones este mes</p>
+            <p className="text-text-muted text-sm">No hay transacciones este mes</p>
           </div>
         ) : (
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="text-left px-6 py-4 text-text-muted font-medium text-xs uppercase tracking-wider">Descripción</th>
-                <th className="text-left px-6 py-4 text-text-muted font-medium text-xs uppercase tracking-wider">Categoría</th>
-                <th className="text-left px-6 py-4 text-text-muted font-medium text-xs uppercase tracking-wider">Fecha</th>
-                <th className="text-right px-6 py-4 text-text-muted font-medium text-xs uppercase tracking-wider">Monto</th>
-                <th className="px-6 py-4"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtradas.map(t => (
-                <tr key={t.id} className="border-b border-border/50 hover:bg-bg-hover transition">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${t.tipo === "ingreso" ? "bg-green-500/20" : "bg-red-500/20"}`}>
-                        {t.tipo === "ingreso" ? <ArrowUp size={14} className="text-green-400" /> : <ArrowDown size={14} className="text-red-400" />}
-                      </div>
-                      <div>
-                        <p className="text-text-main text-sm font-medium">{t.descripcion}</p>
-                        {t.nota && <p className="text-text-muted text-xs">{t.nota}</p>}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-xs px-2 py-1 rounded-lg bg-bg-hover text-text-muted border border-border">{t.categoria}</span>
-                  </td>
-                  <td className="px-6 py-4 text-text-muted text-sm">
-                    {new Date(t.fecha).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
-                  </td>
-                  <td className={`px-6 py-4 text-right font-bold text-sm ${t.tipo === "ingreso" ? "text-green-400" : "text-red-400"}`}>
-                    {t.tipo === "ingreso" ? "+" : "-"}${fmt(t.monto)}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button onClick={() => handleEdit(t)} className="text-text-muted hover:text-primary-light transition"><Pencil size={14} /></button>
-                      <button onClick={() => handleDelete(t.id)} className="text-text-muted hover:text-red-400 transition"><Trash2 size={14} /></button>
-                    </div>
-                  </td>
+          <>
+            {/* Tabla — solo en desktop */}
+            <table className="w-full hidden sm:table">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left px-6 py-4 text-text-muted font-medium text-xs uppercase tracking-wider">Descripción</th>
+                  <th className="text-left px-6 py-4 text-text-muted font-medium text-xs uppercase tracking-wider">Categoría</th>
+                  <th className="text-left px-6 py-4 text-text-muted font-medium text-xs uppercase tracking-wider">Fecha</th>
+                  <th className="text-right px-6 py-4 text-text-muted font-medium text-xs uppercase tracking-wider">Monto</th>
+                  <th className="px-6 py-4"></th>
                 </tr>
+              </thead>
+              <tbody>
+                {filtradas.map(t => (
+                  <tr key={t.id} className="border-b border-border/50 hover:bg-bg-hover transition">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${t.tipo === "ingreso" ? "bg-green-500/20" : "bg-red-500/20"}`}>
+                          {t.tipo === "ingreso" ? <ArrowUp size={14} className="text-green-400" /> : <ArrowDown size={14} className="text-red-400" />}
+                        </div>
+                        <div>
+                          <p className="text-text-main text-sm font-medium">{t.descripcion}</p>
+                          {t.nota && <p className="text-text-muted text-xs">{t.nota}</p>}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-xs px-2 py-1 rounded-lg bg-bg-hover text-text-muted border border-border">{t.categoria}</span>
+                    </td>
+                    <td className="px-6 py-4 text-text-muted text-sm">
+                      {new Date(t.fecha).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
+                    </td>
+                    <td className={`px-6 py-4 text-right font-bold text-sm ${t.tipo === "ingreso" ? "text-green-400" : "text-red-400"}`}>
+                      {t.tipo === "ingreso" ? "+" : "-"}${fmt(t.monto)}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button onClick={() => handleEdit(t)} className="text-text-muted hover:text-primary-light transition"><Pencil size={14} /></button>
+                        <button onClick={() => handleDelete(t.id)} className="text-text-muted hover:text-red-400 transition"><Trash2 size={14} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* Cards — solo en mobile */}
+            <div className="sm:hidden divide-y divide-border">
+              {filtradas.map(t => (
+                <div key={t.id} className="flex items-center gap-3 px-4 py-3">
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${t.tipo === "ingreso" ? "bg-green-500/20" : "bg-red-500/20"}`}>
+                    {t.tipo === "ingreso" ? <ArrowUp size={15} className="text-green-400" /> : <ArrowDown size={15} className="text-red-400" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-text-main text-sm font-medium truncate">{t.descripcion}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-xs text-text-muted">{t.categoria}</span>
+                      <span className="text-[10px] text-text-muted/60">·</span>
+                      <span className="text-xs text-text-muted">
+                        {new Date(t.fecha).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className={`text-sm font-bold ${t.tipo === "ingreso" ? "text-green-400" : "text-red-400"}`}>
+                      {t.tipo === "ingreso" ? "+" : "-"}${fmt(t.monto)}
+                    </span>
+                    <button onClick={() => handleEdit(t)} className="text-text-muted hover:text-primary-light transition p-1"><Pencil size={13} /></button>
+                    <button onClick={() => handleDelete(t.id)} className="text-text-muted hover:text-red-400 transition p-1"><Trash2 size={13} /></button>
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+          </>
         )}
       </div>
 

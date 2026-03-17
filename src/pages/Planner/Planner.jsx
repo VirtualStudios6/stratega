@@ -257,12 +257,12 @@ const Planner = () => {
   return (
     <DashboardLayout>
       {/* Header */}
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-text-main">Planner 📅</h1>
-          <p className="text-text-muted text-sm mt-1">{t("planner.subtitle")}</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-text-main">Planner 📅</h1>
+          <p className="text-text-muted text-xs sm:text-sm mt-0.5">{t("planner.subtitle")}</p>
         </div>
-        <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           {/* Toggle vista */}
           <div className="flex items-center bg-bg-hover border border-border rounded-xl p-1 gap-1">
             <button
@@ -322,7 +322,7 @@ const Planner = () => {
       </div>
 
       {/* Leyenda de prioridades */}
-      <div className="flex gap-3 mb-6 flex-wrap">
+      <div className="flex gap-2 sm:gap-3 mb-4 sm:mb-6 flex-nowrap overflow-x-auto scrollbar-none pb-1">
         {PRIORIDADES.map(p => (
           <div key={p.value} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${p.bg} ${p.border}`}>
             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
@@ -339,33 +339,44 @@ const Planner = () => {
 
       {/* Calendario */}
       {viewMode === "calendar" && (
-        <div className="bg-bg-card border border-border rounded-2xl p-6">
+        <div className="bg-bg-card border border-border rounded-2xl p-3 sm:p-6">
           <style>{`
             .fc { color: var(--text-main); font-family: 'Rubik', sans-serif; }
             .fc-theme-standard td, .fc-theme-standard th, .fc-theme-standard .fc-scrollgrid { border-color: var(--border); }
-            .fc-col-header-cell { background: var(--bg-hover); padding: 10px 0; }
-            .fc-col-header-cell-cushion { color: var(--text-muted); font-size: 12px; font-weight: 500; text-decoration: none; }
+            .fc-col-header-cell { background: var(--bg-hover); padding: 8px 0; }
+            .fc-col-header-cell-cushion { color: var(--text-muted); font-size: 11px; font-weight: 500; text-decoration: none; }
             .fc-daygrid-day { background: transparent; }
             .fc-daygrid-day:hover { background: var(--bg-hover); }
-            .fc-daygrid-day-number { color: var(--text-muted); font-size: 13px; text-decoration: none; }
+            .fc-daygrid-day-number { color: var(--text-muted); font-size: 12px; text-decoration: none; padding: 4px 6px; }
             .fc-day-today { background: color-mix(in srgb, var(--primary) 15%, transparent) !important; }
             .fc-day-today .fc-daygrid-day-number { color: var(--primary-light); font-weight: 700; }
-            .fc-button { background: var(--bg-hover) !important; border: 1px solid var(--border) !important; color: var(--text-main) !important; font-size: 13px !important; border-radius: 10px !important; }
+            .fc-button { background: var(--bg-hover) !important; border: 1px solid var(--border) !important; color: var(--text-main) !important; font-size: 12px !important; border-radius: 8px !important; padding: 4px 8px !important; }
             .fc-button:hover { background: var(--border) !important; }
             .fc-button-active { background: var(--primary) !important; border-color: var(--primary) !important; }
-            .fc-toolbar-title { color: var(--text-main); font-size: 18px; font-weight: 600; }
-            .fc-event { border-radius: 6px; font-size: 12px; padding: 2px 6px; cursor: pointer; }
+            .fc-toolbar-title { color: var(--text-main); font-size: 15px; font-weight: 600; }
+            .fc-event { border-radius: 5px; font-size: 11px; padding: 1px 4px; cursor: pointer; }
             .fc-timegrid-slot { border-color: var(--border); }
-            .fc-timegrid-axis { color: var(--text-muted); font-size: 12px; }
+            .fc-timegrid-axis { color: var(--text-muted); font-size: 11px; }
+            @media (max-width: 640px) {
+              .fc-toolbar { flex-wrap: wrap; gap: 6px; }
+              .fc-toolbar-chunk { display: flex; align-items: center; gap: 4px; }
+              .fc-toolbar-title { font-size: 13px !important; }
+              .fc-button { font-size: 11px !important; padding: 3px 6px !important; }
+              .fc-daygrid-day-number { font-size: 11px; padding: 2px 4px; }
+              .fc-col-header-cell-cushion { font-size: 10px; }
+              .fc-event { font-size: 10px; padding: 1px 3px; }
+              .fc-daygrid-event-dot { display: none; }
+              .fc-daygrid-day-frame { min-height: 36px !important; }
+            }
           `}</style>
           <FullCalendar
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
             initialView="dayGridMonth"
             locale={calendarLocale}
             headerToolbar={{
-              left: "prev,next today",
+              left: "prev,next",
               center: "title",
-              right: "dayGridMonth,timeGridWeek",
+              right: "today dayGridMonth,timeGridWeek",
             }}
             buttonText={buttonText}
             events={todosLosEventos}
@@ -382,7 +393,7 @@ const Planner = () => {
       {viewMode === "list" && (
         <div className="bg-bg-card border border-border rounded-2xl overflow-hidden">
           {/* Cabecera tabla */}
-          <div className="grid grid-cols-[90px_110px_1fr_1fr_auto] gap-0 border-b border-border bg-bg-hover px-4 py-3 hidden md:grid">
+          <div className="hidden md:grid grid-cols-[90px_110px_1fr_1fr_auto] gap-0 border-b border-border bg-bg-hover px-4 py-3">
             <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">{t("planner.col_date")}</span>
             <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">{t("planner.col_day")}</span>
             <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">{t("planner.col_content")}</span>

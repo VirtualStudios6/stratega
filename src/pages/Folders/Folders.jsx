@@ -157,22 +157,61 @@ const Folders = () => {
 
   return (
     <DashboardLayout>
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-5 flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-text-main">Carpetas 📁</h1>
-          <p className="text-text-muted text-sm mt-1">{folders.length} carpetas creadas</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-text-main">Carpetas 📁</h1>
+          <p className="text-text-muted text-xs sm:text-sm mt-0.5">{folders.length} carpetas creadas</p>
         </div>
         <button
           onClick={() => setModalFolder(true)}
-          className="bg-primary text-white font-semibold px-5 py-2.5 rounded-xl hover:bg-primary-light transition shadow-lg shadow-primary/30 text-sm"
+          className="bg-primary text-white font-semibold px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl hover:bg-primary-light transition shadow-lg shadow-primary/30 text-sm flex-shrink-0"
         >
-          + Nueva carpeta
+          + Nueva
         </button>
       </div>
 
-      <div className="grid grid-cols-4 gap-6">
+      {/* ── Carpetas: scroll horizontal en mobile ── */}
+      <div className="md:hidden mb-4">
+        {folders.length === 0 ? (
+          <div className="bg-bg-card border border-border rounded-2xl p-6 text-center">
+            <span className="text-3xl mb-2 block">📁</span>
+            <p className="text-text-muted text-xs mb-3">Sin carpetas</p>
+            <button onClick={() => setModalFolder(true)} className="text-xs bg-primary/10 border border-primary/20 text-primary-light px-3 py-1.5 rounded-lg hover:bg-primary/20 transition">+ Nueva carpeta</button>
+          </div>
+        ) : (
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none -mx-4 px-4">
+            {folders.map(folder => (
+              <button
+                key={folder.id}
+                onClick={() => setSelectedFolder(folder)}
+                className={`flex items-center gap-2 px-3 py-2 rounded-xl border flex-shrink-0 transition ${
+                  selectedFolder?.id === folder.id
+                    ? "bg-primary/10 border-primary/30"
+                    : "bg-bg-card border-border"
+                }`}
+              >
+                <Folder size={16} style={{ color: folder.color }} className="flex-shrink-0" />
+                <span className="text-sm text-text-main whitespace-nowrap">{folder.nombre}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
-        <div className="col-span-1 space-y-2">
+      {/* Mobile: back button when folder is selected */}
+      {selectedFolder && (
+        <button
+          onClick={() => setSelectedFolder(null)}
+          className="md:hidden flex items-center gap-2 text-text-muted text-sm mb-3 hover:text-text-main transition"
+        >
+          <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+          Carpetas
+        </button>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
+
+        <div className="hidden md:block md:col-span-1 space-y-2">
           <p className="text-xs text-text-muted uppercase tracking-wider mb-3">Mis carpetas</p>
           {folders.length === 0 ? (
             <div className="bg-bg-card border border-border rounded-2xl p-6 text-center">
@@ -214,9 +253,9 @@ const Folders = () => {
           )}
         </div>
 
-        <div className="col-span-3">
+        <div className="col-span-1 md:col-span-3">
           {!selectedFolder ? (
-            <div className="bg-bg-card border border-border rounded-2xl p-16 text-center">
+            <div className="hidden md:flex bg-bg-card border border-border rounded-2xl p-16 text-center flex-col items-center justify-center">
               <span className="text-5xl mb-4 block">👈</span>
               <p className="text-text-muted">Selecciona una carpeta para ver su contenido</p>
             </div>
@@ -335,7 +374,7 @@ const Folders = () => {
                   <p className="text-text-muted/50 text-xs mt-1">Sube archivos o imágenes</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {files.map(file => (
                     <div key={file.id} className="group relative bg-bg-input border border-border rounded-xl overflow-hidden">
                       {isImage(file.tipo) ? (
