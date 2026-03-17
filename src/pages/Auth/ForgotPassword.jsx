@@ -1,12 +1,14 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
 import { resetPassword } from "../../firebase/auth"
+import { useTranslation } from "react-i18next"
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("")
   const [message, setMessage] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const { t } = useTranslation()
 
   const handleReset = async (e) => {
     e.preventDefault()
@@ -15,20 +17,20 @@ const ForgotPassword = () => {
     setLoading(true)
     try {
       await resetPassword(email)
-      setMessage("Revisa tu correo, te enviamos el enlace.")
+      setMessage(t("auth.reset_success"))
     } catch (err) {
-      setError("No encontramos una cuenta con ese correo.")
+      setError(t("auth.error_no_account"))
     }
     setLoading(false)
   }
 
   return (
-    <div className="min-h-screen bg-[#080810] flex items-center justify-center px-4 relative overflow-hidden">
+    <div className="min-h-screen bg-bg-main flex items-center justify-center px-4 relative overflow-hidden">
 
       <div className="absolute w-72 h-72 bg-primary opacity-15 rounded-full blur-3xl top-10 left-1/2 -translate-x-1/2 pointer-events-none" />
 
       <div className="relative w-full max-w-md">
-        <div className="bg-[#13131F] border border-[#2A2A3E] rounded-3xl p-8 shadow-2xl">
+        <div className="bg-bg-card border border-border rounded-3xl p-8 shadow-2xl">
 
           <div className="text-center mb-8">
             <img
@@ -36,8 +38,8 @@ const ForgotPassword = () => {
               alt="Stratega Planner"
               className="w-20 h-20 object-contain mx-auto mb-4"
             />
-            <h1 className="text-2xl font-bold text-text-main tracking-tight">Recuperar contraseña</h1>
-            <p className="text-text-muted text-sm mt-1">Te enviaremos un enlace a tu correo</p>
+            <h1 className="text-2xl font-bold text-text-main tracking-tight">{t("auth.forgot_title")}</h1>
+            <p className="text-text-muted text-sm mt-1">{t("auth.forgot_subtitle")}</p>
           </div>
 
           {message && (
@@ -54,14 +56,14 @@ const ForgotPassword = () => {
 
           <form onSubmit={handleReset} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-text-muted mb-1.5 uppercase tracking-wider">Correo</label>
+              <label className="block text-xs font-medium text-text-muted mb-1.5 uppercase tracking-wider">{t("auth.email")}</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="tu@correo.com"
+                placeholder={t("auth.email_placeholder")}
                 required
-                className="w-full bg-[#0D0D18] border border-[#2A2A3E] text-text-main rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder:text-text-muted/40 transition"
+                className="w-full bg-bg-input border border-border text-text-main rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder:text-text-muted/40 transition"
               />
             </div>
 
@@ -70,13 +72,13 @@ const ForgotPassword = () => {
               disabled={loading}
               className="w-full bg-primary text-white font-semibold py-3 rounded-xl hover:bg-primary-light transition shadow-lg shadow-primary/30 disabled:opacity-50"
             >
-              {loading ? "Enviando..." : "Enviar enlace"}
+              {loading ? t("auth.sending") : t("auth.send_reset")}
             </button>
           </form>
 
           <p className="text-center text-xs text-text-muted mt-6">
             <Link to="/login" className="text-primary-light font-medium hover:text-accent transition">
-              ← Volver al inicio de sesión
+              ← {t("auth.back_to_login")}
             </Link>
           </p>
         </div>

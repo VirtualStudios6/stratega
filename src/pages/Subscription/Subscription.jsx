@@ -9,7 +9,7 @@ const PLANES = [
     descripcion: "Para community managers que están comenzando",
     mensual: { precio: 6.99, variantId: import.meta.env.VITE_LS_BASIC_MONTHLY },
     anual: { precio: 67, variantId: import.meta.env.VITE_LS_BASIC_ANNUAL, ahorro: "20%" },
-    color: "border-[#2A2A3E]",
+    color: "border-border",
     badge: null,
     features: [
       "✅ Planner y Calendario",
@@ -67,7 +67,7 @@ const Subscription = () => {
           className={`px-5 py-2 rounded-xl text-sm font-medium border transition ${
             billing === "mensual"
               ? "bg-primary/20 text-primary-light border-primary/30"
-              : "bg-[#13131F] text-text-muted border-[#2A2A3E] hover:bg-[#1E1E2E]"
+              : "bg-bg-card text-text-muted border-border hover:bg-bg-hover"
           }`}
         >
           Mensual
@@ -77,7 +77,7 @@ const Subscription = () => {
           className={`px-5 py-2 rounded-xl text-sm font-medium border transition flex items-center gap-2 ${
             billing === "anual"
               ? "bg-primary/20 text-primary-light border-primary/30"
-              : "bg-[#13131F] text-text-muted border-[#2A2A3E] hover:bg-[#1E1E2E]"
+              : "bg-bg-card text-text-muted border-border hover:bg-bg-hover"
           }`}
         >
           Anual
@@ -94,7 +94,7 @@ const Subscription = () => {
           return (
             <div
               key={plan.id}
-              className={`relative bg-[#13131F] border-2 ${plan.color} rounded-2xl p-6 flex flex-col`}
+              className={`relative bg-bg-card border-2 ${plan.color} rounded-2xl p-6 flex flex-col`}
             >
               {plan.badge && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
@@ -133,7 +133,7 @@ const Subscription = () => {
                 className={`w-full py-3 rounded-xl font-semibold text-sm transition ${
                   plan.id === "pro"
                     ? "bg-primary text-white hover:bg-primary-light shadow-lg shadow-primary/30"
-                    : "bg-[#1E1E2E] text-text-main border border-[#2A2A3E] hover:bg-[#2A2A3E]"
+                    : "bg-bg-hover text-text-main border border-border hover:bg-border"
                 }`}
               >
                 Empezar gratis 7 días
@@ -145,7 +145,7 @@ const Subscription = () => {
 
       {/* Garantía */}
       <div className="max-w-3xl mx-auto">
-        <div className="bg-[#13131F] border border-[#2A2A3E] rounded-2xl p-6 text-center">
+        <div className="bg-bg-card border border-border rounded-2xl p-6 text-center">
           <span className="text-3xl mb-3 block">🛡️</span>
           <h3 className="text-text-main font-semibold mb-2">Garantía de 30 días</h3>
           <p className="text-text-muted text-sm">
@@ -159,7 +159,7 @@ const Subscription = () => {
             { icon: "❌", text: "Cancela cuando quieras" },
             { icon: "🌍", text: "Acepta tarjetas internacionales" },
           ].map((item, i) => (
-            <div key={i} className="bg-[#13131F] border border-[#2A2A3E] rounded-xl p-4 text-center">
+            <div key={i} className="bg-bg-card border border-border rounded-xl p-4 text-center">
               <span className="text-xl block mb-1">{item.icon}</span>
               <p className="text-text-muted text-xs">{item.text}</p>
             </div>

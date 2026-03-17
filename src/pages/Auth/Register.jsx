@@ -1,8 +1,9 @@
 import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
-import { registerWithEmail, loginWithGoogle } from "../../firebase/auth"
+import { registerWithEmail, loginWithGoogle, loginWithFacebook } from "../../firebase/auth"
 import { db } from "../../firebase/config"
 import { doc, setDoc } from "firebase/firestore"
+import { useTranslation } from "react-i18next"
 
 const Register = () => {
   const [name, setName] = useState("")
@@ -11,6 +12,7 @@ const Register = () => {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   const handleRegister = async (e) => {
     e.preventDefault()
@@ -23,14 +25,14 @@ const Register = () => {
       })
       navigate("/dashboard")
     } catch (err) {
-      setError("Error al crear la cuenta. Intenta con otro correo.")
+      setError(t("auth.error_register"))
     }
     setLoading(false)
   }
 
-  const handleGoogle = async () => {
+  const handleSocialRegister = async (providerFn, errorKey) => {
     try {
-      const result = await loginWithGoogle()
+      const result = await providerFn()
       await setDoc(doc(db, "users", result.user.uid), {
         name: result.user.displayName,
         email: result.user.email,
@@ -39,18 +41,18 @@ const Register = () => {
       }, { merge: true })
       navigate("/dashboard")
     } catch (err) {
-      setError("Error al registrarse con Google")
+      setError(t(errorKey))
     }
   }
 
   return (
-    <div className="min-h-screen bg-[#080810] flex items-center justify-center px-4 relative overflow-hidden">
+    <div className="min-h-screen bg-bg-main flex items-center justify-center px-4 relative overflow-hidden">
 
       <div className="absolute w-72 h-72 bg-primary opacity-20 rounded-full blur-3xl -top-10 -right-10 pointer-events-none" />
       <div className="absolute w-72 h-72 bg-primary-light opacity-5 rounded-full blur-3xl bottom-0 left-0 pointer-events-none" />
 
       <div className="relative w-full max-w-md">
-        <div className="bg-[#13131F] border border-[#2A2A3E] rounded-3xl p-8 shadow-2xl">
+        <div className="bg-bg-card border border-border rounded-3xl p-8 shadow-2xl">
 
           <div className="text-center mb-8">
             <img
@@ -58,8 +60,8 @@ const Register = () => {
               alt="Stratega Planner"
               className="w-20 h-20 object-contain mx-auto mb-4"
             />
-            <h1 className="text-2xl font-bold text-text-main tracking-tight">Crear cuenta</h1>
-            <p className="text-text-muted text-sm mt-1">Empieza gratis hoy</p>
+            <h1 className="text-2xl font-bold text-text-main tracking-tight">{t("auth.register_title")}</h1>
+            <p className="text-text-muted text-sm mt-1">{t("auth.register_subtitle")}</p>
           </div>
 
           {error && (
@@ -70,38 +72,38 @@ const Register = () => {
 
           <form onSubmit={handleRegister} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-text-muted mb-1.5 uppercase tracking-wider">Nombre</label>
+              <label className="block text-xs font-medium text-text-muted mb-1.5 uppercase tracking-wider">{t("auth.name_label")}</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Tu nombre"
+                placeholder={t("auth.name_placeholder")}
                 required
-                className="w-full bg-[#0D0D18] border border-[#2A2A3E] text-text-main rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder:text-text-muted/40 transition"
+                className="w-full bg-bg-input border border-border text-text-main rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder:text-text-muted/40 transition"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-text-muted mb-1.5 uppercase tracking-wider">Correo</label>
+              <label className="block text-xs font-medium text-text-muted mb-1.5 uppercase tracking-wider">{t("auth.email")}</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="tu@correo.com"
+                placeholder={t("auth.email_placeholder")}
                 required
-                className="w-full bg-[#0D0D18] border border-[#2A2A3E] text-text-main rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder:text-text-muted/40 transition"
+                className="w-full bg-bg-input border border-border text-text-main rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder:text-text-muted/40 transition"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-text-muted mb-1.5 uppercase tracking-wider">Contraseña</label>
+              <label className="block text-xs font-medium text-text-muted mb-1.5 uppercase tracking-wider">{t("auth.password")}</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Mínimo 6 caracteres"
+                placeholder={t("auth.password_min_placeholder")}
                 required
-                className="w-full bg-[#0D0D18] border border-[#2A2A3E] text-text-main rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder:text-text-muted/40 transition"
+                className="w-full bg-bg-input border border-border text-text-main rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder:text-text-muted/40 transition"
               />
             </div>
 
@@ -110,34 +112,45 @@ const Register = () => {
               disabled={loading}
               className="w-full bg-primary text-white font-semibold py-3 rounded-xl hover:bg-primary-light transition shadow-lg shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Creando cuenta..." : "Crear cuenta gratis"}
+              {loading ? t("auth.creating") : t("auth.create_free")}
             </button>
           </form>
 
           <div className="flex items-center my-6 gap-4">
-            <div className="flex-1 border-t border-[#2A2A3E]" />
+            <div className="flex-1 border-t border-border" />
             <span className="text-xs text-text-muted">o</span>
-            <div className="flex-1 border-t border-[#2A2A3E]" />
+            <div className="flex-1 border-t border-border" />
           </div>
 
-          <button
-            onClick={handleGoogle}
-            className="w-full bg-[#0D0D18] border border-[#2A2A3E] rounded-xl py-3 flex items-center justify-center gap-3 hover:bg-[#1E1E2E] transition"
-          >
-            <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-4 h-4" />
-            <span className="text-sm font-medium text-text-main">Continuar con Google</span>
-          </button>
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={() => handleSocialRegister(loginWithGoogle, "auth.error_google_register")}
+              className="w-full bg-bg-input border border-border rounded-xl py-3 flex items-center justify-center gap-3 hover:bg-bg-hover transition"
+            >
+              <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-4 h-4" />
+              <span className="text-sm font-medium text-text-main">{t("auth.google")}</span>
+            </button>
+            <button
+              onClick={() => handleSocialRegister(loginWithFacebook, "auth.error_facebook_register")}
+              className="w-full bg-[#1877F2]/10 border border-[#1877F2]/30 rounded-xl py-3 flex items-center justify-center gap-3 hover:bg-[#1877F2]/20 transition"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="#1877F2">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+              <span className="text-sm font-medium text-[#1877F2]">{t("auth.facebook")}</span>
+            </button>
+          </div>
 
           <p className="text-center text-xs text-text-muted mt-6">
-            ¿Ya tienes cuenta?{" "}
+            {t("auth.have_account")}{" "}
             <Link to="/login" className="text-primary-light font-medium hover:text-accent transition">
-              Inicia sesión
+              {t("auth.login_link")}
             </Link>
           </p>
         </div>
 
         <p className="text-center text-xs text-text-muted mt-6">
-          © 2026 Stratega Planner. Todos los derechos reservados.
+          {t("auth.copyright")}
         </p>
       </div>
     </div>

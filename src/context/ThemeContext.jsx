@@ -17,6 +17,11 @@ export const THEMES = {
       "--text-muted": "#6B6B8A",
       "--scrollbar-track": "#13131F",
       "--scrollbar-thumb": "#2A2A3E",
+      "--glow-primary": "0 0 28px rgba(96, 34, 236, 0.35)",
+      "--glow-primary-hover": "0 0 38px rgba(96, 34, 236, 0.55)",
+      "--card-shadow": "0 8px 32px rgba(0, 0, 0, 0.35)",
+      "--border-primary": "rgba(96, 34, 236, 0.22)",
+      "--gradient-text": "linear-gradient(135deg, #F5A623, #FF6B7A, #8B5CF6)",
     }
   },
   claro: {
@@ -24,17 +29,22 @@ export const THEMES = {
     nombre: "Claro",
     emoji: "☀️",
     vars: {
-      "--bg-main": "#F4F4F8",
+      "--bg-main": "#F2F2F7",
       "--bg-card": "#FFFFFF",
-      "--bg-input": "#F0F0F5",
-      "--bg-hover": "#E8E8F0",
-      "--border": "#DDDDE8",
-      "--primary": "#6022EC",
-      "--primary-light": "#8B5CF6",
-      "--text-main": "#1A1A2E",
-      "--text-muted": "#6B6B8A",
-      "--scrollbar-track": "#F0F0F5",
-      "--scrollbar-thumb": "#DDDDE8",
+      "--bg-input": "#EAEAF2",
+      "--bg-hover": "#E0E0EC",
+      "--border": "#D4D4E4",
+      "--primary": "#5B1FD9",
+      "--primary-light": "#7C4DEC",
+      "--text-main": "#12122A",
+      "--text-muted": "#6868A0",
+      "--scrollbar-track": "#EAEAF2",
+      "--scrollbar-thumb": "#C8C8DC",
+      "--glow-primary": "0 0 20px rgba(91, 31, 217, 0.14)",
+      "--glow-primary-hover": "0 0 28px rgba(91, 31, 217, 0.24)",
+      "--card-shadow": "0 4px 20px rgba(91, 31, 217, 0.07)",
+      "--border-primary": "rgba(91, 31, 217, 0.20)",
+      "--gradient-text": "linear-gradient(135deg, #D97706, #DC2626, #6D28D9)",
     }
   },
   rosa: {
@@ -53,6 +63,11 @@ export const THEMES = {
       "--text-muted": "#A06080",
       "--scrollbar-track": "#FDE8F0",
       "--scrollbar-thumb": "#F5C0D8",
+      "--glow-primary": "0 0 20px rgba(224, 92, 138, 0.18)",
+      "--glow-primary-hover": "0 0 28px rgba(224, 92, 138, 0.32)",
+      "--card-shadow": "0 4px 20px rgba(224, 92, 138, 0.09)",
+      "--border-primary": "rgba(224, 92, 138, 0.22)",
+      "--gradient-text": "linear-gradient(135deg, #F59E0B, #E05C8A, #A855F7)",
     }
   },
   azul: {
@@ -71,6 +86,11 @@ export const THEMES = {
       "--text-muted": "#5A7AAA",
       "--scrollbar-track": "#E2EDFF",
       "--scrollbar-thumb": "#B8D0F8",
+      "--glow-primary": "0 0 20px rgba(59, 125, 232, 0.18)",
+      "--glow-primary-hover": "0 0 28px rgba(59, 125, 232, 0.32)",
+      "--card-shadow": "0 4px 20px rgba(59, 125, 232, 0.09)",
+      "--border-primary": "rgba(59, 125, 232, 0.22)",
+      "--gradient-text": "linear-gradient(135deg, #F59E0B, #3B7DE8, #6B9EF5)",
     }
   }
 }
@@ -88,6 +108,7 @@ export const ThemeProvider = ({ children }) => {
     Object.entries(vars).forEach(([key, value]) => {
       root.style.setProperty(key, value)
     })
+    root.setAttribute("data-theme", theme)
     document.body.style.backgroundColor = vars["--bg-main"]
     document.body.style.color = vars["--text-main"]
     localStorage.setItem("stratega-theme", theme)

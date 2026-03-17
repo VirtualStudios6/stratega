@@ -1,20 +1,30 @@
 import { useState, useEffect } from "react"
+import { FolderOpen, Folder } from "lucide-react"
 import DashboardLayout from "../../components/layout/DashboardLayout"
 import { db, storage } from "../../firebase/config"
 import {
   collection, addDoc, getDocs, query,
-  where, deleteDoc, doc
+  where, deleteDoc, doc, updateDoc
 } from "firebase/firestore"
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage"
 import { useAuth } from "../../context/AuthContext"
+import compressImage from "../../utils/compressImage"
 
 const COLORES = [
-  { name: "Morado", value: "#6022EC" },
-  { name: "Azul", value: "#3B82F6" },
-  { name: "Verde", value: "#10B981" },
-  { name: "Rojo", value: "#EF4444" },
+  { name: "Morado",    value: "#6022EC" },
+  { name: "Índigo",   value: "#6366F1" },
+  { name: "Azul",     value: "#3B82F6" },
+  { name: "Celeste",  value: "#0EA5E9" },
+  { name: "Cian",     value: "#06B6D4" },
+  { name: "Teal",     value: "#14B8A6" },
+  { name: "Verde",    value: "#10B981" },
+  { name: "Lima",     value: "#84CC16" },
   { name: "Amarillo", value: "#F59E0B" },
-  { name: "Rosa", value: "#EC4899" },
+  { name: "Naranja",  value: "#F97316" },
+  { name: "Rojo",     value: "#EF4444" },
+  { name: "Rosa",     value: "#EC4899" },
+  { name: "Fucsia",   value: "#D946EF" },
+  { name: "Gris",     value: "#64748B" },
 ]
 
 const Folders = () => {
@@ -22,9 +32,13 @@ const Folders = () => {
   const [folders, setFolders] = useState([])
   const [selectedFolder, setSelectedFolder] = useState(null)
   const [files, setFiles] = useState([])
+  const [linkedFeeds, setLinkedFeeds] = useState([])
+  const [linkedPlanners, setLinkedPlanners] = useState([])
+  const [linkedReminders, setLinkedReminders] = useState([])
   const [modalFolder, setModalFolder] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [folderForm, setFolderForm] = useState({ nombre: "", color: "#6022EC" })
+  const [editingFolder, setEditingFolder] = useState(null)
 
   const fetchFolders = async () => {
     if (!user) return
@@ -39,8 +53,41 @@ const Folders = () => {
     setFiles(snap.docs.map(d => ({ id: d.id, ...d.data() })))
   }
 
+  const fetchLinkedFeeds = async (folderId) => {
+    const q = query(collection(db, "feeds"), where("uid", "==", user.uid), where("folderId", "==", folderId))
+    const snap = await getDocs(q)
+    setLinkedFeeds(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+  }
+
+  const fetchLinkedPlanners = async (folderId) => {
+    const q = query(collection(db, "planners"), where("uid", "==", user.uid), where("folderId", "==", folderId))
+    const snap = await getDocs(q)
+    const data = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => new Date(a.fecha) - new Date(b.fecha))
+    setLinkedPlanners(data)
+  }
+
+  const fetchLinkedReminders = async (folderId) => {
+    const q = query(collection(db, "reminders"), where("uid", "==", user.uid), where("folderId", "==", folderId))
+    const snap = await getDocs(q)
+    const data = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => new Date(a.fecha) - new Date(b.fecha))
+    setLinkedReminders(data)
+  }
+
   useEffect(() => { fetchFolders() }, [user])
-  useEffect(() => { if (selectedFolder) fetchFiles(selectedFolder.id) }, [selectedFolder])
+  useEffect(() => {
+    if (selectedFolder) {
+      fetchFiles(selectedFolder.id)
+      fetchLinkedFeeds(selectedFolder.id)
+      fetchLinkedPlanners(selectedFolder.id)
+      fetchLinkedReminders(selectedFolder.id)
+    } else {
+      setLinkedFeeds([])
+      setLinkedPlanners([])
+      setLinkedReminders([])
+    }
+  }, [selectedFolder])
 
   const handleCreateFolder = async () => {
     if (!folderForm.nombre.trim()) return
@@ -51,6 +98,18 @@ const Folders = () => {
       creadoEn: new Date()
     })
     setModalFolder(false)
+    setFolderForm({ nombre: "", color: "#6022EC" })
+    fetchFolders()
+  }
+
+  const handleEditFolder = async () => {
+    if (!folderForm.nombre.trim() || !editingFolder) return
+    await updateDoc(doc(db, "folders", editingFolder.id), {
+      nombre: folderForm.nombre,
+      color: folderForm.color,
+    })
+    setModalFolder(false)
+    setEditingFolder(null)
     setFolderForm({ nombre: "", color: "#6022EC" })
     fetchFolders()
   }
@@ -66,8 +125,9 @@ const Folders = () => {
     if (!file || !selectedFolder) return
     setUploading(true)
     try {
-      const storageRef = ref(storage, `folders/${user.uid}/${selectedFolder.id}/${Date.now()}_${file.name}`)
-      await uploadBytes(storageRef, file)
+      const compressed = await compressImage(file)
+      const storageRef = ref(storage, `folders/${user.uid}/${selectedFolder.id}/${Date.now()}_${compressed.name}`)
+      await uploadBytes(storageRef, compressed)
       const url = await getDownloadURL(storageRef)
       await addDoc(collection(db, "folder_files"), {
         uid: user.uid,
@@ -115,7 +175,7 @@ const Folders = () => {
         <div className="col-span-1 space-y-2">
           <p className="text-xs text-text-muted uppercase tracking-wider mb-3">Mis carpetas</p>
           {folders.length === 0 ? (
-            <div className="bg-[#13131F] border border-[#2A2A3E] rounded-2xl p-6 text-center">
+            <div className="bg-bg-card border border-border rounded-2xl p-6 text-center">
               <span className="text-3xl mb-2 block">📁</span>
               <p className="text-text-muted text-xs">Sin carpetas</p>
             </div>
@@ -127,11 +187,22 @@ const Folders = () => {
                 className={`group flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition ${
                   selectedFolder?.id === folder.id
                     ? "bg-primary/10 border-primary/30"
-                    : "bg-[#13131F] border-[#2A2A3E] hover:bg-[#1E1E2E]"
+                    : "bg-bg-card border-border hover:bg-bg-hover"
                 }`}
               >
-                <span className="text-xl" style={{ color: folder.color }}>📁</span>
+                <Folder size={20} style={{ color: folder.color }} className="flex-shrink-0" />
                 <span className="text-sm text-text-main flex-1 truncate">{folder.nombre}</span>
+                <button
+                  onClick={e => {
+                    e.stopPropagation()
+                    setEditingFolder(folder)
+                    setFolderForm({ nombre: folder.nombre, color: folder.color })
+                    setModalFolder(true)
+                  }}
+                  className="opacity-0 group-hover:opacity-100 text-text-muted hover:text-primary-light transition text-sm mr-1"
+                >
+                  ✏️
+                </button>
                 <button
                   onClick={e => { e.stopPropagation(); handleDeleteFolder(folder) }}
                   className="opacity-0 group-hover:opacity-100 text-text-muted hover:text-red-400 transition text-sm"
@@ -145,15 +216,15 @@ const Folders = () => {
 
         <div className="col-span-3">
           {!selectedFolder ? (
-            <div className="bg-[#13131F] border border-[#2A2A3E] rounded-2xl p-16 text-center">
+            <div className="bg-bg-card border border-border rounded-2xl p-16 text-center">
               <span className="text-5xl mb-4 block">👈</span>
               <p className="text-text-muted">Selecciona una carpeta para ver su contenido</p>
             </div>
           ) : (
-            <div className="bg-[#13131F] border border-[#2A2A3E] rounded-2xl p-6">
+            <div className="bg-bg-card border border-border rounded-2xl p-6">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl" style={{ color: selectedFolder.color }}>📁</span>
+                  <FolderOpen size={24} style={{ color: selectedFolder.color }} />
                   <div>
                     <h2 className="text-text-main font-semibold">{selectedFolder.nombre}</h2>
                     <p className="text-text-muted text-xs">{files.length} archivos</p>
@@ -165,6 +236,98 @@ const Folders = () => {
                 </label>
               </div>
 
+              {/* Feeds vinculados */}
+              {linkedFeeds.length > 0 && (
+                <div className="mb-6 pb-6 border-b border-border">
+                  <p className="text-xs text-text-muted uppercase tracking-wider font-semibold mb-3 flex items-center gap-2">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M2 6.857A1.857 1.857 0 0 1 3.857 5h16.286A1.857 1.857 0 0 1 22 6.857v10.286A1.857 1.857 0 0 1 20.143 19H3.857A1.857 1.857 0 0 1 2 17.143V6.857z"/>
+                    </svg>
+                    Feeds vinculados ({linkedFeeds.length})
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    {linkedFeeds.map(feed => (
+                      <div
+                        key={feed.id}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-border bg-bg-input hover:bg-bg-hover transition"
+                      >
+                        {/* Mini avatar */}
+                        <div
+                          className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 border-2"
+                          style={{ borderColor: selectedFolder.color + "66" }}
+                        >
+                          {feed.photoURL
+                            ? <img src={feed.photoURL} alt={feed.username} className="w-full h-full object-cover" />
+                            : <div className="w-full h-full bg-bg-hover flex items-center justify-center text-sm">👤</div>
+                          }
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-text-main leading-tight">@{feed.username}</p>
+                          {feed.nombre && (
+                            <p className="text-[11px] text-text-muted truncate">{feed.nombre}</p>
+                          )}
+                          <p className="text-[10px] text-text-muted/60 mt-0.5">
+                            {(feed.followers || 0).toLocaleString()} seguidores
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Eventos del Planner */}
+              {linkedPlanners.length > 0 && (
+                <div className="mb-6 pb-6 border-b border-border">
+                  <p className="text-xs text-text-muted uppercase tracking-wider font-semibold mb-3 flex items-center gap-2">
+                    📅 Eventos del Planner ({linkedPlanners.length})
+                  </p>
+                  <div className="space-y-2">
+                    {linkedPlanners.slice(0, 5).map(ev => {
+                      const pColor = { Urgente: "#EF4444", Importante: "#F59E0B", Normal: "#6022EC" }[ev.prioridad] || "#6022EC"
+                      return (
+                        <div key={ev.id} className="flex items-center gap-3 px-3 py-2 rounded-xl border border-border bg-bg-input">
+                          <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: pColor }} />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm text-text-main truncate">{ev.titulo}</p>
+                            {ev.plataforma && <p className="text-[11px] text-text-muted">{ev.plataforma}</p>}
+                          </div>
+                          <span className="text-xs text-text-muted flex-shrink-0 whitespace-nowrap">
+                            {ev.fecha ? new Date(ev.fecha + "T12:00:00").toLocaleDateString("es-ES", { day: "2-digit", month: "short" }) : ""}
+                          </span>
+                        </div>
+                      )
+                    })}
+                    {linkedPlanners.length > 5 && (
+                      <p className="text-xs text-text-muted text-center">+{linkedPlanners.length - 5} más</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Recordatorios */}
+              {linkedReminders.length > 0 && (
+                <div className="mb-6 pb-6 border-b border-border">
+                  <p className="text-xs text-text-muted uppercase tracking-wider font-semibold mb-3">
+                    🔔 Recordatorios ({linkedReminders.length})
+                  </p>
+                  <div className="space-y-2">
+                    {linkedReminders.slice(0, 5).map(rem => (
+                      <div key={rem.id} className="flex items-center gap-3 px-3 py-2 rounded-xl border border-border bg-bg-input">
+                        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${rem.completado ? "bg-green-500" : "bg-yellow-400"}`} />
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-sm text-text-main truncate ${rem.completado ? "line-through opacity-50" : ""}`}>{rem.titulo}</p>
+                        </div>
+                        <span className="text-[11px] text-text-muted flex-shrink-0">{rem.categoria}</span>
+                      </div>
+                    ))}
+                    {linkedReminders.length > 5 && (
+                      <p className="text-xs text-text-muted text-center">+{linkedReminders.length - 5} más</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {files.length === 0 ? (
                 <div className="text-center py-12">
                   <span className="text-4xl mb-3 block">📄</span>
@@ -174,7 +337,7 @@ const Folders = () => {
               ) : (
                 <div className="grid grid-cols-3 gap-3">
                   {files.map(file => (
-                    <div key={file.id} className="group relative bg-[#0D0D18] border border-[#2A2A3E] rounded-xl overflow-hidden">
+                    <div key={file.id} className="group relative bg-bg-input border border-border rounded-xl overflow-hidden">
                       {isImage(file.tipo) ? (
                         <div className="aspect-square">
                           <img src={file.url} alt={file.nombre} className="w-full h-full object-cover" />
@@ -202,7 +365,7 @@ const Folders = () => {
                           Eliminar
                         </button>
                       </div>
-                      <div className="p-2 border-t border-[#2A2A3E]">
+                      <div className="p-2 border-t border-border">
                         <p className="text-text-muted text-xs truncate">{file.nombre}</p>
                       </div>
                     </div>
@@ -216,10 +379,10 @@ const Folders = () => {
 
       {modalFolder && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4">
-          <div className="bg-[#13131F] border border-[#2A2A3E] rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+          <div className="bg-bg-card border border-border rounded-2xl p-6 w-full max-w-sm shadow-2xl">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-text-main font-semibold">Nueva carpeta</h2>
-              <button onClick={() => setModalFolder(false)} className="text-text-muted hover:text-text-main text-xl">✕</button>
+              <h2 className="text-text-main font-semibold">{editingFolder ? "Editar carpeta" : "Nueva carpeta"}</h2>
+              <button onClick={() => { setModalFolder(false); setEditingFolder(null); setFolderForm({ nombre: "", color: "#6022EC" }) }} className="text-text-muted hover:text-text-main text-xl">✕</button>
             </div>
 
             <div className="space-y-4">
@@ -229,8 +392,8 @@ const Folders = () => {
                   type="text"
                   value={folderForm.nombre}
                   onChange={e => setFolderForm({ ...folderForm, nombre: e.target.value })}
-                  placeholder="Ej: Cliente Nike"
-                  className="w-full bg-[#0D0D18] border border-[#2A2A3E] text-text-main rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-text-muted/40"
+                  placeholder="Ej: Empresa de comida"
+                  className="w-full bg-bg-input border border-border text-text-main rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-text-muted/40"
                 />
               </div>
 
@@ -241,31 +404,46 @@ const Folders = () => {
                     <button
                       key={c.value}
                       onClick={() => setFolderForm({ ...folderForm, color: c.value })}
-                      className={`w-8 h-8 rounded-full border-2 transition ${folderForm.color === c.value ? "border-white scale-110" : "border-transparent"}`}
-                      style={{ backgroundColor: c.value }}
-                    />
+                      title={c.name}
+                      className="relative w-8 h-8 rounded-full transition-transform hover:scale-110 focus:outline-none"
+                      style={{
+                        backgroundColor: c.value,
+                        boxShadow: folderForm.color === c.value
+                          ? `0 0 0 2px var(--bg-card), 0 0 0 4px ${c.value}`
+                          : "none",
+                        transform: folderForm.color === c.value ? "scale(1.15)" : "scale(1)",
+                      }}
+                    >
+                      {folderForm.color === c.value && (
+                        <span className="absolute inset-0 flex items-center justify-center">
+                          <svg width="12" height="12" viewBox="0 0 12 10" fill="none">
+                            <path d="M1 5l3.5 3.5L11 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </span>
+                      )}
+                    </button>
                   ))}
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 bg-[#0D0D18] border border-[#2A2A3E] rounded-xl px-4 py-3">
-                <span style={{ color: folderForm.color }} className="text-xl">📁</span>
+              <div className="flex items-center gap-3 bg-bg-input border border-border rounded-xl px-4 py-3">
+                <Folder size={20} style={{ color: folderForm.color }} />
                 <span className="text-text-main text-sm">{folderForm.nombre || "Vista previa"}</span>
               </div>
             </div>
 
             <div className="flex gap-3 mt-6">
               <button
-                onClick={() => setModalFolder(false)}
-                className="flex-1 bg-[#0D0D18] border border-[#2A2A3E] text-text-muted py-2.5 rounded-xl hover:bg-[#1E1E2E] transition text-sm"
+                onClick={() => { setModalFolder(false); setEditingFolder(null); setFolderForm({ nombre: "", color: "#6022EC" }) }}
+                className="flex-1 bg-bg-input border border-border text-text-muted py-2.5 rounded-xl hover:bg-bg-hover transition text-sm"
               >
                 Cancelar
               </button>
               <button
-                onClick={handleCreateFolder}
+                onClick={editingFolder ? handleEditFolder : handleCreateFolder}
                 className="flex-1 bg-primary text-white font-medium py-2.5 rounded-xl hover:bg-primary-light transition text-sm shadow-lg shadow-primary/30"
               >
-                Crear carpeta
+                {editingFolder ? "Guardar cambios" : "Crear carpeta"}
               </button>
             </div>
           </div>

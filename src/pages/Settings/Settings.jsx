@@ -1,19 +1,26 @@
 import { useState, useEffect } from "react"
+import { useTranslation } from "react-i18next"
 import DashboardLayout from "../../components/layout/DashboardLayout"
-import { db, storage } from "../../firebase/config"
+import { db, storage, auth } from "../../firebase/config"
 import { doc, getDoc, updateDoc, setDoc } from "firebase/firestore"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { useAuth } from "../../context/AuthContext"
 import { useTheme, THEMES } from "../../context/ThemeContext"
-import { updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "firebase/auth"
+import { updatePassword, reauthenticateWithCredential, reauthenticateWithPopup, EmailAuthProvider, GoogleAuthProvider, deleteUser, updateProfile } from "firebase/auth"
+import { useNavigate } from "react-router-dom"
+import LanguageSwitcher from "../../components/shared/LanguageSwitcher"
+import { deleteUserData } from "../../firebase/deleteUserData"
 
 const Settings = () => {
-  const { user } = useAuth()
+  const { user, refreshUser } = useAuth()
   const { theme, setTheme } = useTheme()
+  const { t } = useTranslation()
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState("perfil")
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState("")
   const [error, setError] = useState("")
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [avatarPreview, setAvatarPreview] = useState(null)
 
   const [perfil, setPerfil] = useState({
@@ -54,6 +61,9 @@ const Settings = () => {
   const handleAvatarChange = async (e) => {
     const file = e.target.files[0]
     if (!file) return
+    const ALLOWED = ["image/jpeg", "image/png", "image/webp", "image/gif"]
+    if (!ALLOWED.includes(file.type)) { showError("Solo se permiten imágenes (JPG, PNG, WEBP, GIF)"); return }
+    if (file.size > 5 * 1024 * 1024) { showError("La imagen no puede superar 5 MB"); return }
     setLoading(true)
     try {
       const storageRef = ref(storage, `avatars/${user.uid}`)
@@ -61,8 +71,8 @@ const Settings = () => {
       const url = await getDownloadURL(storageRef)
       await updateDoc(doc(db, "users", user.uid), { avatar: url })
       setAvatarPreview(url)
-      showSuccess("Foto actualizada correctamente")
-    } catch { showError("Error al subir la foto") }
+      showSuccess(t("settings.saved"))
+    } catch { showError(t("common.error")) }
     setLoading(false)
   }
 
@@ -73,21 +83,26 @@ const Settings = () => {
         name: perfil.nombre, cargo: perfil.cargo, empresa: perfil.empresa,
         telefono: perfil.telefono, bio: perfil.bio, website: perfil.website,
       }, { merge: true })
-      showSuccess("Perfil actualizado correctamente")
-    } catch { showError("Error al guardar el perfil") }
+      if (perfil.nombre && perfil.nombre !== user.displayName) {
+        await updateProfile(auth.currentUser, { displayName: perfil.nombre })
+        await refreshUser()
+      }
+      showSuccess(t("settings.saved"))
+    } catch { showError(t("common.error")) }
     setLoading(false)
   }
 
   const handleCambiarPassword = async () => {
     if (seguridad.passwordNuevo !== seguridad.passwordConfirm) { showError("Las contraseñas no coinciden"); return }
-    if (seguridad.passwordNuevo.length < 6) { showError("La contraseña debe tener al menos 6 caracteres"); return }
+    if (seguridad.passwordNuevo.length < 8) { showError("La contraseña debe tener al menos 8 caracteres"); return }
+    if (!/[A-Z]/.test(seguridad.passwordNuevo) || !/[0-9]/.test(seguridad.passwordNuevo)) { showError("La contraseña debe incluir al menos una mayúscula y un número"); return }
     setLoading(true)
     try {
       const credential = EmailAuthProvider.credential(user.email, seguridad.passwordActual)
-      await reauthenticateWithCredential(user, credential)
-      await updatePassword(user, seguridad.passwordNuevo)
+      await reauthenticateWithCredential(auth.currentUser, credential)
+      await updatePassword(auth.currentUser, seguridad.passwordNuevo)
       setSeguridad({ passwordActual: "", passwordNuevo: "", passwordConfirm: "" })
-      showSuccess("Contraseña actualizada correctamente")
+      showSuccess(t("settings.saved"))
     } catch { showError("Contraseña actual incorrecta") }
     setLoading(false)
   }
@@ -96,8 +111,45 @@ const Settings = () => {
     setLoading(true)
     try {
       await updateDoc(doc(db, "users", user.uid), { notificaciones })
-      showSuccess("Preferencias guardadas")
-    } catch { showError("Error al guardar preferencias") }
+      showSuccess(t("settings.saved"))
+    } catch { showError(t("common.error")) }
+    setLoading(false)
+  }
+
+  const handleDeleteAccount = async () => {
+    setShowDeleteModal(false)
+    setLoading(true)
+    const uid = auth.currentUser?.uid
+    const doDelete = async () => {
+      await deleteUserData(uid)
+      await deleteUser(auth.currentUser)
+      navigate("/login")
+    }
+    try {
+      await doDelete()
+    } catch (err) {
+      if (err.code === "auth/requires-recent-login") {
+        const providerId = user?.providerData?.[0]?.providerId
+        try {
+          if (providerId === "google.com") {
+            await reauthenticateWithPopup(auth.currentUser, new GoogleAuthProvider())
+          } else if (providerId === "facebook.com") {
+            const { FacebookAuthProvider } = await import("firebase/auth")
+            await reauthenticateWithPopup(auth.currentUser, new FacebookAuthProvider())
+          } else {
+            const password = window.prompt("Por seguridad, confirma tu contraseña para eliminar la cuenta:")
+            if (!password) { setLoading(false); return }
+            const credential = EmailAuthProvider.credential(user.email, password)
+            await reauthenticateWithCredential(auth.currentUser, credential)
+          }
+          await doDelete()
+        } catch {
+          showError("No se pudo verificar tu identidad. Intenta de nuevo.")
+        }
+      } else {
+        showError(t("common.error"))
+      }
+    }
     setLoading(false)
   }
 
@@ -105,11 +157,12 @@ const Settings = () => {
     perfil.nombre?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "??"
 
   const TABS = [
-    { id: "perfil", label: "Perfil", icon: "👤" },
-    { id: "apariencia", label: "Apariencia", icon: "🎨" },
-    { id: "notificaciones", label: "Notificaciones", icon: "🔔" },
-    { id: "seguridad", label: "Seguridad", icon: "🔐" },
-    { id: "cuenta", label: "Cuenta", icon: "⚙️" },
+    { id: "perfil",         label: t("settings.profile"),       icon: "👤" },
+    { id: "apariencia",     label: t("settings.appearance"),    icon: "🎨" },
+    { id: "idioma",         label: t("settings.language"),      icon: "🌍" },
+    { id: "notificaciones", label: t("settings.notifications"), icon: "🔔" },
+    { id: "seguridad",      label: t("settings.security"),      icon: "🔐" },
+    { id: "cuenta",         label: t("settings.current_plan"),  icon: "⚙️" },
   ]
 
   const inputClass = "w-full bg-bg-input border border-border text-text-main rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-text-muted/40"
@@ -118,7 +171,7 @@ const Settings = () => {
   return (
     <DashboardLayout>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-text-main">Configuración ⚙️</h1>
+        <h1 className="text-2xl font-bold text-text-main">{t("settings.title")} ⚙️</h1>
         <p className="text-text-muted text-sm mt-1">Administra tu perfil y preferencias</p>
       </div>
 
@@ -151,10 +204,10 @@ const Settings = () => {
 
         <div className="col-span-3">
 
-          {/* Tab Perfil */}
+          {/* PERFIL */}
           {activeTab === "perfil" && (
             <div className={cardClass}>
-              <h2 className="text-text-main font-semibold mb-6">Información del perfil</h2>
+              <h2 className="text-text-main font-semibold mb-6">{t("settings.profile")}</h2>
               <div className="flex items-center gap-5 mb-8">
                 <div className="relative">
                   {avatarPreview ? (
@@ -177,7 +230,7 @@ const Settings = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs text-text-muted uppercase tracking-wider mb-1.5">Nombre completo</label>
+                  <label className="block text-xs text-text-muted uppercase tracking-wider mb-1.5">{t("settings.name")}</label>
                   <input type="text" value={perfil.nombre} onChange={e => setPerfil({ ...perfil, nombre: e.target.value })} placeholder="Tu nombre" className={inputClass} />
                 </div>
                 <div>
@@ -202,45 +255,44 @@ const Settings = () => {
                 </div>
               </div>
               <button onClick={handleSavePerfil} disabled={loading} className="mt-6 bg-primary text-white font-medium px-6 py-2.5 rounded-xl hover:bg-primary-light transition text-sm shadow-lg shadow-primary/30 disabled:opacity-50">
-                {loading ? "Guardando..." : "Guardar cambios"}
+                {loading ? t("common.loading") : t("settings.save")}
               </button>
             </div>
           )}
 
-          {/* Tab Apariencia */}
+          {/* APARIENCIA */}
           {activeTab === "apariencia" && (
             <div className={cardClass}>
-              <h2 className="text-text-main font-semibold mb-2">Apariencia</h2>
+              <h2 className="text-text-main font-semibold mb-2">{t("settings.appearance")}</h2>
               <p className="text-text-muted text-sm mb-6">Elige el tema que más te guste</p>
-
               <div className="grid grid-cols-2 gap-4">
-                {Object.values(THEMES).map(t => (
+                {Object.values(THEMES).map(th => (
                   <button
-                    key={t.id}
-                    onClick={() => setTheme(t.id)}
+                    key={th.id}
+                    onClick={() => setTheme(th.id)}
                     className={`relative rounded-2xl border-2 overflow-hidden transition ${
-                      theme === t.id
+                      theme === th.id
                         ? "border-primary shadow-lg shadow-primary/20"
                         : "border-border hover:border-primary/40"
                     }`}
                   >
-                    <div className="p-4 text-left" style={{ backgroundColor: t.vars["--bg-main"] }}>
-                      <div className="rounded-xl p-3 mb-3" style={{ backgroundColor: t.vars["--bg-card"], border: `1px solid ${t.vars["--border"]}` }}>
+                    <div className="p-4 text-left" style={{ backgroundColor: th.vars["--bg-main"] }}>
+                      <div className="rounded-xl p-3 mb-3" style={{ backgroundColor: th.vars["--bg-card"], border: `1px solid ${th.vars["--border"]}` }}>
                         <div className="flex items-center gap-2 mb-2">
-                          <div className="w-6 h-6 rounded-lg" style={{ backgroundColor: t.vars["--primary"] }} />
-                          <div className="h-2 rounded-full w-20" style={{ backgroundColor: t.vars["--text-main"], opacity: 0.7 }} />
+                          <div className="w-6 h-6 rounded-lg" style={{ backgroundColor: th.vars["--primary"] }} />
+                          <div className="h-2 rounded-full w-20" style={{ backgroundColor: th.vars["--text-main"], opacity: 0.7 }} />
                         </div>
                         <div className="space-y-1.5">
-                          <div className="h-1.5 rounded-full w-full" style={{ backgroundColor: t.vars["--border"] }} />
-                          <div className="h-1.5 rounded-full w-3/4" style={{ backgroundColor: t.vars["--border"] }} />
+                          <div className="h-1.5 rounded-full w-full" style={{ backgroundColor: th.vars["--border"] }} />
+                          <div className="h-1.5 rounded-full w-3/4" style={{ backgroundColor: th.vars["--border"] }} />
                         </div>
                       </div>
                       <div className="flex items-center justify-between">
-                        <p className="text-sm font-semibold" style={{ color: t.vars["--text-main"] }}>
-                          {t.emoji} {t.nombre}
+                        <p className="text-sm font-semibold" style={{ color: th.vars["--text-main"] }}>
+                          {th.emoji} {th.nombre}
                         </p>
-                        {theme === t.id && (
-                          <div className="w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: t.vars["--primary"] }}>
+                        {theme === th.id && (
+                          <div className="w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: th.vars["--primary"] }}>
                             ✓
                           </div>
                         )}
@@ -249,25 +301,38 @@ const Settings = () => {
                   </button>
                 ))}
               </div>
-
               <div className="mt-6 bg-bg-input border border-border rounded-xl px-4 py-3">
                 <p className="text-text-muted text-xs">
-                  ✨ Tema activo: <span className="text-text-main font-medium">{THEMES[theme]?.nombre}</span> — Se guarda automáticamente
+                  ✨ {t("settings.theme")}: <span className="text-text-main font-medium">{THEMES[theme]?.nombre}</span> — Se guarda automáticamente
                 </p>
               </div>
             </div>
           )}
 
-          {/* Tab Notificaciones */}
+          {/* IDIOMA */}
+          {activeTab === "idioma" && (
+            <div className={cardClass}>
+              <h2 className="text-text-main font-semibold mb-2">{t("settings.language")} 🌍</h2>
+              <p className="text-text-muted text-sm mb-8">{t("settings.select_language")}</p>
+              <LanguageSwitcher variant="default" />
+              <div className="mt-8 bg-bg-input border border-border rounded-xl px-4 py-3">
+                <p className="text-text-muted text-xs">
+                  🌐 El idioma se guarda automáticamente y aplica a toda la aplicación.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* NOTIFICACIONES */}
           {activeTab === "notificaciones" && (
             <div className={cardClass}>
-              <h2 className="text-text-main font-semibold mb-6">Preferencias de notificaciones</h2>
+              <h2 className="text-text-main font-semibold mb-6">{t("settings.notifications")}</h2>
               <div className="space-y-4">
                 {[
-                  { key: "recordatorios", label: "Recordatorios", desc: "Notificaciones de tus recordatorios programados" },
-                  { key: "resumenSemanal", label: "Resumen semanal", desc: "Recibe un resumen de tu actividad cada semana" },
-                  { key: "nuevosClientes", label: "Nuevos clientes", desc: "Cuando agregues un nuevo miembro al equipo" },
-                  { key: "actualizaciones", label: "Actualizaciones", desc: "Novedades y mejoras de Stratega Planner" },
+                  { key: "recordatorios",  label: t("reminders.title"), desc: "Notificaciones de tus recordatorios programados" },
+                  { key: "resumenSemanal", label: "Resumen semanal",    desc: "Recibe un resumen de tu actividad cada semana" },
+                  { key: "nuevosClientes", label: "Nuevos clientes",    desc: "Cuando agregues un nuevo miembro al equipo" },
+                  { key: "actualizaciones",label: "Actualizaciones",    desc: "Novedades y mejoras de Stratega Planner" },
                 ].map(n => (
                   <div key={n.key} className="flex items-center justify-between bg-bg-input border border-border rounded-xl px-4 py-4">
                     <div>
@@ -284,37 +349,37 @@ const Settings = () => {
                 ))}
               </div>
               <button onClick={handleSaveNotificaciones} disabled={loading} className="mt-6 bg-primary text-white font-medium px-6 py-2.5 rounded-xl hover:bg-primary-light transition text-sm shadow-lg shadow-primary/30 disabled:opacity-50">
-                {loading ? "Guardando..." : "Guardar preferencias"}
+                {loading ? t("common.loading") : t("settings.save")}
               </button>
             </div>
           )}
 
-          {/* Tab Seguridad */}
+          {/* SEGURIDAD */}
           {activeTab === "seguridad" && (
             <div className={cardClass}>
-              <h2 className="text-text-main font-semibold mb-6">Cambiar contraseña</h2>
+              <h2 className="text-text-main font-semibold mb-6">{t("settings.change_password")}</h2>
               <div className="space-y-4 max-w-md">
                 <div>
-                  <label className="block text-xs text-text-muted uppercase tracking-wider mb-1.5">Contraseña actual</label>
+                  <label className="block text-xs text-text-muted uppercase tracking-wider mb-1.5">{t("settings.current_password")}</label>
                   <input type="password" value={seguridad.passwordActual} onChange={e => setSeguridad({ ...seguridad, passwordActual: e.target.value })} placeholder="••••••••" className={inputClass} />
                 </div>
                 <div>
-                  <label className="block text-xs text-text-muted uppercase tracking-wider mb-1.5">Nueva contraseña</label>
+                  <label className="block text-xs text-text-muted uppercase tracking-wider mb-1.5">{t("settings.new_password")}</label>
                   <input type="password" value={seguridad.passwordNuevo} onChange={e => setSeguridad({ ...seguridad, passwordNuevo: e.target.value })} placeholder="••••••••" className={inputClass} />
                 </div>
                 <div>
-                  <label className="block text-xs text-text-muted uppercase tracking-wider mb-1.5">Confirmar contraseña</label>
+                  <label className="block text-xs text-text-muted uppercase tracking-wider mb-1.5">{t("settings.confirm_password")}</label>
                   <input type="password" value={seguridad.passwordConfirm} onChange={e => setSeguridad({ ...seguridad, passwordConfirm: e.target.value })} placeholder="••••••••" className={inputClass} />
                 </div>
               </div>
               <button onClick={handleCambiarPassword} disabled={loading} className="mt-6 bg-primary text-white font-medium px-6 py-2.5 rounded-xl hover:bg-primary-light transition text-sm shadow-lg shadow-primary/30 disabled:opacity-50">
-                {loading ? "Actualizando..." : "Cambiar contraseña"}
+                {loading ? t("common.loading") : t("settings.change_password")}
               </button>
               <div className="mt-8 bg-bg-input border border-border rounded-xl p-4">
-                <p className="text-text-muted text-xs uppercase tracking-wider mb-3">Info de la cuenta</p>
+                <p className="text-text-muted text-xs uppercase tracking-wider mb-3">{t("settings.account_info")}</p>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-text-muted text-sm">Correo</span>
+                    <span className="text-text-muted text-sm">{t("settings.email")}</span>
                     <span className="text-text-main text-sm">{user?.email}</span>
                   </div>
                   <div className="flex justify-between">
@@ -322,7 +387,7 @@ const Settings = () => {
                     <span className="text-text-muted/60 text-xs font-mono">{user?.uid?.slice(0, 16)}...</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-text-muted text-sm">Proveedor</span>
+                    <span className="text-text-muted text-sm">{t("settings.provider")}</span>
                     <span className="text-text-main text-sm">{user?.providerData?.[0]?.providerId === "google.com" ? "Google" : "Email"}</span>
                   </div>
                 </div>
@@ -330,27 +395,34 @@ const Settings = () => {
             </div>
           )}
 
-          {/* Tab Cuenta */}
+          {/* CUENTA */}
           {activeTab === "cuenta" && (
             <div className={cardClass}>
-              <h2 className="text-text-main font-semibold mb-6">Información de la cuenta</h2>
+              <h2 className="text-text-main font-semibold mb-6">{t("settings.current_plan")}</h2>
               <div className="bg-bg-input border border-border rounded-xl p-5 mb-6">
-                <p className="text-text-muted text-xs uppercase tracking-wider mb-4">Plan actual</p>
+                <p className="text-text-muted text-xs uppercase tracking-wider mb-4">{t("settings.current_plan")}</p>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-text-main font-bold text-lg">Plan Gratuito</p>
-                    <p className="text-text-muted text-sm mt-0.5">Acceso limitado a funciones básicas</p>
+                    <p className="text-text-main font-bold text-lg">{t("dashboard.free_plan")}</p>
+                    <p className="text-text-muted text-sm mt-0.5">{t("settings.free_access")}</p>
                   </div>
-                  <button className="bg-primary text-white font-medium px-5 py-2 rounded-xl hover:bg-primary-light transition text-sm shadow-lg shadow-primary/30">
-                    Mejorar plan
+                  <button
+                    onClick={() => navigate("/subscription")}
+                    className="bg-primary text-white font-medium px-5 py-2 rounded-xl hover:bg-primary-light transition text-sm shadow-lg shadow-primary/30"
+                  >
+                    {t("settings.upgrade")}
                   </button>
                 </div>
               </div>
               <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-5">
-                <p className="text-red-400 font-semibold text-sm mb-1">Zona de peligro</p>
-                <p className="text-text-muted text-xs mb-4">Estas acciones son irreversibles. Procede con cuidado.</p>
-                <button className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm px-4 py-2 rounded-xl hover:bg-red-500/20 transition">
-                  Eliminar cuenta
+                <p className="text-red-400 font-semibold text-sm mb-1">{t("settings.danger_zone")}</p>
+                <p className="text-text-muted text-xs mb-4">{t("settings.danger_desc")}</p>
+                <button
+                  onClick={() => setShowDeleteModal(true)}
+                  disabled={loading}
+                  className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm px-4 py-2 rounded-xl hover:bg-red-500/20 transition disabled:opacity-50"
+                >
+                  {loading ? t("common.loading") : t("settings.delete_account")}
                 </button>
               </div>
             </div>
@@ -358,6 +430,40 @@ const Settings = () => {
 
         </div>
       </div>
+      {/* ── Delete Account Confirmation Modal ──────────────────────── */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-bg-card border border-red-500/30 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+            <div className="w-12 h-12 rounded-full bg-red-500/15 flex items-center justify-center mx-auto mb-4">
+              <span className="text-2xl">⚠️</span>
+            </div>
+            <h3 className="text-text-main font-bold text-center text-lg mb-2">
+              Eliminar cuenta
+            </h3>
+            <p className="text-text-muted text-sm text-center mb-1">
+              Esta acción es <span className="text-red-400 font-semibold">irreversible</span>.
+            </p>
+            <p className="text-text-muted text-sm text-center mb-6">
+              Se eliminarán todos tus datos: recordatorios, cotizaciones, archivos, publicaciones y más.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 bg-bg-input border border-border text-text-main text-sm font-medium py-2.5 rounded-xl hover:bg-bg-hover transition"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                className="flex-1 bg-red-500 text-white text-sm font-bold py-2.5 rounded-xl hover:bg-red-600 transition"
+              >
+                Sí, eliminar todo
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </DashboardLayout>
   )
 }

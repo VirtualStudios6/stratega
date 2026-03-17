@@ -5,68 +5,177 @@ import timeGridPlugin from "@fullcalendar/timegrid"
 import interactionPlugin from "@fullcalendar/interaction"
 import DashboardLayout from "../../components/layout/DashboardLayout"
 import { db } from "../../firebase/config"
-import { collection, addDoc, getDocs, query, where, deleteDoc, doc } from "firebase/firestore"
+import { collection, addDoc, getDocs, query, where, deleteDoc, doc, updateDoc } from "firebase/firestore"
 import { useAuth } from "../../context/AuthContext"
+import { FECHAS_CLAVE } from "../../data/fechasClave"
+import { useTranslation } from "react-i18next"
+
+const FORMATOS = ["Reel", "Carrusel", "Historia", "Video corto"]
+const IconInstagram = () => (
+  <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+  </svg>
+)
+const IconYouTube = () => (
+  <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+    <path d="M23.495 6.205a3.007 3.007 0 00-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 00.527 6.205a31.247 31.247 0 00-.522 5.805 31.247 31.247 0 00.522 5.783 3.007 3.007 0 002.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 002.088-2.088 31.247 31.247 0 00.5-5.783 31.247 31.247 0 00-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/>
+  </svg>
+)
+const IconFacebook = () => (
+  <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+    <path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.268h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/>
+  </svg>
+)
+const IconTelegram = () => (
+  <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+    <path d="M11.944 0A12 12 0 000 12a12 12 0 0012 12 12 12 0 0012-12A12 12 0 0012 0a12 12 0 00-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 01.171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+  </svg>
+)
+const IconTikTok = () => (
+  <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+    <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
+  </svg>
+)
+
+const PLATAFORMAS = [
+  { label: "Instagram", Icon: IconInstagram, color: "#E1306C" },
+  { label: "YouTube",   Icon: IconYouTube,   color: "#FF0000" },
+  { label: "Facebook",  Icon: IconFacebook,  color: "#1877F2" },
+  { label: "Telegram",  Icon: IconTelegram,  color: "#229ED9" },
+  { label: "TikTok",    Icon: IconTikTok,    color: "#010101" },
+]
 
 const PRIORIDADES = [
-  { label: "Urgente", color: "#EF4444", bg: "bg-red-500/20", text: "text-red-400", border: "border-red-500/30" },
-  { label: "Importante", color: "#F59E0B", bg: "bg-yellow-500/20", text: "text-yellow-400", border: "border-yellow-500/30" },
-  { label: "Normal", color: "#6022EC", bg: "bg-primary/20", text: "text-primary-light", border: "border-primary/30" },
+  { value: "Urgente",    color: "#EF4444", bg: "bg-red-500/20",    text: "text-red-400",       border: "border-red-500/30" },
+  { value: "Importante", color: "#F59E0B", bg: "bg-yellow-500/20", text: "text-yellow-400",    border: "border-yellow-500/30" },
+  { value: "Normal",     color: "#6022EC", bg: "bg-primary/20",    text: "text-primary-light", border: "border-primary/30" },
 ]
 
 const Planner = () => {
   const { user } = useAuth()
+  const { t, i18n } = useTranslation()
   const [eventos, setEventos] = useState([])
   const [modalOpen, setModalOpen] = useState(false)
+  const [fechaClaveModal, setFechaClaveModal] = useState(null)
   const [selectedDate, setSelectedDate] = useState("")
   const [selectedEvent, setSelectedEvent] = useState(null)
+  const [viewMode, setViewMode] = useState(() => localStorage.getItem("planner_view") || "calendar")
+  const [previewEvent, setPreviewEvent] = useState(null)
+  const [showFechasClave, setShowFechasClave] = useState(() => {
+    const saved = localStorage.getItem("planner_fechas_clave")
+    return saved === null ? true : saved === "true"
+  })
   const [form, setForm] = useState({
     titulo: "",
     descripcion: "",
     objetivo: "",
+    hook: "",
+    formato: "",
+    plataforma: "",
+    cta: "",
     prioridad: "Normal",
     hora: "09:00",
+    folderId: "",
   })
+  const [folders, setFolders] = useState([])
+  const [selectedCompany, setSelectedCompany] = useState(null)
+
+  const priorityLabel = (value) => {
+    const keyMap = { Urgente: "priority_urgent", Importante: "priority_important", Normal: "priority_normal" }
+    return t(`planner.${keyMap[value] || "priority_normal"}`)
+  }
 
   const fetchEventos = async () => {
     if (!user) return
     const q = query(collection(db, "planners"), where("uid", "==", user.uid))
     const snap = await getDocs(q)
-    const data = snap.docs.map(doc => {
-      const d = doc.data()
-      const prioridad = PRIORIDADES.find(p => p.label === d.prioridad)
+    const data = snap.docs.map(document => {
+      const d = document.data()
+      const prioridad = PRIORIDADES.find(p => p.value === d.prioridad)
       return {
-        id: doc.id,
+        id: document.id,
         title: d.titulo,
         date: d.fecha,
         backgroundColor: prioridad?.color || "#6022EC",
         borderColor: prioridad?.color || "#6022EC",
-        extendedProps: d
+        extendedProps: { ...d, esFechaClave: false },
       }
     })
     setEventos(data)
   }
 
-  useEffect(() => { fetchEventos() }, [user])
+  const fetchFolders = async () => {
+    if (!user) return
+    const q = query(collection(db, "folders"), where("uid", "==", user.uid))
+    const snap = await getDocs(q)
+    setFolders(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+  }
+
+  useEffect(() => { fetchEventos(); fetchFolders() }, [user])
+
+  const toggleFechasClave = () => {
+    const next = !showFechasClave
+    setShowFechasClave(next)
+    localStorage.setItem("planner_fechas_clave", String(next))
+  }
+
+  const fechasClaveEventos = showFechasClave
+    ? FECHAS_CLAVE.map(f => ({
+        id: `clave-${f.date}-${f.title}`,
+        title: f.title,
+        date: f.date,
+        backgroundColor: f.color + "22",
+        borderColor: f.color,
+        textColor: f.color,
+        display: "block",
+        extendedProps: { esFechaClave: true, sugerencia: f.sugerencia, colorOriginal: f.color },
+      }))
+    : []
+
+  const eventosFiltrados = selectedCompany
+    ? eventos.filter(ev => ev.extendedProps?.folderId === selectedCompany)
+    : eventos
+  const todosLosEventos = [...eventosFiltrados, ...fechasClaveEventos]
 
   const handleDateClick = (info) => {
     setSelectedDate(info.dateStr)
     setSelectedEvent(null)
-    setForm({ titulo: "", descripcion: "", objetivo: "", prioridad: "Normal", hora: "09:00" })
+    setForm({ titulo: "", descripcion: "", objetivo: "", hook: "", formato: "", plataforma: "", cta: "", prioridad: "Normal", hora: "09:00", folderId: "" })
     setModalOpen(true)
   }
 
   const handleEventClick = (info) => {
     const props = info.event.extendedProps
-    setSelectedEvent(info.event.id)
-    setSelectedDate(props.fecha)
+
+    if (props.esFechaClave) {
+      setFechaClaveModal({
+        title: info.event.title,
+        sugerencia: props.sugerencia,
+        color: props.colorOriginal,
+      })
+      return
+    }
+
+    setPreviewEvent({ id: info.event.id, title: info.event.title, ...props })
+  }
+
+  const openEditFromPreview = () => {
+    if (!previewEvent) return
+    setSelectedEvent(previewEvent.id)
+    setSelectedDate(previewEvent.fecha)
     setForm({
-      titulo: info.event.title,
-      descripcion: props.descripcion,
-      objetivo: props.objetivo,
-      prioridad: props.prioridad,
-      hora: props.hora,
+      titulo: previewEvent.title,
+      descripcion: previewEvent.descripcion || "",
+      objetivo: previewEvent.objetivo || "",
+      hook: previewEvent.hook || "",
+      formato: previewEvent.formato || "",
+      plataforma: previewEvent.plataforma || "",
+      cta: previewEvent.cta || "",
+      prioridad: previewEvent.prioridad || "Normal",
+      hora: previewEvent.hora || "09:00",
+      folderId: previewEvent.folderId || "",
     })
+    setPreviewEvent(null)
     setModalOpen(true)
   }
 
@@ -77,10 +186,15 @@ const Planner = () => {
       titulo: form.titulo,
       descripcion: form.descripcion,
       objetivo: form.objetivo,
+      hook: form.hook,
+      formato: form.formato,
+      plataforma: form.plataforma,
+      cta: form.cta,
       prioridad: form.prioridad,
       hora: form.hora,
       fecha: selectedDate,
-      creadoEn: new Date()
+      folderId: form.folderId || null,
+      creadoEn: new Date(),
     })
     setModalOpen(false)
     fetchEventos()
@@ -93,130 +207,473 @@ const Planner = () => {
     fetchEventos()
   }
 
-  const prioridadActual = PRIORIDADES.find(p => p.label === form.prioridad)
+  const handleUpdate = async () => {
+    if (!form.titulo.trim() || !selectedEvent) return
+    await updateDoc(doc(db, "planners", selectedEvent), {
+      titulo: form.titulo,
+      descripcion: form.descripcion,
+      objetivo: form.objetivo,
+      hook: form.hook,
+      formato: form.formato,
+      plataforma: form.plataforma,
+      cta: form.cta,
+      prioridad: form.prioridad,
+      hora: form.hora,
+      fecha: selectedDate,
+      folderId: form.folderId || null,
+    })
+    setModalOpen(false)
+    fetchEventos()
+  }
+
+  const prioridadActual = PRIORIDADES.find(p => p.value === form.prioridad) || PRIORIDADES[2]
+
+  const switchView = (mode) => {
+    setViewMode(mode)
+    localStorage.setItem("planner_view", mode)
+  }
+
+  const getDiaSemana = (fecha) => {
+    const d = new Date(fecha + "T12:00:00")
+    return d.toLocaleDateString(i18n.language === "es" ? "es-ES" : "en-US", { weekday: "long" })
+  }
+
+  const eventosOrdenados = [...eventosFiltrados].sort((a, b) => new Date(a.date) - new Date(b.date))
+
+  const openNewForDate = (dateStr) => {
+    setSelectedDate(dateStr)
+    setSelectedEvent(null)
+    setForm({ titulo: "", descripcion: "", objetivo: "", hook: "", formato: "", plataforma: "", cta: "", prioridad: "Normal", hora: "09:00", folderId: "" })
+    setModalOpen(true)
+  }
+
+  const calendarLocale = i18n.language === "es" ? "es" : "en"
+  const buttonText = {
+    today: t("planner.today_btn"),
+    month: t("planner.month_btn"),
+    week:  t("planner.week_btn"),
+  }
 
   return (
     <DashboardLayout>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-text-main">Planner 📅</h1>
-        <p className="text-text-muted text-sm mt-1">Organiza tus objetivos y tareas</p>
+      {/* Header */}
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-text-main">Planner 📅</h1>
+          <p className="text-text-muted text-sm mt-1">{t("planner.subtitle")}</p>
+        </div>
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* Toggle vista */}
+          <div className="flex items-center bg-bg-hover border border-border rounded-xl p-1 gap-1">
+            <button
+              onClick={() => switchView("calendar")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+                viewMode === "calendar"
+                  ? "bg-primary text-white shadow"
+                  : "text-text-muted hover:text-text-main"
+              }`}
+            >
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              {t("planner.view_calendar")}
+            </button>
+            <button
+              onClick={() => switchView("list")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+                viewMode === "list"
+                  ? "bg-primary text-white shadow"
+                  : "text-text-muted hover:text-text-main"
+              }`}
+            >
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1" fill="currentColor"/><circle cx="3" cy="12" r="1" fill="currentColor"/><circle cx="3" cy="18" r="1" fill="currentColor"/>
+              </svg>
+              {t("planner.view_list")}
+            </button>
+          </div>
+
+          {/* Empresa filter */}
+          {folders.length > 0 && (
+            <select
+              value={selectedCompany || ""}
+              onChange={e => setSelectedCompany(e.target.value || null)}
+              className="bg-bg-card border border-border text-text-main rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="">Todas las empresas</option>
+              {folders.map(f => (
+                <option key={f.id} value={f.id}>{f.nombre}</option>
+              ))}
+            </select>
+          )}
+          {/* Fechas clave toggle */}
+          <button
+            onClick={toggleFechasClave}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium transition
+              ${showFechasClave
+                ? "bg-primary/20 border-primary/30 text-primary-light"
+                : "bg-bg-card border-border text-text-muted hover:bg-bg-hover"
+              }`}
+          >
+            <span>🌍</span>
+            {t("planner.key_dates")}: {showFechasClave ? "ON" : "OFF"}
+          </button>
+        </div>
       </div>
 
       {/* Leyenda de prioridades */}
-      <div className="flex gap-3 mb-6">
+      <div className="flex gap-3 mb-6 flex-wrap">
         {PRIORIDADES.map(p => (
-          <div key={p.label} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${p.bg} ${p.border}`}>
+          <div key={p.value} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${p.bg} ${p.border}`}>
             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
-            <span className={`text-xs font-medium ${p.text}`}>{p.label}</span>
+            <span className={`text-xs font-medium ${p.text}`}>{priorityLabel(p.value)}</span>
           </div>
         ))}
+        {showFechasClave && (
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border bg-bg-hover border-border">
+            <div className="w-2 h-2 rounded-full bg-yellow-400" />
+            <span className="text-xs font-medium text-text-muted">{t("planner.key_dates")}</span>
+          </div>
+        )}
       </div>
 
       {/* Calendario */}
-      <div className="bg-[#13131F] border border-[#2A2A3E] rounded-2xl p-6">
-        <style>{`
-          .fc { color: #EEEEF2; font-family: 'Rubik', sans-serif; }
-          .fc-theme-standard td, .fc-theme-standard th, .fc-theme-standard .fc-scrollgrid { border-color: #2A2A3E; }
-          .fc-col-header-cell { background: #1E1E2E; padding: 10px 0; }
-          .fc-col-header-cell-cushion { color: #8B8BA7; font-size: 12px; font-weight: 500; text-decoration: none; }
-          .fc-daygrid-day { background: transparent; }
-          .fc-daygrid-day:hover { background: #1E1E2E; }
-          .fc-daygrid-day-number { color: #8B8BA7; font-size: 13px; text-decoration: none; }
-          .fc-day-today { background: #1a1a3e !important; }
-          .fc-day-today .fc-daygrid-day-number { color: #A78BFA; font-weight: 700; }
-          .fc-button { background: #1E1E2E !important; border: 1px solid #2A2A3E !important; color: #EEEEF2 !important; font-size: 13px !important; border-radius: 10px !important; }
-          .fc-button:hover { background: #2A2A3E !important; }
-          .fc-button-active { background: #6022EC !important; border-color: #6022EC !important; }
-          .fc-toolbar-title { color: #EEEEF2; font-size: 18px; font-weight: 600; }
-          .fc-event { border-radius: 6px; font-size: 12px; padding: 2px 6px; }
-          .fc-timegrid-slot { border-color: #2A2A3E; }
-          .fc-timegrid-axis { color: #8B8BA7; font-size: 12px; }
-        `}</style>
-        <FullCalendar
-          plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-          initialView="dayGridMonth"
-          locale="es"
-          headerToolbar={{
-            left: "prev,next today",
-            center: "title",
-            right: "dayGridMonth,timeGridWeek"
-          }}
-          buttonText={{ today: "Hoy", month: "Mes", week: "Semana" }}
-          events={eventos}
-          dateClick={handleDateClick}
-          eventClick={handleEventClick}
-          height="auto"
-          editable={false}
-          selectable={true}
-        />
-      </div>
+      {viewMode === "calendar" && (
+        <div className="bg-bg-card border border-border rounded-2xl p-6">
+          <style>{`
+            .fc { color: var(--text-main); font-family: 'Rubik', sans-serif; }
+            .fc-theme-standard td, .fc-theme-standard th, .fc-theme-standard .fc-scrollgrid { border-color: var(--border); }
+            .fc-col-header-cell { background: var(--bg-hover); padding: 10px 0; }
+            .fc-col-header-cell-cushion { color: var(--text-muted); font-size: 12px; font-weight: 500; text-decoration: none; }
+            .fc-daygrid-day { background: transparent; }
+            .fc-daygrid-day:hover { background: var(--bg-hover); }
+            .fc-daygrid-day-number { color: var(--text-muted); font-size: 13px; text-decoration: none; }
+            .fc-day-today { background: color-mix(in srgb, var(--primary) 15%, transparent) !important; }
+            .fc-day-today .fc-daygrid-day-number { color: var(--primary-light); font-weight: 700; }
+            .fc-button { background: var(--bg-hover) !important; border: 1px solid var(--border) !important; color: var(--text-main) !important; font-size: 13px !important; border-radius: 10px !important; }
+            .fc-button:hover { background: var(--border) !important; }
+            .fc-button-active { background: var(--primary) !important; border-color: var(--primary) !important; }
+            .fc-toolbar-title { color: var(--text-main); font-size: 18px; font-weight: 600; }
+            .fc-event { border-radius: 6px; font-size: 12px; padding: 2px 6px; cursor: pointer; }
+            .fc-timegrid-slot { border-color: var(--border); }
+            .fc-timegrid-axis { color: var(--text-muted); font-size: 12px; }
+          `}</style>
+          <FullCalendar
+            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+            initialView="dayGridMonth"
+            locale={calendarLocale}
+            headerToolbar={{
+              left: "prev,next today",
+              center: "title",
+              right: "dayGridMonth,timeGridWeek",
+            }}
+            buttonText={buttonText}
+            events={todosLosEventos}
+            dateClick={handleDateClick}
+            eventClick={handleEventClick}
+            height="auto"
+            editable={false}
+            selectable={true}
+          />
+        </div>
+      )}
 
-      {/* Modal */}
+      {/* Vista lineal */}
+      {viewMode === "list" && (
+        <div className="bg-bg-card border border-border rounded-2xl overflow-hidden">
+          {/* Cabecera tabla */}
+          <div className="grid grid-cols-[90px_110px_1fr_1fr_auto] gap-0 border-b border-border bg-bg-hover px-4 py-3 hidden md:grid">
+            <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">{t("planner.col_date")}</span>
+            <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">{t("planner.col_day")}</span>
+            <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">{t("planner.col_content")}</span>
+            <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">{t("planner.col_goal")}</span>
+            <span className="text-xs font-semibold text-text-muted uppercase tracking-wider pr-2">{t("planner.col_format")}</span>
+          </div>
+
+          {eventosOrdenados.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-center px-4">
+              <div className="text-4xl mb-3">📋</div>
+              <p className="text-text-muted text-sm">{t("planner.list_empty")}</p>
+              <button
+                onClick={() => openNewForDate(new Date().toISOString().split("T")[0])}
+                className="mt-4 px-4 py-2 bg-primary text-white text-sm font-medium rounded-xl hover:bg-primary-light transition shadow-lg shadow-primary/30"
+              >
+                + {t("planner.new_entry")}
+              </button>
+            </div>
+          ) : (
+            <div className="divide-y divide-border">
+              {eventosOrdenados.map((ev, i) => {
+                const d = ev.extendedProps
+                const prioridad = PRIORIDADES.find(p => p.value === d.prioridad) || PRIORIDADES[2]
+                const plat = PLATAFORMAS.find(p => p.label === d.plataforma)
+                const isToday = ev.date === new Date().toISOString().split("T")[0]
+                return (
+                  <div
+                    key={ev.id}
+                    onClick={() => setPreviewEvent({ id: ev.id, title: ev.title, ...d })}
+                    className={`group flex flex-col md:grid md:grid-cols-[90px_110px_1fr_1fr_auto] gap-2 md:gap-0 px-4 py-4 cursor-pointer hover:bg-bg-hover transition relative ${
+                      isToday ? "bg-primary/5" : i % 2 === 0 ? "" : "bg-bg-hover/30"
+                    }`}
+                  >
+                    {/* Borde izquierdo de prioridad */}
+                    <div
+                      className="absolute left-0 top-0 bottom-0 w-0.5 rounded-r"
+                      style={{ backgroundColor: prioridad.color }}
+                    />
+
+                    {/* Fecha */}
+                    <div className="flex items-center gap-2 md:pr-3">
+                      <div className={`text-xs font-semibold ${isToday ? "text-primary-light" : "text-text-main"}`}>
+                        {new Date(ev.date + "T12:00:00").toLocaleDateString(i18n.language === "es" ? "es-ES" : "en-US", { day: "2-digit", month: "short" })}
+                        {isToday && <span className="ml-1 text-primary-light text-[10px]">●</span>}
+                      </div>
+                    </div>
+
+                    {/* Día semana */}
+                    <div className="hidden md:flex items-center md:pr-3">
+                      <span className="text-xs text-text-muted capitalize">{getDiaSemana(ev.date)}</span>
+                    </div>
+
+                    {/* Contenido + hook */}
+                    <div className="flex flex-col gap-1 md:pr-4 min-w-0">
+                      <span className="text-sm font-medium text-text-main truncate">{ev.title}</span>
+                      {d.hook && (
+                        <span className="text-xs text-text-muted italic truncate">"{d.hook}"</span>
+                      )}
+                      {d.descripcion && (
+                        <span className="text-xs text-text-muted truncate hidden md:block">{d.descripcion}</span>
+                      )}
+                    </div>
+
+                    {/* Objetivo + CTA */}
+                    <div className="flex flex-col gap-1 md:pr-4 min-w-0">
+                      {d.objetivo && (
+                        <span className="text-xs text-text-main truncate">{d.objetivo}</span>
+                      )}
+                      {d.cta && (
+                        <span className="text-xs text-text-muted truncate">→ {d.cta}</span>
+                      )}
+                    </div>
+
+                    {/* Formato + Plataforma + Prioridad */}
+                    <div className="flex items-center gap-2 flex-wrap md:flex-nowrap">
+                      {d.formato && (
+                        <span className="px-2 py-0.5 rounded-md bg-primary/10 border border-primary/20 text-primary-light text-[11px] font-medium whitespace-nowrap">
+                          {d.formato}
+                        </span>
+                      )}
+                      {plat && (
+                        <span
+                          className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium whitespace-nowrap"
+                          style={{ backgroundColor: plat.color + "22", color: plat.color, border: `1px solid ${plat.color}44` }}
+                        >
+                          <plat.Icon />
+                          {plat.label}
+                        </span>
+                      )}
+                      <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: prioridad.color }} title={d.prioridad} />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {/* Footer con botón añadir */}
+          {eventosOrdenados.length > 0 && (
+            <div className="px-4 py-3 border-t border-border flex justify-between items-center">
+              <span className="text-xs text-text-muted">{eventosOrdenados.length} {t("planner.list_entries")}</span>
+              <button
+                onClick={() => openNewForDate(new Date().toISOString().split("T")[0])}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white text-xs font-medium rounded-lg hover:bg-primary-light transition shadow shadow-primary/30"
+              >
+                + {t("planner.new_entry")}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Modal nueva entrada */}
       {modalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4">
-          <div className="bg-[#13131F] border border-[#2A2A3E] rounded-2xl p-6 w-full max-w-md shadow-2xl">
+          <div className="bg-bg-card border border-border rounded-2xl w-full max-w-md shadow-2xl flex flex-col max-h-[90vh]">
 
-            <div className="flex items-center justify-between mb-6">
+            {/* Header fijo */}
+            <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border flex-shrink-0">
               <h2 className="text-text-main font-semibold">
-                {selectedEvent ? "Ver entrada" : "Nueva entrada"}
+                {selectedEvent ? t("planner.view_entry") : t("planner.new_entry")}
               </h2>
               <button onClick={() => setModalOpen(false)} className="text-text-muted hover:text-text-main text-xl">✕</button>
             </div>
 
-            <div className="space-y-4">
+            {/* Contenido scrollable */}
+            <div className="overflow-y-auto px-6 py-4 space-y-5 flex-1">
+
+              {/* Contenido */}
               <div>
-                <label className="block text-xs text-text-muted uppercase tracking-wider mb-1.5">Título</label>
+                <label className="block text-sm font-medium text-text-main mb-0.5">{t("planner.title_label")}</label>
+                <p className="text-xs text-text-muted mb-1.5">{t("planner.title_sublabel")}</p>
                 <input
                   type="text"
                   value={form.titulo}
                   onChange={e => setForm({ ...form, titulo: e.target.value })}
-                  placeholder="Ej: Publicar en Instagram"
-                  className="w-full bg-[#0D0D18] border border-[#2A2A3E] text-text-main rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-text-muted/40"
+                  placeholder={t("planner.title_placeholder")}
+                  className="w-full bg-bg-input border border-border text-text-main rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-text-muted/40"
                 />
               </div>
 
+              {/* Objetivo */}
               <div>
-                <label className="block text-xs text-text-muted uppercase tracking-wider mb-1.5">Objetivo</label>
+                <label className="block text-sm font-medium text-text-main mb-0.5">{t("planner.goal_label")}</label>
+                <p className="text-xs text-text-muted mb-1.5">{t("planner.goal_sublabel")}</p>
                 <input
                   type="text"
                   value={form.objetivo}
                   onChange={e => setForm({ ...form, objetivo: e.target.value })}
-                  placeholder="¿Qué quieres lograr?"
-                  className="w-full bg-[#0D0D18] border border-[#2A2A3E] text-text-main rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-text-muted/40"
+                  placeholder={t("planner.goal_placeholder")}
+                  className="w-full bg-bg-input border border-border text-text-main rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-text-muted/40"
                 />
               </div>
 
+              {/* Hook */}
               <div>
-                <label className="block text-xs text-text-muted uppercase tracking-wider mb-1.5">Descripción</label>
+                <label className="block text-sm font-medium text-text-main mb-0.5">{t("planner.hook_label")}</label>
+                <p className="text-xs text-text-muted mb-1.5">{t("planner.hook_sublabel")}</p>
+                <input
+                  type="text"
+                  value={form.hook}
+                  onChange={e => setForm({ ...form, hook: e.target.value })}
+                  placeholder={t("planner.hook_placeholder")}
+                  className="w-full bg-bg-input border border-border text-text-main rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-text-muted/40"
+                />
+              </div>
+
+              {/* Formato */}
+              <div>
+                <label className="block text-sm font-medium text-text-main mb-2">{t("planner.format_label")}</label>
+                <div className="flex flex-wrap gap-2">
+                  {FORMATOS.map(f => (
+                    <button
+                      key={f}
+                      type="button"
+                      onClick={() => setForm({ ...form, formato: form.formato === f ? "" : f })}
+                      className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition ${
+                        form.formato === f
+                          ? "bg-primary/20 border-primary/50 text-primary-light"
+                          : "bg-bg-input border-border text-text-muted hover:bg-bg-hover"
+                      }`}
+                    >
+                      {f}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Plataforma */}
+              <div>
+                <label className="block text-sm font-medium text-text-main mb-2">{t("planner.platform_label")}</label>
+                <div className="flex flex-wrap gap-2">
+                  {PLATAFORMAS.map(p => {
+                    const active = form.plataforma === p.label
+                    return (
+                      <button
+                        key={p.label}
+                        type="button"
+                        onClick={() => setForm({ ...form, plataforma: active ? "" : p.label })}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition ${
+                          active
+                            ? "border-transparent text-white"
+                            : "bg-bg-input border-border text-text-muted hover:bg-bg-hover"
+                        }`}
+                        style={active ? { backgroundColor: p.color + "33", borderColor: p.color + "88", color: p.color } : {}}
+                      >
+                        <span style={{ color: active ? p.color : undefined }}>
+                          <p.Icon />
+                        </span>
+                        {p.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* CTA */}
+              <div>
+                <label className="block text-sm font-medium text-text-main mb-0.5">{t("planner.cta_label")}</label>
+                <p className="text-xs text-text-muted mb-1.5">{t("planner.cta_sublabel")}</p>
+                <input
+                  type="text"
+                  value={form.cta}
+                  onChange={e => setForm({ ...form, cta: e.target.value })}
+                  placeholder={t("planner.cta_placeholder")}
+                  className="w-full bg-bg-input border border-border text-text-main rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-text-muted/40"
+                />
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {[t("planner.cta_ex1"), t("planner.cta_ex2"), t("planner.cta_ex3"), t("planner.cta_ex4")].map(ex => (
+                    <button
+                      key={ex}
+                      type="button"
+                      onClick={() => setForm({ ...form, cta: ex })}
+                      className="px-2.5 py-1 rounded-lg bg-bg-hover border border-border text-xs text-text-muted hover:text-text-main hover:bg-bg-card transition"
+                    >
+                      {ex}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Detalles / Guion */}
+              <div>
+                <label className="block text-sm font-medium text-text-main mb-1.5">{t("planner.desc_label")}</label>
                 <textarea
                   value={form.descripcion}
                   onChange={e => setForm({ ...form, descripcion: e.target.value })}
-                  placeholder="Detalles adicionales..."
+                  placeholder={t("planner.desc_placeholder")}
                   rows={3}
-                  className="w-full bg-[#0D0D18] border border-[#2A2A3E] text-text-main rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-text-muted/40 resize-none"
+                  className="w-full bg-bg-input border border-border text-text-main rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-text-muted/40 resize-none"
                 />
               </div>
 
+              {/* Empresa / Carpeta */}
+              {folders.length > 0 && (
+                <div>
+                  <label className="block text-xs text-text-muted uppercase tracking-wider mb-1.5">Empresa / Carpeta</label>
+                  <select
+                    value={form.folderId}
+                    onChange={e => setForm({ ...form, folderId: e.target.value })}
+                    className="w-full bg-bg-input border border-border text-text-main rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    <option value="">Sin empresa</option>
+                    {folders.map(f => (
+                      <option key={f.id} value={f.id}>{f.nombre}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Hora + Prioridad */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs text-text-muted uppercase tracking-wider mb-1.5">Hora</label>
+                  <label className="block text-xs text-text-muted uppercase tracking-wider mb-1.5">{t("planner.time_label")}</label>
                   <input
                     type="time"
                     value={form.hora}
                     onChange={e => setForm({ ...form, hora: e.target.value })}
-                    className="w-full bg-[#0D0D18] border border-[#2A2A3E] text-text-main rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="w-full bg-bg-input border border-border text-text-main rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs text-text-muted uppercase tracking-wider mb-1.5">Prioridad</label>
+                  <label className="block text-xs text-text-muted uppercase tracking-wider mb-1.5">{t("planner.event_priority")}</label>
                   <select
                     value={form.prioridad}
                     onChange={e => setForm({ ...form, prioridad: e.target.value })}
-                    className="w-full bg-[#0D0D18] border border-[#2A2A3E] text-text-main rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="w-full bg-bg-input border border-border text-text-main rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                   >
                     {PRIORIDADES.map(p => (
-                      <option key={p.label} value={p.label}>{p.label}</option>
+                      <option key={p.value} value={p.value}>{priorityLabel(p.value)}</option>
                     ))}
                   </select>
                 </div>
@@ -224,33 +681,203 @@ const Planner = () => {
 
               <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${prioridadActual.bg} ${prioridadActual.border}`}>
                 <div className="w-2 h-2 rounded-full" style={{ backgroundColor: prioridadActual.color }} />
-                <span className={`text-xs ${prioridadActual.text}`}>Prioridad: {form.prioridad}</span>
+                <span className={`text-xs ${prioridadActual.text}`}>{t("planner.priority_indicator", { value: priorityLabel(form.prioridad) })}</span>
               </div>
             </div>
 
-            <div className="flex gap-3 mt-6">
-              {selectedEvent && (
-                <button
-                  onClick={handleDelete}
-                  className="flex-1 bg-red-500/10 border border-red-500/30 text-red-400 font-medium py-2.5 rounded-xl hover:bg-red-500/20 transition text-sm"
-                >
-                  Eliminar
-                </button>
-              )}
+            {/* Footer fijo */}
+            <div className="flex gap-3 px-6 py-4 border-t border-border flex-shrink-0">
               <button
                 onClick={() => setModalOpen(false)}
-                className="flex-1 bg-[#0D0D18] border border-[#2A2A3E] text-text-muted font-medium py-2.5 rounded-xl hover:bg-[#1E1E2E] transition text-sm"
+                className="flex-1 bg-bg-input border border-border text-text-muted font-medium py-2.5 rounded-xl hover:bg-bg-hover transition text-sm"
               >
-                Cancelar
+                {t("planner.cancel")}
               </button>
-              {!selectedEvent && (
+              {selectedEvent ? (
+                <>
+                  <button
+                    onClick={handleDelete}
+                    className="bg-red-500/10 border border-red-500/30 text-red-400 font-medium py-2.5 px-4 rounded-xl hover:bg-red-500/20 transition text-sm"
+                  >
+                    {t("planner.delete_event")}
+                  </button>
+                  <button
+                    onClick={handleUpdate}
+                    className="flex-1 bg-primary text-white font-medium py-2.5 rounded-xl hover:bg-primary-light transition text-sm shadow-lg shadow-primary/30"
+                  >
+                    {t("planner.save")}
+                  </button>
+                </>
+              ) : (
                 <button
                   onClick={handleSave}
                   className="flex-1 bg-primary text-white font-medium py-2.5 rounded-xl hover:bg-primary-light transition text-sm shadow-lg shadow-primary/30"
                 >
-                  Guardar
+                  {t("planner.save")}
                 </button>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal preview de evento */}
+      {previewEvent && (() => {
+        const prioridad = PRIORIDADES.find(p => p.value === previewEvent.prioridad) || PRIORIDADES[2]
+        const plat = PLATAFORMAS.find(p => p.label === previewEvent.plataforma)
+        const fecha = previewEvent.fecha
+          ? new Date(previewEvent.fecha + "T12:00:00").toLocaleDateString(
+              i18n.language === "es" ? "es-ES" : "en-US",
+              { weekday: "long", day: "numeric", month: "long" }
+            )
+          : ""
+        return (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+            <div className="bg-bg-card border border-border rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+
+              {/* Banda de prioridad */}
+              <div className="h-1 w-full" style={{ backgroundColor: prioridad.color }} />
+
+              {/* Header */}
+              <div className="flex items-start justify-between px-6 pt-5 pb-4">
+                <div className="flex-1 min-w-0 pr-4">
+                  <p className="text-xs text-text-muted capitalize mb-0.5">{fecha}</p>
+                  <h2 className="text-base font-semibold text-text-main leading-snug">{previewEvent.title}</h2>
+                </div>
+                <button onClick={() => setPreviewEvent(null)} className="text-text-muted hover:text-text-main text-xl flex-shrink-0">✕</button>
+              </div>
+
+              {/* Chips — formato + plataforma + prioridad */}
+              <div className="flex items-center gap-2 flex-wrap px-6 pb-4">
+                {previewEvent.formato && (
+                  <span className="px-2.5 py-1 rounded-lg bg-primary/10 border border-primary/20 text-primary-light text-xs font-medium">
+                    {previewEvent.formato}
+                  </span>
+                )}
+                {plat && (
+                  <span
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium"
+                    style={{ backgroundColor: plat.color + "22", color: plat.color, border: `1px solid ${plat.color}44` }}
+                  >
+                    <plat.Icon />
+                    {plat.label}
+                  </span>
+                )}
+                <span className={`px-2.5 py-1 rounded-lg text-xs font-medium border ${prioridad.bg} ${prioridad.border} ${prioridad.text}`}>
+                  {priorityLabel(previewEvent.prioridad)}
+                </span>
+                {previewEvent.hora && (
+                  <span className="px-2.5 py-1 rounded-lg bg-bg-hover border border-border text-xs text-text-muted">
+                    🕐 {previewEvent.hora}
+                  </span>
+                )}
+              </div>
+
+              {/* Cuerpo */}
+              <div className="px-6 pb-5 space-y-4 border-t border-border pt-4">
+
+                {previewEvent.objetivo && (
+                  <div>
+                    <p className="text-[11px] text-text-muted uppercase tracking-wider font-semibold mb-1">{t("planner.goal_label")}</p>
+                    <p className="text-sm text-text-main">{previewEvent.objetivo}</p>
+                  </div>
+                )}
+
+                {previewEvent.hook && (
+                  <div>
+                    <p className="text-[11px] text-text-muted uppercase tracking-wider font-semibold mb-1">{t("planner.hook_label")}</p>
+                    <p className="text-sm text-text-main italic">"{previewEvent.hook}"</p>
+                  </div>
+                )}
+
+                {previewEvent.cta && (
+                  <div>
+                    <p className="text-[11px] text-text-muted uppercase tracking-wider font-semibold mb-1">{t("planner.cta_label")}</p>
+                    <p className="text-sm text-text-main">→ {previewEvent.cta}</p>
+                  </div>
+                )}
+
+                {previewEvent.descripcion && (
+                  <div>
+                    <p className="text-[11px] text-text-muted uppercase tracking-wider font-semibold mb-1">{t("planner.desc_label")}</p>
+                    <p className="text-sm text-text-main leading-relaxed">{previewEvent.descripcion}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="flex gap-3 px-6 py-4 border-t border-border">
+                <button
+                  onClick={() => setPreviewEvent(null)}
+                  className="flex-1 bg-bg-input border border-border text-text-muted font-medium py-2.5 rounded-xl hover:bg-bg-hover transition text-sm"
+                >
+                  {t("common.close")}
+                </button>
+                <button
+                  onClick={openEditFromPreview}
+                  className="flex-1 bg-primary text-white font-medium py-2.5 rounded-xl hover:bg-primary-light transition text-sm shadow-lg shadow-primary/30"
+                >
+                  ✏️ {t("planner.edit")}
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
+
+      {/* Modal fecha clave */}
+      {fechaClaveModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+          <div className="bg-bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl">
+
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ backgroundColor: fechaClaveModal.color + "22", border: `1px solid ${fechaClaveModal.color}44` }}
+                >
+                  <span className="text-xl">🌍</span>
+                </div>
+                <h2 className="text-text-main font-semibold leading-tight">{fechaClaveModal.title}</h2>
+              </div>
+              <button
+                onClick={() => setFechaClaveModal(null)}
+                className="text-text-muted hover:text-text-main text-xl flex-shrink-0 ml-2"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div
+              className="rounded-xl p-4 mb-5"
+              style={{ backgroundColor: fechaClaveModal.color + "11", border: `1px solid ${fechaClaveModal.color}33` }}
+            >
+              <p className="text-xs uppercase tracking-wider mb-2" style={{ color: fechaClaveModal.color }}>
+                {t("planner.content_ideas")}
+              </p>
+              <p className="text-text-main text-sm leading-relaxed">{fechaClaveModal.sugerencia}</p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setFechaClaveModal(null)}
+                className="flex-1 bg-bg-input border border-border text-text-muted font-medium py-2.5 rounded-xl hover:bg-bg-hover transition text-sm"
+              >
+                {t("common.close")}
+              </button>
+              <button
+                onClick={() => {
+                  const cleanTitle = fechaClaveModal.title.replace(/^\S+\s/, "")
+                  setFechaClaveModal(null)
+                  setSelectedDate(new Date().toISOString().split("T")[0])
+                  setSelectedEvent(null)
+                  setForm({ titulo: cleanTitle, descripcion: fechaClaveModal.sugerencia, objetivo: "", hook: "", formato: "", plataforma: "", cta: "", prioridad: "Normal", hora: "09:00" })
+                  setModalOpen(true)
+                }}
+                className="flex-1 bg-primary text-white font-medium py-2.5 rounded-xl hover:bg-primary-light transition text-sm shadow-lg shadow-primary/30"
+              >
+                {t("planner.create_event")}
+              </button>
             </div>
           </div>
         </div>

@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm uninstall groq-sdk @stripe/stripe-js)",
+      "Bash(node fix-colors.js)",
+      "Bash(mv fix-colors.js fix-colors.cjs)",
+      "Bash(node fix-colors.cjs)",
+      "Bash(node check-colors.cjs)",
+      "Bash(node -e \":*)",
+      "Bash(grep -rn \"\"\"border\"\"\" --include=\"*.jsx\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" -X POST \"https://api.groq.com/openai/v1/chat/completions\" -H \"Content-Type: application/json\" -H \"Authorization: Bearer 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\" -d '{\"\"model\"\":\"\"llama-3.1-8b-instant\"\",\"\"messages\"\":[{\"\"role\"\":\"\"user\"\",\"\"content\"\":\"\"test\"\"}],\"\"max_tokens\"\":10}')"
+    ]
+  }
+}

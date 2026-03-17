@@ -15,8 +15,24 @@ export default {
         "text-muted": "var(--text-muted)",
         border: "var(--border)",
       },
+      borderColor: {
+        DEFAULT: "var(--border)",
+      },
+      ringColor: {
+        DEFAULT: "var(--primary)",
+      },
       fontFamily: {
         sans: ["Rubik", "sans-serif"],
+      },
+      transitionDuration: {
+        DEFAULT: "150ms",
+      },
+      animationDelay: {
+        50:  "50ms",
+        100: "100ms",
+        150: "150ms",
+        200: "200ms",
+        300: "300ms",
       },
     },
   },

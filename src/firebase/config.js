@@ -4,16 +4,16 @@ import { getFirestore } from "firebase/firestore"
 import { getStorage } from "firebase/storage"
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBiEMIbwISIt5-J9_yE3xhFaLtCtyhPJOQ",
-  authDomain: "stratega-planner.firebaseapp.com",
-  projectId: "stratega-planner",
-  storageBucket: "stratega-planner.firebasestorage.app",
-  messagingSenderId: "1022294410705",
-  appId: "1:1022294410705:web:729c2e424c613679298cf0",
-  measurementId: "G-6X89SLDPH5"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
-const app = initializeApp(firebaseConfig)
+export const app = initializeApp(firebaseConfig)
 
 export const auth = getAuth(app)
 export const db = getFirestore(app)

@@ -18,8 +18,15 @@ export const AuthProvider = ({ children }) => {
     return unsub
   }, [])
 
+  const refreshUser = async () => {
+    if (auth.currentUser) {
+      await auth.currentUser.reload()
+      setUser({ ...auth.currentUser }) // new object triggers re-render for displayName etc.
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ user, loading, refreshUser }}>
       {!loading && children}
     </AuthContext.Provider>
   )

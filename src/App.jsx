@@ -13,9 +13,14 @@ import Accounting from "./pages/Accounting/Accounting"
 import Team from "./pages/Team/Team"
 import Settings from "./pages/Settings/Settings"
 import Subscription from "./pages/Subscription/Subscription"
+import QuotePresentation from "./pages/Quotes/QuotePresentation"
 import PrivateRoute from "./components/shared/PrivateRoute"
+import { useFCM } from "./hooks/useFCM"
+import { useReminderNotifications } from "./hooks/useReminderNotifications"
 
 function App() {
+  useFCM()
+  useReminderNotifications()
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
@@ -51,6 +56,9 @@ function App() {
       } />
       <Route path="/subscription" element={
         <PrivateRoute><Subscription /></PrivateRoute>
+      } />
+      <Route path="/quotes/ver/:id" element={
+        <PrivateRoute><QuotePresentation /></PrivateRoute>
       } />
     </Routes>
   )

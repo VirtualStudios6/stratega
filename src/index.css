@@ -4,6 +4,7 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Variables de tema (defaults = oscuro) ── */
 :root {
   --bg-main: #080810;
   --bg-card: #13131F;
@@ -16,28 +17,176 @@
   --text-muted: #6B6B8A;
   --scrollbar-track: #13131F;
   --scrollbar-thumb: #2A2A3E;
+  --sidebar-width: 256px;
+  --gradient-text: linear-gradient(135deg, #F5A623, #FF6B7A, #8B5CF6);
+  --glow-primary: 0 0 28px rgba(96, 34, 236, 0.35);
+  --glow-primary-hover: 0 0 38px rgba(96, 34, 236, 0.55);
+  --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  --border-primary: rgba(96, 34, 236, 0.22);
 }
 
-* {
+/* ── Reset ── */
+*, *::before, *::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  --tw-ring-offset-color: transparent;
 }
 
+*:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ── Body ── */
 body {
   font-family: "Rubik", sans-serif;
   background-color: var(--bg-main);
   color: var(--text-main);
   transition: background-color 0.3s ease, color 0.3s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-::-webkit-scrollbar {
-  width: 6px;
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+/* ── Animaciones ── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-::-webkit-scrollbar-track {
-  background: var(--scrollbar-track);
+
+@keyframes fadeInFast {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
-::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb);
-  border-radius: 3px;
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.animate-fade-in       { animation: fadeIn 0.35s ease both; }
+.animate-fade-in-fast  { animation: fadeInFast 0.2s ease both; }
+.animate-slide-left    { animation: slideInLeft 0.3s ease both; }
+.animate-scale-in      { animation: scaleIn 0.25s ease both; }
+
+/* Delay utilities */
+.delay-50  { animation-delay: 50ms; }
+.delay-100 { animation-delay: 100ms; }
+.delay-150 { animation-delay: 150ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+
+/* ── Cards con hover lift ── */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--card-shadow);
+  border-color: var(--border-primary) !important;
+}
+
+/* ── Gradient text (landing style) ── */
+.gradient-text {
+  background: var(--gradient-text);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Glow button ── */
+.btn-glow {
+  box-shadow: var(--glow-primary);
+}
+.btn-glow:hover {
+  box-shadow: var(--glow-primary-hover);
+}
+
+/* ── Inputs ── */
+input, textarea, select {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* ── Botones ── */
+button {
+  transition: all 0.15s ease;
+}
+
+/* ── Página con animación de entrada ── */
+.page-enter {
+  animation: fadeIn 0.3s ease both;
+}
+
+/* ── Modal backdrop ── */
+.modal-enter {
+  animation: fadeInFast 0.2s ease both;
+}
+.modal-content-enter {
+  animation: scaleIn 0.25s ease both;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   TEMAS CLAROS — colores semánticos accesibles sobre fondo blanco/claro
+   Los colores -400 de Tailwind son para fondos oscuros; en light se
+   reemplazan por -600/-700 para garantizar contraste suficiente.
+   ───────────────────────────────────────────────────────────────────────── */
+:is([data-theme="claro"], [data-theme="rosa"], [data-theme="azul"]) {
+
+  /* ── Textos de estado ── */
+  .text-green-400,
+  .text-green-400\/40  { color: #15803d !important; }   /* green-700  */
+  .text-red-400,
+  .text-red-400\/70    { color: #dc2626 !important; }   /* red-600    */
+  .text-amber-400      { color: #b45309 !important; }   /* amber-700  */
+  .text-yellow-400     { color: #a16207 !important; }   /* yellow-700 */
+  .text-blue-400       { color: #1d4ed8 !important; }   /* blue-700   */
+  .text-teal-400       { color: #0f766e !important; }   /* teal-700   */
+  .text-pink-400       { color: #be185d !important; }   /* pink-700   */
+  .text-indigo-400     { color: #4338ca !important; }   /* indigo-700 */
+  .text-purple-400     { color: #7e22ce !important; }   /* purple-700 */
+  .text-orange-400     { color: #c2410c !important; }   /* orange-700 */
+  .text-cyan-400       { color: #0e7490 !important; }   /* cyan-700   */
+
+  /* ── Fondos de badge/alerta — aumentar opacidad para que sean visibles ── */
+  .bg-green-500\/10    { background-color: rgb(34 197 94 / 0.15)  !important; }
+  .bg-green-500\/20    { background-color: rgb(34 197 94 / 0.18)  !important; }
+  .bg-red-500\/10      { background-color: rgb(239 68 68 / 0.12)  !important; }
+  .bg-red-500\/20      { background-color: rgb(239 68 68 / 0.16)  !important; }
+  .bg-yellow-500\/10   { background-color: rgb(234 179 8 / 0.14)  !important; }
+  .bg-yellow-500\/20   { background-color: rgb(234 179 8 / 0.18)  !important; }
+  .bg-amber-500\/20    { background-color: rgb(245 158 11 / 0.16) !important; }
+  .bg-blue-500\/20     { background-color: rgb(59 130 246 / 0.15) !important; }
+  .bg-orange-500\/20   { background-color: rgb(249 115 22 / 0.15) !important; }
+
+  /* ── Bordes de badge/alerta ── */
+  .border-green-500\/20  { border-color: rgb(34 197 94 / 0.35)  !important; }
+  .border-red-500\/20    { border-color: rgb(239 68 68 / 0.35)  !important; }
+  .border-red-500\/30    { border-color: rgb(239 68 68 / 0.40)  !important; }
+  .border-yellow-500\/20 { border-color: rgb(234 179 8 / 0.40)  !important; }
+  .border-amber-500\/30  { border-color: rgb(245 158 11 / 0.40) !important; }
+
+  /* ── card-hover shadow más suave en light ── */
+  .card-hover:hover {
+    box-shadow: var(--card-shadow);
+  }
 }
