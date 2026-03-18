@@ -499,7 +499,7 @@ const Dashboard = () => {
                   >
                     <div
                       className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-xs font-bold text-white"
-                      style={{ backgroundColor: f.color || "#6022EC" }}
+                      style={{ backgroundColor: f.color || "var(--primary)" }}
                     >
                       {f.nombre?.[0]?.toUpperCase() || "E"}
                     </div>

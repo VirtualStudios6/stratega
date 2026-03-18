@@ -19,23 +19,41 @@ import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage
 import { useAuth } from "../../context/AuthContext"
 import compressImage from "../../utils/compressImage"
 
-/* ─── Sortable image ─────────────────────────────────────────── */
-const SortableImage = ({ item, onDelete, index }) => {
+/* ─── Sortable image/video ───────────────────────────────────── */
+const SortableImage = ({ item, onDelete, onPreview, index }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id })
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1, zIndex: isDragging ? 999 : 1 }
+  const isVideo = item.type === "video"
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}
-      className="relative group aspect-square overflow-hidden cursor-grab active:cursor-grabbing">
-      <img src={item.url} alt={item.caption || "feed"}
-        className="w-full h-full object-cover pointer-events-none transition-transform duration-300 group-hover:scale-105" />
-      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-3 p-3">
+      className="relative group aspect-square overflow-hidden cursor-grab active:cursor-grabbing bg-black">
+      {isVideo ? (
+        <video src={item.url} muted playsInline preload="metadata"
+          className="w-full h-full object-cover pointer-events-none" />
+      ) : (
+        <img src={item.url} alt={item.caption || "feed"}
+          className="w-full h-full object-cover pointer-events-none transition-transform duration-300 group-hover:scale-105" />
+      )}
+      {isVideo && (
+        <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/60 backdrop-blur-sm rounded px-1.5 py-0.5 pointer-events-none">
+          <svg width="8" height="9" viewBox="0 0 8 9" fill="white"><path d="M0 0l8 4.5L0 9V0z"/></svg>
+          <span className="text-white text-[8px] font-bold tracking-wide">VIDEO</span>
+        </div>
+      )}
+      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-2 p-3">
         {item.caption && (
-          <p className="text-white text-xs text-center leading-relaxed line-clamp-3 pointer-events-none">{item.caption}</p>
+          <p className="text-white text-xs text-center leading-relaxed line-clamp-2 pointer-events-none">{item.caption}</p>
         )}
-        <button onPointerDown={e => e.stopPropagation()} onClick={() => onDelete(item)}
-          className="bg-red-500 text-white text-xs px-4 py-1.5 rounded-lg hover:bg-red-400 transition font-medium">
-          Eliminar
-        </button>
+        <div className="flex gap-2">
+          <button onPointerDown={e => e.stopPropagation()} onClick={() => onPreview(item)}
+            className="bg-white/20 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-lg hover:bg-white/30 transition font-medium border border-white/30">
+            Ver
+          </button>
+          <button onPointerDown={e => e.stopPropagation()} onClick={() => onDelete(item)}
+            className="bg-red-500 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-red-400 transition font-medium">
+            Eliminar
+          </button>
+        </div>
       </div>
       <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded-full pointer-events-none">
         {index + 1}
@@ -80,7 +98,10 @@ const Feed = () => {
   const [caption, setCaption] = useState("")
   const [selectedFile, setSelectedFile] = useState(null)
   const [preview, setPreview] = useState(null)
+  const [mediaType, setMediaType] = useState("photo") // "photo" | "video"
   const [activeTab, setActiveTab] = useState("grid")
+  const [previewItem, setPreviewItem] = useState(null)
+  const [copiedCaption, setCopiedCaption] = useState(false)
 
   // Folders
   const [folders, setFolders] = useState([])
@@ -204,9 +225,18 @@ const Feed = () => {
   const handleFileChange = (e) => {
     const file = e.target.files[0]
     if (!file) return
-    const ALLOWED = ["image/jpeg", "image/png", "image/webp", "image/gif"]
-    if (!ALLOWED.includes(file.type)) { alert("Solo se permiten imágenes (JPG, PNG, WEBP, GIF)"); e.target.value = ""; return }
-    if (file.size > 10 * 1024 * 1024) { alert("La imagen no puede superar 10 MB"); e.target.value = ""; return }
+    const isImage = file.type.startsWith("image/")
+    const isVideo = file.type.startsWith("video/")
+    if (!isImage && !isVideo) { alert("Solo se permiten imágenes o videos"); e.target.value = ""; return }
+    if (isImage) {
+      const ALLOWED = ["image/jpeg", "image/png", "image/webp", "image/gif"]
+      if (!ALLOWED.includes(file.type)) { alert("Solo se permiten imágenes JPG, PNG, WEBP o GIF"); e.target.value = ""; return }
+      if (file.size > 10 * 1024 * 1024) { alert("La imagen no puede superar 10 MB"); e.target.value = ""; return }
+    }
+    if (isVideo) {
+      if (file.size > 100 * 1024 * 1024) { alert("El video no puede superar 100 MB"); e.target.value = ""; return }
+    }
+    setMediaType(isVideo ? "video" : "photo")
     setSelectedFile(file)
     setPreview(URL.createObjectURL(file))
     setPostModalOpen(true)
@@ -216,16 +246,16 @@ const Feed = () => {
     if (!selectedFile || !user || !selectedFeed) return
     setUploading(true)
     try {
-      const compressed = await compressImage(selectedFile)
-      const storageRef = ref(storage, `feed/${user.uid}/${selectedFeed.id}/${Date.now()}_${compressed.name}`)
-      await uploadBytes(storageRef, compressed)
+      const fileToUpload = mediaType === "photo" ? await compressImage(selectedFile) : selectedFile
+      const storageRef = ref(storage, `feed/${user.uid}/${selectedFeed.id}/${Date.now()}_${fileToUpload.name}`)
+      await uploadBytes(storageRef, fileToUpload)
       const url = await getDownloadURL(storageRef)
       await addDoc(collection(db, "feed_posts"), {
         uid: user.uid, feedId: selectedFeed.id,
-        url, caption, orden: items.length,
+        url, caption, type: mediaType, orden: items.length,
         storagePath: storageRef.fullPath, creadoEn: new Date()
       })
-      setPostModalOpen(false); setCaption(""); setSelectedFile(null); setPreview(null)
+      setPostModalOpen(false); setCaption(""); setSelectedFile(null); setPreview(null); setMediaType("photo")
       fetchItems(selectedFeed.id)
     } catch (err) { console.error(err) }
     setUploading(false)
@@ -420,13 +450,21 @@ const Feed = () => {
               })()}
 
               {/* Upload row */}
-              <div className="px-5 pt-4 flex justify-end">
-                <label className="flex items-center gap-2 bg-primary text-white font-semibold px-4 py-2 rounded-xl hover:bg-primary-light transition shadow-lg shadow-primary/25 cursor-pointer text-xs">
-                  <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                    <path d="M12 5v14M5 12h14"/>
+              <div className="px-5 pt-4 flex justify-end gap-2">
+                <label className="flex items-center gap-2 bg-bg-input border border-border text-text-main font-semibold px-4 py-2 rounded-xl hover:bg-bg-hover transition cursor-pointer text-xs">
+                  <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                    <circle cx="12" cy="13" r="4"/>
                   </svg>
-                  Subir imagen
+                  Foto
                   <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+                </label>
+                <label className="flex items-center gap-2 bg-primary text-white font-semibold px-4 py-2 rounded-xl hover:bg-primary-light transition shadow-lg shadow-primary/25 cursor-pointer text-xs">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M2 6.857A1.857 1.857 0 0 1 3.857 5h16.286A1.857 1.857 0 0 1 22 6.857v10.286A1.857 1.857 0 0 1 20.143 19H3.857A1.857 1.857 0 0 1 2 17.143V6.857zM9.5 9.5v5l5-2.5-5-2.5z"/>
+                  </svg>
+                  Video
+                  <input type="file" accept="video/*" className="hidden" onChange={handleFileChange} />
                 </label>
               </div>
 
@@ -518,18 +556,17 @@ const Feed = () => {
               {activeTab === "grid" && (
                 <>
                   {items.length === 0 ? (
-                    <div className="grid grid-cols-3 gap-0.5 bg-border">
+                    <div className="grid grid-cols-3 gap-px bg-border">
                       {Array.from({ length: 9 }).map((_, i) => (
                         i === 4 ? (
-                          <label key={i} className="aspect-square bg-bg-card flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-bg-hover transition">
-                            <div className="w-12 h-12 rounded-full bg-primary/10 border-2 border-dashed border-primary/30 flex items-center justify-center">
-                              <svg width="20" height="20" fill="none" stroke="var(--primary)" strokeWidth="2" viewBox="0 0 24 24">
+                          <div key={i} className="aspect-square bg-bg-card flex flex-col items-center justify-center gap-2">
+                            <div className="w-10 h-10 rounded-full bg-primary/10 border-2 border-dashed border-primary/30 flex items-center justify-center">
+                              <svg width="18" height="18" fill="none" stroke="var(--primary)" strokeWidth="2" viewBox="0 0 24 24">
                                 <path d="M12 5v14M5 12h14"/>
                               </svg>
                             </div>
-                            <span className="text-xs text-text-muted">Sube tu primera imagen</span>
-                            <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
-                          </label>
+                            <span className="text-[10px] text-text-muted text-center px-2">Sube tu primera foto o video</span>
+                          </div>
                         ) : (
                           <div key={i} className="aspect-square bg-bg-card" />
                         )
@@ -538,20 +575,16 @@ const Feed = () => {
                   ) : (
                     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                       <SortableContext items={items.map(i => i.id)} strategy={rectSortingStrategy}>
-                        <div className="grid grid-cols-3 gap-0.5 bg-border">
+                        <div className="grid grid-cols-3 gap-px bg-border">
                           {items.map((item, index) => (
-                            <SortableImage key={item.id} item={item} onDelete={handleDelete} index={index} />
+                            <SortableImage key={item.id} item={item} onDelete={handleDelete} onPreview={setPreviewItem} index={index} />
                           ))}
                           {Array.from({ length: emptySlots }).map((_, i) => (
-                            <label key={`empty-${i}`} className="aspect-square bg-bg-card flex items-center justify-center cursor-pointer hover:bg-bg-hover transition group">
-                              <div className="flex flex-col items-center gap-1.5 text-text-muted group-hover:text-text-main transition">
-                                <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                  <path d="M12 5v14M5 12h14"/>
-                                </svg>
-                                <span className="text-xs">Agregar</span>
-                              </div>
-                              <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
-                            </label>
+                            <div key={`empty-${i}`} className="aspect-square bg-bg-card flex flex-col items-center justify-center gap-1 text-text-muted/30">
+                              <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                <path d="M12 5v14M5 12h14"/>
+                              </svg>
+                            </div>
                           ))}
                         </div>
                       </SortableContext>
@@ -561,67 +594,75 @@ const Feed = () => {
               )}
 
               {/* REELS VIEW */}
-              {activeTab === "reels" && (
-                <div>
-                  {items.length === 0 ? (
-                    <div className="py-16 text-center">
-                      <div className="text-4xl mb-3">🎬</div>
-                      <p className="text-text-muted text-sm mb-4">No hay reels todavía</p>
-                      <label className="inline-flex items-center gap-2 bg-primary text-white text-sm font-medium px-4 py-2 rounded-xl cursor-pointer hover:bg-primary-light transition shadow-lg shadow-primary/30">
-                        + Subir imagen
-                        <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
-                      </label>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-3 gap-0.5 bg-border">
-                      {items.map((item) => (
-                        <div key={item.id} className="relative aspect-[9/16] overflow-hidden bg-black group">
-                          <img src={item.url} alt={item.caption || "reel"}
-                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/10 pointer-events-none" />
-                          <div className="absolute top-2 right-2">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M5 3l14 9-14 9V3z"/></svg>
-                          </div>
-                          <div className="absolute bottom-0 left-0 right-0 px-2 pb-2 pointer-events-none">
-                            <div className="flex items-center gap-1.5 mb-1">
-                              <div className="w-5 h-5 rounded-full overflow-hidden border border-white/60 flex-shrink-0 bg-bg-card">
-                                {selectedFeed.photoURL
-                                  ? <img src={selectedFeed.photoURL} alt="av" className="w-full h-full object-cover" />
-                                  : <span className="text-[8px] flex items-center justify-center h-full">👤</span>
-                                }
+              {activeTab === "reels" && (() => {
+                const reelItems = items.filter(i => i.type === "video")
+                return (
+                  <div>
+                    {reelItems.length === 0 ? (
+                      <div className="py-16 text-center">
+                        <div className="text-4xl mb-3">🎬</div>
+                        <p className="text-text-muted text-sm mb-1">No hay reels todavía</p>
+                        <p className="text-text-muted/50 text-xs mb-4">Solo los videos aparecen aquí</p>
+                        <label className="inline-flex items-center gap-2 bg-primary text-white text-sm font-medium px-4 py-2 rounded-xl cursor-pointer hover:bg-primary-light transition shadow-lg shadow-primary/30">
+                          + Subir video
+                          <input type="file" accept="video/*" className="hidden" onChange={handleFileChange} />
+                        </label>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-3 gap-px bg-border">
+                        {reelItems.map((item) => (
+                          <div key={item.id} className="relative aspect-[9/16] overflow-hidden bg-black group">
+                            <video src={item.url} muted playsInline preload="metadata"
+                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/10 pointer-events-none" />
+                            <div className="absolute top-2 right-2">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M5 3l14 9-14 9V3z"/></svg>
+                            </div>
+                            <div className="absolute bottom-0 left-0 right-0 px-2 pb-2 pointer-events-none">
+                              <div className="flex items-center gap-1.5 mb-1">
+                                <div className="w-5 h-5 rounded-full overflow-hidden border border-white/60 flex-shrink-0 bg-bg-card">
+                                  {selectedFeed.photoURL
+                                    ? <img src={selectedFeed.photoURL} alt="av" className="w-full h-full object-cover" />
+                                    : <span className="text-[8px] flex items-center justify-center h-full">👤</span>
+                                  }
+                                </div>
+                                <span className="text-white text-[10px] font-semibold truncate">{selectedFeed.username}</span>
                               </div>
-                              <span className="text-white text-[10px] font-semibold truncate">{selectedFeed.username}</span>
+                              {item.caption && <p className="text-white/90 text-[10px] leading-tight line-clamp-2">{item.caption}</p>}
+                              <div className="flex items-center gap-2 mt-1.5">
+                                <span className="flex items-center gap-0.5 text-white/70 text-[10px]">
+                                  <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                                  {(Math.floor(Math.random() * 900) + 100).toLocaleString()}
+                                </span>
+                                <span className="flex items-center gap-0.5 text-white/70 text-[10px]">
+                                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                  {(Math.floor(Math.random() * 90) + 10)}
+                                </span>
+                              </div>
                             </div>
-                            {item.caption && <p className="text-white/90 text-[10px] leading-tight line-clamp-2">{item.caption}</p>}
-                            <div className="flex items-center gap-2 mt-1.5">
-                              <span className="flex items-center gap-0.5 text-white/70 text-[10px]">
-                                <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                                {(Math.floor(Math.random() * 900) + 100).toLocaleString()}
-                              </span>
-                              <span className="flex items-center gap-0.5 text-white/70 text-[10px]">
-                                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                                {(Math.floor(Math.random() * 90) + 10)}
-                              </span>
+                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
+                              <button onClick={() => setPreviewItem(item)}
+                                className="bg-white/20 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-lg hover:bg-white/30 transition font-medium border border-white/30">
+                                Ver
+                              </button>
+                              <button onClick={() => handleDelete(item)}
+                                className="bg-red-500 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-red-400 transition font-medium">
+                                Eliminar
+                              </button>
                             </div>
                           </div>
-                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                            <button onClick={() => handleDelete(item)}
-                              className="bg-red-500 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-red-400 transition font-medium">
-                              Eliminar
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )
+              })()}
             </div>
           )}
 
           {items.length > 0 && activeTab === "grid" && selectedFeed && (
             <p className="text-center text-text-muted text-xs mt-4">
-              💡 Arrastra las imágenes en la cuadrícula para reordenar tu feed
+              💡 Arrastra las fotos/videos para reordenar · Haz clic en "Ver" para previsualizar y copiar la descripción
             </p>
           )}
         </div>
@@ -781,13 +822,19 @@ const Feed = () => {
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 px-4">
           <div className="bg-bg-card border border-border rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-              <h2 className="text-text-main font-semibold text-sm">Nueva publicación</h2>
-              <button onClick={() => { setPostModalOpen(false); setPreview(null) }}
+              <h2 className="text-text-main font-semibold text-sm">
+                {mediaType === "video" ? "Nuevo reel" : "Nueva publicación"}
+              </h2>
+              <button onClick={() => { setPostModalOpen(false); setPreview(null); setMediaType("photo") }}
                 className="text-text-muted hover:text-text-main transition text-xl leading-none">✕</button>
             </div>
             {preview && (
-              <div className="aspect-square w-full overflow-hidden">
-                <img src={preview} alt="preview" className="w-full h-full object-cover" />
+              <div className={`w-full overflow-hidden bg-black ${mediaType === "video" ? "aspect-[9/16] max-h-64" : "aspect-square"}`}>
+                {mediaType === "video" ? (
+                  <video src={preview} controls className="w-full h-full object-contain" />
+                ) : (
+                  <img src={preview} alt="preview" className="w-full h-full object-cover" />
+                )}
               </div>
             )}
             <div className="p-5">
@@ -802,7 +849,7 @@ const Feed = () => {
                 />
               </div>
               <div className="flex gap-3">
-                <button onClick={() => { setPostModalOpen(false); setPreview(null) }}
+                <button onClick={() => { setPostModalOpen(false); setPreview(null); setMediaType("photo") }}
                   className="flex-1 bg-bg-input border border-border text-text-muted py-2.5 rounded-xl hover:bg-bg-hover transition text-sm font-medium">
                   Cancelar
                 </button>
@@ -811,6 +858,80 @@ const Feed = () => {
                   {uploading ? "Subiendo..." : "Compartir"}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Post preview modal ── */}
+      {previewItem && (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 px-4"
+          onClick={() => { setPreviewItem(null); setCopiedCaption(false) }}>
+          <div className="bg-bg-card border border-border rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden"
+            onClick={e => e.stopPropagation()}>
+            {/* Header */}
+            <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
+              <Avatar photoURL={selectedFeed?.photoURL} size="sm" />
+              <span className="text-text-main text-sm font-semibold flex-1">{selectedFeed?.username}</span>
+              <button onClick={() => { setPreviewItem(null); setCopiedCaption(false) }}
+                className="text-text-muted hover:text-text-main transition text-xl leading-none">✕</button>
+            </div>
+            {/* Media */}
+            <div className={`w-full overflow-hidden bg-black ${previewItem.type === "video" ? "aspect-[9/16] max-h-72" : "aspect-square"}`}>
+              {previewItem.type === "video" ? (
+                <video src={previewItem.url} controls className="w-full h-full object-contain" />
+              ) : (
+                <img src={previewItem.url} alt={previewItem.caption || ""} className="w-full h-full object-cover" />
+              )}
+            </div>
+            {/* Action icons bar */}
+            <div className="px-4 py-2.5 flex items-center gap-4 border-b border-border">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-main cursor-pointer hover:text-red-400 transition">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-main cursor-pointer hover:text-primary-light transition">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-main cursor-pointer hover:text-primary-light transition">
+                <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
+            </div>
+            {/* Caption + copy */}
+            <div className="px-4 py-3">
+              {previewItem.caption ? (
+                <p className="text-text-main text-sm mb-3 leading-relaxed">
+                  <span className="font-semibold mr-1.5">{selectedFeed?.username}</span>
+                  <span className="whitespace-pre-wrap">{previewItem.caption}</span>
+                </p>
+              ) : (
+                <p className="text-text-muted/50 text-sm italic mb-3">Sin descripción</p>
+              )}
+              <button
+                onClick={async () => {
+                  if (!previewItem.caption) return
+                  await navigator.clipboard.writeText(previewItem.caption)
+                  setCopiedCaption(true)
+                  setTimeout(() => setCopiedCaption(false), 2000)
+                }}
+                disabled={!previewItem.caption}
+                className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-medium transition ${
+                  copiedCaption
+                    ? "bg-green-500/10 border-green-500/30 text-green-400"
+                    : "bg-bg-input border-border text-text-main hover:bg-bg-hover"
+                } disabled:opacity-40 disabled:cursor-not-allowed`}
+              >
+                {copiedCaption ? (
+                  <>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    ¡Copiado!
+                  </>
+                ) : (
+                  <>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    Copiar descripción
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>

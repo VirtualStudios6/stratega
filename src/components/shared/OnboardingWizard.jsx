@@ -20,7 +20,7 @@ const FEATURES = [
   { icon: Bell,            bg: "bg-amber-500/20",    text: "text-amber-400",    title: "Recordatorios",desc: "Alertas para fechas clave" },
   { icon: ImageIcon,       bg: "bg-pink-500/20",     text: "text-pink-400",     title: "Feed",         desc: "Preview de tu feed de Instagram" },
   { icon: Users,           bg: "bg-teal-500/20",     text: "text-teal-400",     title: "Equipo",       desc: "Gestiona clientes y colaboradores" },
-  { icon: Sparkles,        bg: "bg-purple-500/20",   text: "text-purple-400",   title: "Stratega IA",  desc: "Asistente de marketing con IA" },
+  { icon: Sparkles,        bg: "bg-primary/20",      text: "text-primary-light", title: "Stratega IA",  desc: "Asistente de marketing con IA" },
 ]
 
 const TOTAL_STEPS = 3

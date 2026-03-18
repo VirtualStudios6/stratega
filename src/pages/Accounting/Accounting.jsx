@@ -21,7 +21,7 @@ const CATEGORIAS_SUGERIDAS = [
 const MESES       = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
 const MESES_CORTO = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"]
 
-const PIE_COLORS = ["#6022EC","#3B82F6","#10B981","#F59E0B","#EC4899","#EF4444","#8B5CF6","#14B8A6","#F97316","#06B6D4"]
+const PIE_COLORS = ["#10B981","#3B82F6","#F59E0B","#EC4899","#EF4444","#14B8A6","#F97316","#06B6D4","#A3A3A3","#64748B"]
 
 const fmt = (n, decimals = 2) =>
   Number(n || 0).toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })

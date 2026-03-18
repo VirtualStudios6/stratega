@@ -52,7 +52,7 @@ const STEPS = [
   },
   {
     icon: Sparkles,
-    color: "bg-purple-500/20 text-purple-400",
+    color: "bg-primary/20 text-primary-light",
     title: "Stratega IA — Tu Asistente",
     desc:  "Disponible en todas las páginas. Consulta estrategias de redes sociales, redacción de captions, precios y más. ¡Siempre a tu lado!",
   },

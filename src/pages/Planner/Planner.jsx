@@ -9,6 +9,9 @@ import { collection, addDoc, getDocs, query, where, deleteDoc, doc, updateDoc } 
 import { useAuth } from "../../context/AuthContext"
 import { FECHAS_CLAVE } from "../../data/fechasClave"
 import { useTranslation } from "react-i18next"
+import { THEMES, useTheme } from "../../context/ThemeContext"
+import jsPDF from "jspdf"
+import autoTable from "jspdf-autotable"
 
 const FORMATOS = ["Reel", "Carrusel", "Historia", "Video corto"]
 const IconInstagram = () => (
@@ -45,15 +48,17 @@ const PLATAFORMAS = [
   { label: "TikTok",    Icon: IconTikTok,    color: "#010101" },
 ]
 
-const PRIORIDADES = [
-  { value: "Urgente",    color: "#EF4444", bg: "bg-red-500/20",    text: "text-red-400",       border: "border-red-500/30" },
-  { value: "Importante", color: "#F59E0B", bg: "bg-yellow-500/20", text: "text-yellow-400",    border: "border-yellow-500/30" },
-  { value: "Normal",     color: "#6022EC", bg: "bg-primary/20",    text: "text-primary-light", border: "border-primary/30" },
-]
-
 const Planner = () => {
   const { user } = useAuth()
   const { t, i18n } = useTranslation()
+  const { theme } = useTheme()
+  const primaryHex = THEMES[theme]?.vars["--primary"] || "#6022EC"
+
+  const PRIORIDADES = [
+    { value: "Urgente",    color: "#EF4444", bg: "bg-red-500/20",    text: "text-red-400",       border: "border-red-500/30" },
+    { value: "Importante", color: "#F59E0B", bg: "bg-yellow-500/20", text: "text-yellow-400",    border: "border-yellow-500/30" },
+    { value: "Normal",     color: primaryHex, bg: "bg-primary/20",   text: "text-primary-light", border: "border-primary/30" },
+  ]
   const [eventos, setEventos] = useState([])
   const [modalOpen, setModalOpen] = useState(false)
   const [fechaClaveModal, setFechaClaveModal] = useState(null)
@@ -91,13 +96,10 @@ const Planner = () => {
     const snap = await getDocs(q)
     const data = snap.docs.map(document => {
       const d = document.data()
-      const prioridad = PRIORIDADES.find(p => p.value === d.prioridad)
       return {
         id: document.id,
         title: d.titulo,
         date: d.fecha,
-        backgroundColor: prioridad?.color || "#6022EC",
-        borderColor: prioridad?.color || "#6022EC",
         extendedProps: { ...d, esFechaClave: false },
       }
     })
@@ -132,15 +134,22 @@ const Planner = () => {
       }))
     : []
 
-  const eventosFiltrados = selectedCompany
+  const applyPriorityColor = (ev) => {
+    const p = PRIORIDADES.find(x => x.value === ev.extendedProps?.prioridad)
+    const color = p?.color || primaryHex
+    return { ...ev, backgroundColor: color, borderColor: color }
+  }
+
+  const eventosFiltrados = (selectedCompany
     ? eventos.filter(ev => ev.extendedProps?.folderId === selectedCompany)
-    : eventos
+    : eventos).map(applyPriorityColor)
+
   const todosLosEventos = [...eventosFiltrados, ...fechasClaveEventos]
 
   const handleDateClick = (info) => {
     setSelectedDate(info.dateStr)
     setSelectedEvent(null)
-    setForm({ titulo: "", descripcion: "", objetivo: "", hook: "", formato: "", plataforma: "", cta: "", prioridad: "Normal", hora: "09:00", folderId: "" })
+    setForm({ titulo: "", descripcion: "", objetivo: "", hook: "", formato: "", plataforma: "", cta: "", prioridad: "Normal", hora: "09:00", folderId: selectedCompany || "" })
     setModalOpen(true)
   }
 
@@ -233,6 +242,166 @@ const Planner = () => {
     localStorage.setItem("planner_view", mode)
   }
 
+  const handleExportPDF = () => {
+    const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" })
+    const pageW = 297
+
+    // ── Paleta neutra/minimalista
+    const BLACK   = [15, 15, 15]
+    const DARK    = [40, 40, 40]
+    const MEDIUM  = [100, 100, 100]
+    const LIGHT   = [200, 200, 200]
+    const XLIGHT  = [248, 248, 248]
+    const WHITE   = [255, 255, 255]
+
+    const companyFolder = selectedCompany ? folders.find(f => f.id === selectedCompany) : null
+
+    // ── Franja superior negra fina
+    pdf.setFillColor(...BLACK)
+    pdf.rect(0, 0, pageW, 10, "F")
+
+    // ── Título en la franja
+    pdf.setFontSize(9)
+    pdf.setFont("helvetica", "bold")
+    pdf.setTextColor(...WHITE)
+    pdf.setCharSpace(1.5)
+    pdf.text("CALENDARIO DE CONTENIDO", 14, 6.5)
+    pdf.setCharSpace(0)
+
+    // ── "Stratega Planner" a la derecha en gris claro
+    pdf.setFontSize(7.5)
+    pdf.setFont("helvetica", "normal")
+    pdf.setTextColor(180, 180, 180)
+    pdf.text("Stratega Planner", pageW - 14, 6.5, { align: "right" })
+
+    // ── Subtítulo: empresa y fecha
+    pdf.setFontSize(8.5)
+    pdf.setFont("helvetica", "normal")
+    pdf.setTextColor(...DARK)
+    const empresaLabel = companyFolder ? companyFolder.nombre : "Todas las empresas"
+    pdf.text(empresaLabel, 14, 18)
+
+    pdf.setFontSize(7.5)
+    pdf.setTextColor(...MEDIUM)
+    pdf.text(
+      `Exportado el ${new Date().toLocaleDateString("es-ES", { day:"2-digit", month:"long", year:"numeric" })}`,
+      pageW - 14, 18, { align: "right" }
+    )
+
+    // ── Línea divisoria delgada
+    pdf.setDrawColor(...LIGHT)
+    pdf.setLineWidth(0.3)
+    pdf.line(14, 21, pageW - 14, 21)
+
+    // ── Badges de resumen
+    const sorted = [...eventosFiltrados].sort((a, b) => new Date(a.date) - new Date(b.date))
+    const urgentes    = sorted.filter(e => e.extendedProps?.prioridad === "Urgente").length
+    const importantes = sorted.filter(e => e.extendedProps?.prioridad === "Importante").length
+    const normales    = sorted.filter(e => e.extendedProps?.prioridad === "Normal").length
+
+    const drawBadge = (x, y, label, count, fillRgb, textRgb) => {
+      pdf.setFillColor(...fillRgb)
+      pdf.roundedRect(x, y - 3.5, 42, 6, 1.5, 1.5, "F")
+      pdf.setFontSize(7)
+      pdf.setFont("helvetica", "normal")
+      pdf.setTextColor(...textRgb)
+      pdf.text(`${label}: ${count}`, x + 21, y + 0.5, { align: "center" })
+    }
+
+    drawBadge(14,  28, "Total",      sorted.length, [235,235,235], DARK)
+    drawBadge(60,  28, "Urgentes",   urgentes,      [254,226,226], [180,30,30])
+    drawBadge(106, 28, "Importantes",importantes,   [254,243,199], [146,64,14])
+    drawBadge(152, 28, "Normales",   normales,      [241,245,249], [51,65,85])
+
+    // ── Tabla de eventos
+    const rows = sorted.map(ev => {
+      const d = ev.extendedProps
+      const fecha  = new Date(ev.date + "T12:00:00")
+      const fechaStr = fecha.toLocaleDateString("es-ES", { day:"2-digit", month:"short", year:"numeric" })
+      const diaStr   = fecha.toLocaleDateString("es-ES", { weekday:"long" })
+      return [
+        fechaStr,
+        diaStr.charAt(0).toUpperCase() + diaStr.slice(1),
+        ev.title || "",
+        d.objetivo || "",
+        d.hook ? `"${d.hook}"` : "",
+        [d.formato, d.plataforma].filter(Boolean).join(" · ") || "",
+        d.hora || "",
+        d.prioridad || "Normal",
+      ]
+    })
+
+    autoTable(pdf, {
+      startY: 34,
+      head: [["Fecha", "Día", "Contenido", "Objetivo", "Hook", "Formato / Red", "Hora", "Prioridad"]],
+      body: rows,
+      margin: { left: 14, right: 14 },
+      styles: {
+        fontSize: 7.5,
+        cellPadding: { top: 3, bottom: 3, left: 3, right: 3 },
+        textColor: DARK,
+        lineColor: [230, 230, 230],
+        lineWidth: 0.25,
+        font: "helvetica",
+      },
+      headStyles: {
+        fillColor: BLACK,
+        textColor: WHITE,
+        fontStyle: "bold",
+        fontSize: 7.5,
+        cellPadding: { top: 3.5, bottom: 3.5, left: 3, right: 3 },
+      },
+      alternateRowStyles: { fillColor: XLIGHT },
+      columnStyles: {
+        0: { cellWidth: 22 },
+        1: { cellWidth: 22 },
+        2: { cellWidth: 54 },
+        3: { cellWidth: 44 },
+        4: { cellWidth: 40 },
+        5: { cellWidth: 30 },
+        6: { cellWidth: 13 },
+        7: { cellWidth: 22 },
+      },
+      didParseCell: (data) => {
+        if (data.column.index === 7 && data.section === "body") {
+          const p = data.cell.raw
+          if (p === "Urgente")    { data.cell.styles.fillColor = [254,226,226]; data.cell.styles.textColor = [180,30,30];  data.cell.styles.fontStyle = "bold" }
+          if (p === "Importante") { data.cell.styles.fillColor = [254,243,199]; data.cell.styles.textColor = [146,64,14];  data.cell.styles.fontStyle = "bold" }
+          if (p === "Normal")     { data.cell.styles.fillColor = [241,245,249]; data.cell.styles.textColor = [51,65,85];   data.cell.styles.fontStyle = "normal" }
+        }
+      },
+      willDrawPage: (data) => {
+        if (data.pageNumber > 1) {
+          pdf.setFillColor(...BLACK)
+          pdf.rect(0, 0, pageW, 8, "F")
+          pdf.setFontSize(7.5)
+          pdf.setFont("helvetica", "bold")
+          pdf.setTextColor(...WHITE)
+          pdf.setCharSpace(1.5)
+          pdf.text("CALENDARIO DE CONTENIDO", 14, 5.5)
+          pdf.setCharSpace(0)
+        }
+      },
+    })
+
+    // ── Pie de página
+    const pageCount = pdf.internal.getNumberOfPages()
+    for (let i = 1; i <= pageCount; i++) {
+      pdf.setPage(i)
+      pdf.setFontSize(6.5)
+      pdf.setTextColor(...LIGHT)
+      pdf.text(`${i} / ${pageCount}`, pageW - 14, 207, { align: "right" })
+      if (companyFolder) {
+        pdf.text(companyFolder.nombre, 14, 207)
+      }
+    }
+
+    const fileName = companyFolder
+      ? `calendario_${companyFolder.nombre.replace(/\s+/g,"_").toLowerCase()}_${new Date().toISOString().slice(0,10)}.pdf`
+      : `calendario_contenido_${new Date().toISOString().slice(0,10)}.pdf`
+    pdf.save(fileName)
+  }
+
   const getDiaSemana = (fecha) => {
     const d = new Date(fecha + "T12:00:00")
     return d.toLocaleDateString(i18n.language === "es" ? "es-ES" : "en-US", { weekday: "long" })
@@ -243,7 +412,7 @@ const Planner = () => {
   const openNewForDate = (dateStr) => {
     setSelectedDate(dateStr)
     setSelectedEvent(null)
-    setForm({ titulo: "", descripcion: "", objetivo: "", hook: "", formato: "", plataforma: "", cta: "", prioridad: "Normal", hora: "09:00", folderId: "" })
+    setForm({ titulo: "", descripcion: "", objetivo: "", hook: "", formato: "", plataforma: "", cta: "", prioridad: "Normal", hora: "09:00", folderId: selectedCompany || "" })
     setModalOpen(true)
   }
 
@@ -259,7 +428,7 @@ const Planner = () => {
       {/* Header */}
       <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-text-main">Planner 📅</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-text-main">Calendario 📅</h1>
           <p className="text-text-muted text-xs sm:text-sm mt-0.5">{t("planner.subtitle")}</p>
         </div>
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
@@ -295,16 +464,22 @@ const Planner = () => {
 
           {/* Empresa filter */}
           {folders.length > 0 && (
-            <select
-              value={selectedCompany || ""}
-              onChange={e => setSelectedCompany(e.target.value || null)}
-              className="bg-bg-card border border-border text-text-main rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              <option value="">Todas las empresas</option>
-              {folders.map(f => (
-                <option key={f.id} value={f.id}>{f.nombre}</option>
-              ))}
-            </select>
+            <div className="flex items-center gap-2">
+              {selectedCompany && (() => {
+                const f = folders.find(x => x.id === selectedCompany)
+                return f ? <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: f.color }} /> : null
+              })()}
+              <select
+                value={selectedCompany || ""}
+                onChange={e => setSelectedCompany(e.target.value || null)}
+                className="bg-bg-card border border-border text-text-main rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="">— Todas las empresas —</option>
+                {folders.map(f => (
+                  <option key={f.id} value={f.id}>{f.nombre}</option>
+                ))}
+              </select>
+            </div>
           )}
           {/* Fechas clave toggle */}
           <button
@@ -318,8 +493,47 @@ const Planner = () => {
             <span>🌍</span>
             {t("planner.key_dates")}: {showFechasClave ? "ON" : "OFF"}
           </button>
+
+          {/* Exportar PDF */}
+          <button
+            onClick={handleExportPDF}
+            disabled={eventosFiltrados.length === 0}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border bg-bg-card border-border text-text-muted hover:bg-bg-hover hover:text-text-main transition text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+            title="Descargar calendario como PDF"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            PDF
+          </button>
         </div>
       </div>
+
+      {/* Banner empresa activa */}
+      {selectedCompany && (() => {
+        const folder = folders.find(f => f.id === selectedCompany)
+        if (!folder) return null
+        return (
+          <div
+            className="flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl border mb-4 text-sm"
+            style={{ backgroundColor: folder.color + "12", borderColor: folder.color + "40" }}
+          >
+            <div className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: folder.color }} />
+              <span className="font-medium" style={{ color: folder.color }}>{folder.nombre}</span>
+              <span className="text-text-muted text-xs">— mostrando solo el calendario de esta empresa</span>
+            </div>
+            <button
+              onClick={() => setSelectedCompany(null)}
+              className="text-text-muted/60 hover:text-text-muted transition text-xs"
+            >
+              Ver todas
+            </button>
+          </div>
+        )
+      })()}
 
       {/* Leyenda de prioridades */}
       <div className="flex gap-2 sm:gap-3 mb-4 sm:mb-6 flex-nowrap overflow-x-auto scrollbar-none pb-1">
@@ -647,20 +861,36 @@ const Planner = () => {
                 />
               </div>
 
-              {/* Empresa / Carpeta */}
+              {/* Empresa */}
               {folders.length > 0 && (
                 <div>
-                  <label className="block text-xs text-text-muted uppercase tracking-wider mb-1.5">Empresa / Carpeta</label>
-                  <select
-                    value={form.folderId}
-                    onChange={e => setForm({ ...form, folderId: e.target.value })}
-                    className="w-full bg-bg-input border border-border text-text-main rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                  >
-                    <option value="">Sin empresa</option>
-                    {folders.map(f => (
-                      <option key={f.id} value={f.id}>{f.nombre}</option>
-                    ))}
-                  </select>
+                  <label className="block text-xs text-text-muted uppercase tracking-wider mb-1.5">Empresa</label>
+                  {selectedCompany ? (
+                    (() => {
+                      const folder = folders.find(f => f.id === selectedCompany)
+                      return folder ? (
+                        <div
+                          className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl border"
+                          style={{ backgroundColor: folder.color + "15", borderColor: folder.color + "50" }}
+                        >
+                          <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: folder.color }} />
+                          <span className="text-sm font-medium flex-1" style={{ color: folder.color }}>{folder.nombre}</span>
+                          <span className="text-[10px] text-text-muted/60 bg-bg-hover px-2 py-0.5 rounded-full">asignado</span>
+                        </div>
+                      ) : null
+                    })()
+                  ) : (
+                    <select
+                      value={form.folderId}
+                      onChange={e => setForm({ ...form, folderId: e.target.value })}
+                      className="w-full bg-bg-input border border-border text-text-main rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      <option value="">Sin empresa</option>
+                      {folders.map(f => (
+                        <option key={f.id} value={f.id}>{f.nombre}</option>
+                      ))}
+                    </select>
+                  )}
                 </div>
               )}
 

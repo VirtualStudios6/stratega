@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { FolderOpen, Folder } from "lucide-react"
+import { FolderOpen, Folder, X, Download, FileText, Film, File, Eye, Play } from "lucide-react"
 import DashboardLayout from "../../components/layout/DashboardLayout"
 import { db, storage } from "../../firebase/config"
 import {
@@ -39,6 +39,7 @@ const Folders = () => {
   const [uploading, setUploading] = useState(false)
   const [folderForm, setFolderForm] = useState({ nombre: "", color: "#6022EC" })
   const [editingFolder, setEditingFolder] = useState(null)
+  const [previewFile, setPreviewFile] = useState(null)
 
   const fetchFolders = async () => {
     if (!user) return
@@ -125,9 +126,9 @@ const Folders = () => {
     if (!file || !selectedFolder) return
     setUploading(true)
     try {
-      const compressed = await compressImage(file)
-      const storageRef = ref(storage, `folders/${user.uid}/${selectedFolder.id}/${Date.now()}_${compressed.name}`)
-      await uploadBytes(storageRef, compressed)
+      const toUpload = file.type.startsWith("image/") ? await compressImage(file) : file
+      const storageRef = ref(storage, `folders/${user.uid}/${selectedFolder.id}/${Date.now()}_${file.name}`)
+      await uploadBytes(storageRef, toUpload)
       const url = await getDownloadURL(storageRef)
       await addDoc(collection(db, "folder_files"), {
         uid: user.uid,
@@ -154,6 +155,8 @@ const Folders = () => {
   }
 
   const isImage = (tipo) => tipo?.startsWith("image/")
+  const isVideo = (tipo) => tipo?.startsWith("video/")
+  const isPDF   = (tipo) => tipo === "application/pdf"
 
   return (
     <DashboardLayout>
@@ -271,7 +274,7 @@ const Folders = () => {
                 </div>
                 <label className={`bg-primary/20 border border-primary/30 text-primary-light text-sm px-4 py-2 rounded-xl hover:bg-primary/30 transition cursor-pointer ${uploading ? "opacity-50 pointer-events-none" : ""}`}>
                   {uploading ? "Subiendo..." : "+ Subir archivo"}
-                  <input type="file" className="hidden" onChange={handleUploadFile} />
+                  <input type="file" className="hidden" accept="image/*,video/*,application/pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar" onChange={handleUploadFile} />
                 </label>
               </div>
 
@@ -323,7 +326,7 @@ const Folders = () => {
                   </p>
                   <div className="space-y-2">
                     {linkedPlanners.slice(0, 5).map(ev => {
-                      const pColor = { Urgente: "#EF4444", Importante: "#F59E0B", Normal: "#6022EC" }[ev.prioridad] || "#6022EC"
+                      const pColor = { Urgente: "#EF4444", Importante: "#F59E0B", Normal: "var(--primary)" }[ev.prioridad] || "var(--primary)"
                       return (
                         <div key={ev.id} className="flex items-center gap-3 px-3 py-2 rounded-xl border border-border bg-bg-input">
                           <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: pColor }} />
@@ -371,34 +374,49 @@ const Folders = () => {
                 <div className="text-center py-12">
                   <span className="text-4xl mb-3 block">📄</span>
                   <p className="text-text-muted text-sm">Esta carpeta está vacía</p>
-                  <p className="text-text-muted/50 text-xs mt-1">Sube archivos o imágenes</p>
+                  <p className="text-text-muted/50 text-xs mt-1">Sube archivos, imágenes, videos o PDFs</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {files.map(file => (
-                    <div key={file.id} className="group relative bg-bg-input border border-border rounded-xl overflow-hidden">
+                    <div
+                      key={file.id}
+                      className="group relative bg-bg-input border border-border rounded-xl overflow-hidden cursor-pointer"
+                      onClick={() => setPreviewFile(file)}
+                    >
                       {isImage(file.tipo) ? (
                         <div className="aspect-square">
                           <img src={file.url} alt={file.nombre} className="w-full h-full object-cover" />
                         </div>
+                      ) : isVideo(file.tipo) ? (
+                        <div className="aspect-square relative bg-black flex items-center justify-center">
+                          <video src={file.url} className="w-full h-full object-cover opacity-70" preload="metadata" muted />
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                              <Play size={18} className="text-white ml-0.5" />
+                            </div>
+                          </div>
+                        </div>
+                      ) : isPDF(file.tipo) ? (
+                        <div className="aspect-square flex flex-col items-center justify-center p-4 bg-red-500/5">
+                          <FileText size={40} className="text-red-400 mb-2" />
+                          <p className="text-text-muted text-[10px] text-center line-clamp-2">{file.nombre}</p>
+                        </div>
                       ) : (
                         <div className="aspect-square flex flex-col items-center justify-center p-4">
-                          <span className="text-4xl mb-2">📄</span>
-                          <p className="text-text-muted text-xs text-center truncate w-full">{file.nombre}</p>
+                          <File size={40} className="text-text-muted/50 mb-2" />
+                          <p className="text-text-muted text-[10px] text-center line-clamp-2">{file.nombre}</p>
                         </div>
                       )}
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex flex-col items-center justify-center gap-2">
-                        <a
-                          href={file.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="bg-primary/80 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-primary transition"
-                          onClick={e => e.stopPropagation()}
-                        >
-                          Ver archivo
-                        </a>
                         <button
-                          onClick={() => handleDeleteFile(file)}
+                          onClick={e => { e.stopPropagation(); setPreviewFile(file) }}
+                          className="bg-white/20 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-lg hover:bg-white/30 transition flex items-center gap-1.5"
+                        >
+                          <Eye size={12} /> Previsualizar
+                        </button>
+                        <button
+                          onClick={e => { e.stopPropagation(); handleDeleteFile(file) }}
                           className="bg-red-500/80 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-red-500 transition"
                         >
                           Eliminar
@@ -415,6 +433,94 @@ const Folders = () => {
           )}
         </div>
       </div>
+
+      {/* ── Modal de previsualización ── */}
+      {previewFile && (
+        <div
+          className="fixed inset-0 bg-black/85 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+          onClick={() => setPreviewFile(null)}
+        >
+          <div
+            className="relative bg-bg-card border border-border rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border flex-shrink-0">
+              <div className="flex items-center gap-2 min-w-0">
+                {isImage(previewFile.tipo) && <Eye size={15} className="text-primary-light flex-shrink-0" />}
+                {isVideo(previewFile.tipo) && <Film size={15} className="text-primary-light flex-shrink-0" />}
+                {isPDF(previewFile.tipo)   && <FileText size={15} className="text-red-400 flex-shrink-0" />}
+                {!isImage(previewFile.tipo) && !isVideo(previewFile.tipo) && !isPDF(previewFile.tipo) && <File size={15} className="text-text-muted flex-shrink-0" />}
+                <p className="text-text-main text-sm font-medium truncate">{previewFile.nombre}</p>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0 ml-3">
+                <a
+                  href={previewFile.url}
+                  download={previewFile.nombre}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-1.5 text-xs text-text-muted hover:text-text-main border border-border px-3 py-1.5 rounded-lg hover:bg-bg-hover transition"
+                  onClick={e => e.stopPropagation()}
+                >
+                  <Download size={12} /> Descargar
+                </a>
+                <button
+                  onClick={() => setPreviewFile(null)}
+                  className="text-text-muted hover:text-text-main transition p-1.5 rounded-lg hover:bg-bg-hover"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+
+            {/* Contenido */}
+            <div className="flex-1 overflow-auto flex items-center justify-center p-4 min-h-0">
+              {isImage(previewFile.tipo) && (
+                <img
+                  src={previewFile.url}
+                  alt={previewFile.nombre}
+                  className="max-w-full max-h-full object-contain rounded-lg"
+                />
+              )}
+              {isVideo(previewFile.tipo) && (
+                <video
+                  src={previewFile.url}
+                  controls
+                  autoPlay
+                  className="max-w-full max-h-full rounded-lg"
+                  style={{ maxHeight: "calc(90vh - 100px)" }}
+                />
+              )}
+              {isPDF(previewFile.tipo) && (
+                <iframe
+                  src={previewFile.url}
+                  title={previewFile.nombre}
+                  className="w-full rounded-lg border border-border"
+                  style={{ height: "calc(90vh - 110px)", minHeight: "400px" }}
+                />
+              )}
+              {!isImage(previewFile.tipo) && !isVideo(previewFile.tipo) && !isPDF(previewFile.tipo) && (
+                <div className="flex flex-col items-center gap-4 py-12">
+                  <File size={64} className="text-text-muted/30" />
+                  <div className="text-center">
+                    <p className="text-text-main font-medium">{previewFile.nombre}</p>
+                    <p className="text-text-muted text-sm mt-1">Vista previa no disponible para este tipo de archivo</p>
+                  </div>
+                  <a
+                    href={previewFile.url}
+                    download={previewFile.nombre}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-2 bg-primary text-white text-sm px-5 py-2.5 rounded-xl hover:bg-primary-light transition"
+                  >
+                    <Download size={14} /> Descargar archivo
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {modalFolder && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4">

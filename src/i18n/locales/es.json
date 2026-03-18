@@ -133,8 +133,8 @@
   },
 
   "sidebar": {
-    "dashboard": "Dashboard",
-    "planner": "Planner",
+    "dashboard": "Panel",
+    "planner": "Calendario",
     "feed": "Feed",
     "reminders": "Recordatorios",
     "folders": "Carpetas",
@@ -211,7 +211,7 @@
   },
 
   "planner": {
-    "title": "Planner",
+    "title": "Calendario",
     "new_event": "Nuevo evento",
     "edit_event": "Editar evento",
     "delete_event": "Eliminar evento",
