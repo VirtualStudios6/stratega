@@ -11,14 +11,14 @@
   },
 
   "hero": {
-    "badge": "7 Tage kostenlos · Keine Kreditkarte erforderlich",
+    "badge": "7 Tage kostenlos",
     "title1": "Willkommen im Strategen-Modus.",
     "title2": "Beginne",
     "title3": "deinen Content zu erstellen.",
     "subtitle": "Hier organisierst du keine Aufgaben. Du führst echtes Marketing durch. Werde Teil der 1%, die ihre Woche in Minuten strategisch planen.",
     "cta_primary": "Kostenlose Testversion starten →",
     "cta_secondary": "Funktionen ansehen",
-    "trust": "✓ 7 Tage kostenlos · ✓ Jederzeit kündbar · ✓ Ohne Verpflichtungen"
+    "trust": "✓ 7 Tage kostenlos · ✓ Jederzeit kündbar"
   },
 
   "stats": {
@@ -59,7 +59,7 @@
   "pricing": {
     "tag": "Preise",
     "title": "Pläne für jede Phase",
-    "subtitle": "Starte kostenlos für 7 Tage. Keine Kreditkarte erforderlich.",
+    "subtitle": "Starte kostenlos für 7 Tage.",
     "monthly": "Monatlich",
     "annual": "Jährlich",
     "save": "Spare 20%",
@@ -121,7 +121,7 @@
     "title2": "Stratega Planner",
     "subtitle": "Schließe dich den Community Managern an, die ihre Arbeit bereits intelligent organisieren. 7 Tage kostenlos, ohne Verpflichtungen.",
     "btn": "Kostenlose Testversion starten →",
-    "note": "✓ Keine Kreditkarte · ✓ Jederzeit kündbar · ✓ 30-Tage-Garantie"
+    "note": "✓ 7 Tage kostenlos · ✓ Jederzeit kündbar"
   },
 
   "footer": {

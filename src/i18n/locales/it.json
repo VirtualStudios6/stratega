@@ -11,14 +11,14 @@
   },
 
   "hero": {
-    "badge": "7 giorni gratis · Senza carta di credito",
+    "badge": "7 giorni gratis",
     "title1": "Benvenuto nella modalità Stratega.",
     "title2": "Inizia",
     "title3": "a creare il tuo contenuto.",
     "subtitle": "Qui non vieni ad organizzare attività. Vieni ad eseguire vero marketing. Fai parte dell'1% che pianifica la propria settimana strategicamente in pochi minuti.",
     "cta_primary": "Inizia la prova gratis →",
     "cta_secondary": "Vedi funzionalità",
-    "trust": "✓ 7 giorni gratis · ✓ Cancella quando vuoi · ✓ Senza impegni"
+    "trust": "✓ 7 giorni gratis · ✓ Cancella quando vuoi"
   },
 
   "stats": {
@@ -59,7 +59,7 @@
   "pricing": {
     "tag": "Prezzi",
     "title": "Piani per ogni fase",
-    "subtitle": "Inizia gratis per 7 giorni. Nessuna carta di credito richiesta.",
+    "subtitle": "Inizia gratis per 7 giorni.",
     "monthly": "Mensile",
     "annual": "Annuale",
     "save": "Risparmia 20%",
@@ -121,7 +121,7 @@
     "title2": "Stratega Planner",
     "subtitle": "Unisciti ai community manager che organizzano già il loro lavoro in modo intelligente. 7 giorni gratis, senza impegni.",
     "btn": "Inizia la prova gratis →",
-    "note": "✓ Senza carta di credito · ✓ Cancella quando vuoi · ✓ Garanzia 30 giorni"
+    "note": "✓ 7 giorni gratis · ✓ Cancella quando vuoi"
   },
 
   "footer": {

@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import LanguageSwitcher from "../../components/shared/LanguageSwitcher"
+import { CalendarDays, Image, FileText, Wallet, Users, Bell, Bot, Check, X } from "lucide-react"
 import "./Landing.css"
 
 const Landing = () => {
@@ -27,12 +28,12 @@ const Landing = () => {
   const p = prices[billing]
 
   const features = [
-    { icon: "📅", color: "rgba(245,166,35,0.15)", title: t("features.planner_title"), desc: t("features.planner_desc") },
-    { icon: "🖼️", color: "rgba(255,107,122,0.15)", title: t("features.feed_title"),   desc: t("features.feed_desc") },
-    { icon: "📄", color: "rgba(45,110,197,0.15)",  title: t("features.quotes_title"), desc: t("features.quotes_desc") },
-    { icon: "💰", color: "rgba(96,34,236,0.15)",   title: t("features.accounting_title"), desc: t("features.accounting_desc") },
-    { icon: "👥", color: "rgba(34,197,94,0.15)",   title: t("features.team_title"),   desc: t("features.team_desc") },
-    { icon: "🔔", color: "rgba(245,166,35,0.15)",  title: t("features.reminders_title"), desc: t("features.reminders_desc") },
+    { icon: CalendarDays, stroke: "#F5A623", bg: "rgba(245,166,35,0.15)", title: t("features.planner_title"),    desc: t("features.planner_desc")    },
+    { icon: Image,        stroke: "#FF6B7A", bg: "rgba(255,107,122,0.15)", title: t("features.feed_title"),       desc: t("features.feed_desc")       },
+    { icon: FileText,     stroke: "#3B7DE8", bg: "rgba(59,125,232,0.15)",  title: t("features.quotes_title"),     desc: t("features.quotes_desc")     },
+    { icon: Wallet,       stroke: "#c18c35", bg: "rgba(193,140,53,0.15)",  title: t("features.accounting_title"), desc: t("features.accounting_desc") },
+    { icon: Users,        stroke: "#22C55E", bg: "rgba(34,197,94,0.15)",   title: t("features.team_title"),       desc: t("features.team_desc")       },
+    { icon: Bell,         stroke: "#F59E0B", bg: "rgba(245,158,11,0.15)",  title: t("features.reminders_title"),  desc: t("features.reminders_desc")  },
   ]
 
   const testimonials = [
@@ -157,7 +158,9 @@ const Landing = () => {
         <div className="lp-features-grid">
           {features.map(f => (
             <div key={f.title} className="lp-feat-card">
-              <div className="lp-feat-icon" style={{background:f.color}}>{f.icon}</div>
+              <div className="lp-feat-icon" style={{background:f.bg}}>
+                <f.icon size={22} color={f.stroke} strokeWidth={1.8} />
+              </div>
               <h3>{f.title}</h3>
               <p>{f.desc}</p>
             </div>
@@ -174,7 +177,7 @@ const Landing = () => {
             <div className="lp-ai-features">
               {[t("ai_section.feat1"),t("ai_section.feat2"),t("ai_section.feat3"),t("ai_section.feat4")].map(f => (
                 <div key={f} className="lp-ai-feat">
-                  <div className="lp-ai-check">✓</div>
+                  <div className="lp-ai-check"><Check size={10} strokeWidth={2.5} /></div>
                   {f}
                 </div>
               ))}
@@ -183,14 +186,14 @@ const Landing = () => {
           <div className="lp-chat-box">
             <div className="lp-chat-label">Strat AI</div>
             <div className="lp-chat-bubble">
-              <div className="lp-chat-avatar">🤖</div>
+              <div className="lp-chat-avatar"><Bot size={15} color="white" strokeWidth={1.8} /></div>
               <div className="lp-chat-msg">¡Hola! Analicé tu feed. Tienes 3 posts con bajo engagement. Te recomiendo alternar colores cálidos y fríos ✨</div>
             </div>
             <div className="lp-chat-bubble" style={{justifyContent:"flex-end"}}>
               <div className="lp-chat-msg user">¿Cuánto debería cobrar por un paquete de social media?</div>
             </div>
             <div className="lp-chat-bubble">
-              <div className="lp-chat-avatar">🤖</div>
+              <div className="lp-chat-avatar"><Bot size={15} color="white" strokeWidth={1.8} /></div>
               <div className="lp-chat-msg">Básico $300–500/mes (3 redes, 12 posts), Pro $600–900/mes (5 redes, 20 posts + stories) 💡</div>
             </div>
           </div>
@@ -215,7 +218,7 @@ const Landing = () => {
             <div className="lp-plan-period">{p.basicP}</div>
             <ul className="lp-plan-features">
               {[[true,t("pricing.feat_planner")],[true,t("pricing.feat_feed")],[true,t("pricing.feat_reminders")],[true,t("pricing.feat_folders")],[true,t("pricing.feat_members3")],[false,t("pricing.feat_quotes")],[false,t("pricing.feat_accounting")],[false,t("pricing.feat_ai")]].map(([yes,label]) => (
-                <li key={label} className={yes ? "yes" : ""}><span className="lp-feat-ico">{yes ? "✅" : "❌"}</span>{label}</li>
+                <li key={label} className={yes ? "yes" : ""}><span className="lp-feat-ico">{yes ? <Check size={13} color="#22c55e" strokeWidth={2.5} /> : <X size={13} color="#ef4444" strokeWidth={2.5} />}</span>{label}</li>
               ))}
             </ul>
             <a href={p.basicUrl} target="_blank" rel="noreferrer" className="lp-plan-cta secondary">{t("pricing.start_free")}</a>
@@ -229,17 +232,12 @@ const Landing = () => {
             <div className="lp-plan-period">{p.proP}</div>
             <ul className="lp-plan-features">
               {[[true,t("pricing.feat_all_basic")],[true,t("pricing.feat_quotes_pdf")],[true,t("pricing.feat_full_accounting")],[true,t("pricing.feat_ai_integrated")],[true,t("pricing.feat_unlimited_members")],[true,t("pricing.feat_storage")],[true,t("pricing.feat_support")],[true,t("pricing.feat_first")]].map(([yes,label]) => (
-                <li key={label} className={yes ? "yes" : ""}><span className="lp-feat-ico">{yes ? "✅" : "❌"}</span>{label}</li>
+                <li key={label} className={yes ? "yes" : ""}><span className="lp-feat-ico">{yes ? <Check size={13} color="#22c55e" strokeWidth={2.5} /> : <X size={13} color="#ef4444" strokeWidth={2.5} />}</span>{label}</li>
               ))}
             </ul>
             <a href={p.proUrl} target="_blank" rel="noreferrer" className="lp-plan-cta primary">{t("pricing.start_free_arrow")}</a>
             <div className="lp-plan-trial">{t("pricing.trial_note")}</div>
           </div>
-        </div>
-        <div className="lp-guarantee">
-          <span style={{fontSize:"26px"}}>🛡️</span>
-          <h3>{t("pricing.guarantee_title")}</h3>
-          <p>{t("pricing.guarantee_desc")}</p>
         </div>
       </section>
 

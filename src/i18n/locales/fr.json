@@ -11,14 +11,14 @@
   },
 
   "hero": {
-    "badge": "7 jours gratuits · Sans carte bancaire",
+    "badge": "7 jours gratuits",
     "title1": "Bienvenue en mode Stratège.",
     "title2": "Commencez",
     "title3": "à créer votre contenu.",
     "subtitle": "Ici, vous ne venez pas organiser des tâches. Vous venez exécuter un vrai marketing. Rejoignez le 1% qui planifie sa semaine stratégiquement en quelques minutes.",
     "cta_primary": "Démarrer l'essai gratuit →",
     "cta_secondary": "Voir les fonctionnalités",
-    "trust": "✓ 7 jours gratuits · ✓ Annulez quand vous voulez · ✓ Sans engagement"
+    "trust": "✓ 7 jours gratuits · ✓ Annulez quand vous voulez"
   },
 
   "stats": {
@@ -59,7 +59,7 @@
   "pricing": {
     "tag": "Tarifs",
     "title": "Des plans pour chaque étape",
-    "subtitle": "Commencez gratuitement pendant 7 jours. Sans carte bancaire requise.",
+    "subtitle": "Commencez gratuitement pendant 7 jours.",
     "monthly": "Mensuel",
     "annual": "Annuel",
     "save": "Économisez 20%",
@@ -121,7 +121,7 @@
     "title2": "Stratega Planner",
     "subtitle": "Rejoignez les community managers qui organisent déjà leur travail intelligemment. 7 jours gratuits, sans engagement.",
     "btn": "Démarrer l'essai gratuit →",
-    "note": "✓ Sans carte bancaire · ✓ Annulez quand vous voulez · ✓ Garantie 30 jours"
+    "note": "✓ 7 jours gratuits · ✓ Annulez quand vous voulez"
   },
 
   "footer": {

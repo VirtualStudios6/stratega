@@ -91,11 +91,20 @@ aside, header, main, nav, footer,
   from { opacity: 0; transform: scale(0.95); }
   to   { opacity: 1; transform: scale(1); }
 }
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0.6; }
+  to   { transform: translateY(0);    opacity: 1;   }
+}
+@keyframes slideDown {
+  from { transform: translateY(0);    opacity: 1;   }
+  to   { transform: translateY(100%); opacity: 0;   }
+}
 
-.animate-fade-in       { animation: fadeIn 0.35s ease both; }
+.animate-fade-in       { animation: fadeIn    0.35s ease both; }
 .animate-fade-in-fast  { animation: fadeInFast 0.2s ease both; }
 .animate-slide-left    { animation: slideInLeft 0.3s ease both; }
-.animate-scale-in      { animation: scaleIn 0.25s ease both; }
+.animate-scale-in      { animation: scaleIn   0.25s ease both; }
+.animate-slide-up      { animation: slideUp   0.32s cubic-bezier(0.32, 0.72, 0, 1) both; }
 
 .delay-50  { animation-delay: 50ms; }
 .delay-100 { animation-delay: 100ms; }
@@ -156,10 +165,32 @@ button { transition: all 0.15s ease; }
 }
 .scrollbar-none::-webkit-scrollbar { display: none; }
 
-@media (max-width: 640px) {
-  body { padding-bottom: env(safe-area-inset-bottom, 0px); }
-  button, [role="button"], label[for], label[class*="cursor-pointer"] { min-height: 36px; }
-  input, textarea, select { font-size: 16px !important; }
+/* ── Tap press feedback en móvil ── */
+@media (hover: none) {
+  /* Cards */
+  .card-hover:active {
+    transform: scale(0.98) !important;
+    transition: transform 0.1s ease !important;
+  }
+  /* Botones genéricos */
+  button:active, a:active, [role="button"]:active {
+    opacity: 0.65;
+    transition: opacity 0.08s ease !important;
+  }
+  /* No aplicar a la barra de navegación inferior para evitar parpadeos */
+  nav button:active, nav a:active { opacity: 1; }
+}
+
+/* ── Bottom nav safe area ── */
+.bottom-nav-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@media (max-width: 1023px) {
+  /* Fondo del body respeta el área del bottom nav */
+  body { padding-bottom: 0; }
+
+  /* Todos los modales en móvil se abren como sheet desde abajo */
   .modal-mobile-full {
     border-radius: 1.5rem 1.5rem 0 0 !important;
     position: fixed !important;
@@ -168,7 +199,18 @@ button { transition: all 0.15s ease; }
     right: 0 !important;
     max-width: 100% !important;
     margin: 0 !important;
+    animation: slideUp 0.3s cubic-bezier(0.32, 0.72, 0, 1) both !important;
   }
+}
+
+@media (max-width: 640px) {
+  /* Tamaño mínimo táctil WCAG */
+  button, [role="button"], label[for], label[class*="cursor-pointer"] {
+    min-height: 40px;
+    min-width: 40px;
+  }
+  /* Previene zoom en inputs (iOS) */
+  input, textarea, select { font-size: 16px !important; }
 }
 
 @media (hover: none) {

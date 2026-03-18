@@ -11,14 +11,14 @@
   },
 
   "hero": {
-    "badge": "7 dias grátis · Sem cartão de crédito",
+    "badge": "7 dias grátis",
     "title1": "Bem-vindo ao modo Estrategista.",
     "title2": "Comece",
     "title3": "a criar seu conteúdo.",
     "subtitle": "Aqui você não vem organizar tarefas. Você vem executar marketing de verdade. Faça parte do 1% que planeja sua semana de forma estratégica em minutos.",
     "cta_primary": "Começar teste grátis →",
     "cta_secondary": "Ver funcionalidades",
-    "trust": "✓ 7 dias grátis · ✓ Cancele quando quiser · ✓ Sem compromissos"
+    "trust": "✓ 7 dias grátis · ✓ Cancele quando quiser"
   },
 
   "stats": {
@@ -59,7 +59,7 @@
   "pricing": {
     "tag": "Preços",
     "title": "Planos para cada etapa",
-    "subtitle": "Comece grátis por 7 dias. Sem cartão de crédito necessário.",
+    "subtitle": "Comece grátis por 7 dias.",
     "monthly": "Mensal",
     "annual": "Anual",
     "save": "Economize 20%",
@@ -121,7 +121,7 @@
     "title2": "Stratega Planner",
     "subtitle": "Junte-se aos community managers que já organizam seu trabalho de forma inteligente. 7 dias grátis, sem compromissos.",
     "btn": "Começar teste grátis →",
-    "note": "✓ Sem cartão de crédito · ✓ Cancele quando quiser · ✓ Garantia 30 dias"
+    "note": "✓ 7 dias grátis · ✓ Cancele quando quiser"
   },
 
   "footer": {

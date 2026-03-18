@@ -11,14 +11,14 @@
   },
 
   "hero": {
-    "badge": "7 days free · No credit card required",
+    "badge": "7 days free",
     "title1": "The all-in-one platform",
     "title2": "for",
     "title3": "Community Managers",
     "subtitle": "Plan content, organize your feed, manage clients and let AI work with you. All in one place.",
     "cta_primary": "Start free trial →",
     "cta_secondary": "See features",
-    "trust": "✓ 7 days free · ✓ Cancel anytime · ✓ No commitment"
+    "trust": "✓ 7 days free · ✓ Cancel anytime"
   },
 
   "stats": {
@@ -59,7 +59,7 @@
   "pricing": {
     "tag": "Pricing",
     "title": "Plans for every stage",
-    "subtitle": "Start free for 7 days. No credit card required.",
+    "subtitle": "Start free for 7 days.",
     "monthly": "Monthly",
     "annual": "Annual",
     "save": "Save 20%",
@@ -121,7 +121,7 @@
     "title2": "Stratega Planner",
     "subtitle": "Join the community managers who already organize their work intelligently. 7 days free, no commitment.",
     "btn": "Start free trial →",
-    "note": "✓ No credit card · ✓ Cancel anytime · ✓ 30-day guarantee"
+    "note": "✓ 7 days free · ✓ Cancel anytime"
   },
 
   "footer": {
