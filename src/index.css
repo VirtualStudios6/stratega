@@ -4,25 +4,29 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Variables de tema (defaults = oscuro) ── */
+/* ─────────────────────────────────────────────────────────────────────────
+   Variables de tema — defaults = CLARO (tema predeterminado)
+   ThemeContext las sobreescribe al montar, esto evita el flash oscuro.
+   ───────────────────────────────────────────────────────────────────────── */
 :root {
-  --bg-main: #080810;
-  --bg-card: #13131F;
-  --bg-input: #0D0D18;
-  --bg-hover: #1E1E2E;
-  --border: #2A2A3E;
-  --primary: #6022EC;
-  --primary-light: #8B5CF6;
-  --text-main: #EEEEF2;
-  --text-muted: #6B6B8A;
-  --scrollbar-track: #13131F;
-  --scrollbar-thumb: #2A2A3E;
-  --sidebar-width: 256px;
-  --gradient-text: linear-gradient(135deg, #F5A623, #FF6B7A, #8B5CF6);
-  --glow-primary: 0 0 28px rgba(96, 34, 236, 0.35);
-  --glow-primary-hover: 0 0 38px rgba(96, 34, 236, 0.55);
-  --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
-  --border-primary: rgba(96, 34, 236, 0.22);
+  --bg-main:          #F2F2F7;
+  --bg-card:          #FFFFFF;
+  --bg-input:         #EAEAF2;
+  --bg-hover:         #E0E0EC;
+  --border:           #D4D4E4;
+  --primary:          #c18c35;
+  --primary-light:    #d9a84a;
+  --text-main:        #12122A;
+  --text-muted:       #6868A0;
+  --scrollbar-track:  #EAEAF2;
+  --scrollbar-thumb:  #C8C8DC;
+  --sidebar-width:    256px;
+  --gradient-text:    linear-gradient(135deg, #c18c35, #d9a84a, #DC2626);
+  --glow-primary:         0 0 20px rgba(193, 140, 53, 0.18);
+  --glow-primary-hover:   0 0 28px rgba(193, 140, 53, 0.32);
+  --card-shadow:          0 4px 20px rgba(193, 140, 53, 0.09);
+  --border-primary:       rgba(193, 140, 53, 0.22);
+  --primary-subtle:       rgba(193, 140, 53, 0.09);
 }
 
 /* ── Reset ── */
@@ -43,14 +47,25 @@
   outline-offset: 2px;
 }
 
-/* ── Body ── */
+/* ── Body — transición suave al cambiar tema ── */
 body {
   font-family: "Rubik", sans-serif;
   background-color: var(--bg-main);
   color: var(--text-main);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.25s ease, color 0.2s ease;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Transición suave para elementos principales al cambiar tema ── */
+.bg-bg-card, .bg-bg-main, .bg-bg-input, .bg-bg-hover,
+aside, header, main, nav, footer,
+[class*="border-border"],
+[class*="text-text-main"], [class*="text-text-muted"] {
+  transition:
+    background-color 0.25s ease,
+    border-color     0.22s ease,
+    color            0.15s ease;
 }
 
 /* ── Scrollbar ── */
@@ -64,17 +79,14 @@ body {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-
 @keyframes fadeInFast {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
-
 @keyframes slideInLeft {
   from { opacity: 0; transform: translateX(-16px); }
   to   { opacity: 1; transform: translateX(0); }
 }
-
 @keyframes scaleIn {
   from { opacity: 0; transform: scale(0.95); }
   to   { opacity: 1; transform: scale(1); }
@@ -85,7 +97,6 @@ body {
 .animate-slide-left    { animation: slideInLeft 0.3s ease both; }
 .animate-scale-in      { animation: scaleIn 0.25s ease both; }
 
-/* Delay utilities */
 .delay-50  { animation-delay: 50ms; }
 .delay-100 { animation-delay: 100ms; }
 .delay-150 { animation-delay: 150ms; }
@@ -102,7 +113,7 @@ body {
   border-color: var(--border-primary) !important;
 }
 
-/* ── Gradient text (landing style) ── */
+/* ── Gradient text ── */
 .gradient-text {
   background: var(--gradient-text);
   -webkit-background-clip: text;
@@ -111,12 +122,8 @@ body {
 }
 
 /* ── Glow button ── */
-.btn-glow {
-  box-shadow: var(--glow-primary);
-}
-.btn-glow:hover {
-  box-shadow: var(--glow-primary-hover);
-}
+.btn-glow       { box-shadow: var(--glow-primary); }
+.btn-glow:hover { box-shadow: var(--glow-primary-hover); }
 
 /* ── Inputs ── */
 input, textarea, select {
@@ -128,58 +135,31 @@ input:focus, textarea:focus, select:focus {
 }
 
 /* ── Botones ── */
-button {
-  transition: all 0.15s ease;
-}
+button { transition: all 0.15s ease; }
 
 /* ── Página con animación de entrada ── */
-.page-enter {
-  animation: fadeIn 0.3s ease both;
-}
+.page-enter { animation: fadeIn 0.3s ease both; }
 
 /* ── Modal backdrop ── */
-.modal-enter {
-  animation: fadeInFast 0.2s ease both;
-}
-.modal-content-enter {
-  animation: scaleIn 0.25s ease both;
-}
+.modal-enter          { animation: fadeInFast 0.2s ease both; }
+.modal-content-enter  { animation: scaleIn 0.25s ease both; }
 
-/* ── Mobile app-native feel ─────────────────────────────────────────────── */
-
-/* Elimina el delay de tap en móvil */
+/* ── Mobile app-native feel ── */
 * {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
 
-/* Scroll horizontal sin scrollbar visible */
 .scrollbar-none {
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
-.scrollbar-none::-webkit-scrollbar {
-  display: none;
-}
+.scrollbar-none::-webkit-scrollbar { display: none; }
 
-/* Evita que el contenido se quede pegado al borde en móvil */
 @media (max-width: 640px) {
-  /* Agrega padding seguro al body para notch/botones del sistema */
-  body {
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-  }
-
-  /* Botones más fáciles de tocar en mobile */
-  button, [role="button"], label[for], label[class*="cursor-pointer"] {
-    min-height: 36px;
-  }
-
-  /* Inputs más grandes en mobile */
-  input, textarea, select {
-    font-size: 16px !important; /* Previene zoom en iOS */
-  }
-
-  /* Modales ocupan toda la pantalla en mobile */
+  body { padding-bottom: env(safe-area-inset-bottom, 0px); }
+  button, [role="button"], label[for], label[class*="cursor-pointer"] { min-height: 36px; }
+  input, textarea, select { font-size: 16px !important; }
   .modal-mobile-full {
     border-radius: 1.5rem 1.5rem 0 0 !important;
     position: fixed !important;
@@ -191,44 +171,127 @@ button {
   }
 }
 
-/* ── Active state para elementos táctiles ── */
 @media (hover: none) {
   .group:active .group-hover\:opacity-100 { opacity: 1; }
   button:active { opacity: 0.85; }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
-   TEMAS CLAROS — colores semánticos accesibles sobre fondo blanco/claro
-   Los colores -400 de Tailwind son para fondos oscuros; en light se
-   reemplazan por -600/-700 para garantizar contraste suficiente.
+   FullCalendar — integración completa con el sistema de temas
    ───────────────────────────────────────────────────────────────────────── */
-:is([data-theme="claro"], [data-theme="rosa"], [data-theme="azul"]) {
+.fc {
+  --fc-border-color:             var(--border);
+  --fc-page-bg-color:            transparent;
+  --fc-neutral-bg-color:         var(--bg-input);
+  --fc-neutral-text-color:       var(--text-muted);
+  --fc-list-event-hover-bg-color: var(--bg-hover);
+}
 
+/* Bordes del grid */
+.fc-theme-standard td,
+.fc-theme-standard th,
+.fc-theme-standard .fc-scrollgrid {
+  border-color: var(--border) !important;
+}
+
+/* Título del calendario */
+.fc .fc-toolbar-title {
+  color: var(--text-main) !important;
+  font-size: 17px !important;
+  font-weight: 700 !important;
+}
+
+/* Números de día y encabezados de columna */
+.fc .fc-col-header-cell-cushion,
+.fc .fc-daygrid-day-number,
+.fc .fc-list-day-cushion,
+.fc .fc-list-day-text,
+.fc .fc-list-day-side-text {
+  color: var(--text-muted) !important;
+  text-decoration: none !important;
+}
+
+/* Botones de navegación */
+.fc .fc-button-primary {
+  background-color: var(--bg-input) !important;
+  border-color:     var(--border)   !important;
+  color:            var(--text-muted) !important;
+  box-shadow:  none !important;
+  text-shadow: none !important;
+  font-size:   13px !important;
+  font-weight: 500  !important;
+  border-radius: 10px !important;
+  padding: 5px 13px !important;
+  transition: all 0.15s ease !important;
+}
+.fc .fc-button-primary:hover {
+  background-color: var(--bg-hover)  !important;
+  border-color:     var(--border)    !important;
+  color:            var(--text-main) !important;
+}
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active {
+  background-color: var(--primary) !important;
+  border-color:     var(--primary) !important;
+  color: #fff !important;
+}
+.fc .fc-button-group .fc-button { border-radius: 10px !important; }
+
+/* Día de hoy */
+.fc .fc-daygrid-day.fc-day-today {
+  background-color: var(--primary-subtle) !important;
+}
+.fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+  color:       var(--primary) !important;
+  font-weight: 700 !important;
+}
+
+/* Eventos en vista de lista */
+.fc .fc-list-event:hover td { background-color: var(--bg-hover) !important; }
+.fc .fc-list-table td { border-color: var(--border) !important; }
+.fc .fc-list-empty { color: var(--text-muted) !important; }
+
+/* Scrollbar dentro del calendar — usa los estilos webkit globales */
+.fc-scroller::-webkit-scrollbar { width: 5px; height: 5px; }
+.fc-scroller::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+.fc-scroller::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 99px; }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   TEMAS CLAROS — colores semánticos con contraste suficiente sobre fondo
+   blanco/claro. Los -400 de Tailwind son para oscuro; en light se usan
+   -600 / -700 para garantizar WCAG AA.
+   Aplica a: claro, rosa, azul, cappuccino, menta
+   ───────────────────────────────────────────────────────────────────────── */
+:is(
+  [data-theme="claro"],
+  [data-theme="rosa"],
+  [data-theme="azul"],
+  [data-theme="cafe"],
+  [data-theme="menta"]
+) {
   /* ── Textos de estado ── */
-  .text-green-400,
-  .text-green-400\/40  { color: #15803d !important; }   /* green-700  */
-  .text-red-400,
-  .text-red-400\/70    { color: #dc2626 !important; }   /* red-600    */
-  .text-amber-400      { color: #b45309 !important; }   /* amber-700  */
-  .text-yellow-400     { color: #a16207 !important; }   /* yellow-700 */
-  .text-blue-400       { color: #1d4ed8 !important; }   /* blue-700   */
-  .text-teal-400       { color: #0f766e !important; }   /* teal-700   */
-  .text-pink-400       { color: #be185d !important; }   /* pink-700   */
-  .text-indigo-400     { color: #4338ca !important; }   /* indigo-700 */
-  .text-purple-400     { color: #7e22ce !important; }   /* purple-700 */
-  .text-orange-400     { color: #c2410c !important; }   /* orange-700 */
-  .text-cyan-400       { color: #0e7490 !important; }   /* cyan-700   */
+  .text-green-400, .text-green-400\/40  { color: #15803d !important; }
+  .text-red-400,   .text-red-400\/70   { color: #dc2626 !important; }
+  .text-amber-400                       { color: #b45309 !important; }
+  .text-yellow-400                      { color: #a16207 !important; }
+  .text-blue-400                        { color: #1d4ed8 !important; }
+  .text-teal-400                        { color: #0f766e !important; }
+  .text-pink-400                        { color: #be185d !important; }
+  .text-indigo-400                      { color: #4338ca !important; }
+  .text-purple-400                      { color: #7e22ce !important; }
+  .text-orange-400                      { color: #c2410c !important; }
+  .text-cyan-400                        { color: #0e7490 !important; }
 
-  /* ── Fondos de badge/alerta — aumentar opacidad para que sean visibles ── */
-  .bg-green-500\/10    { background-color: rgb(34 197 94 / 0.15)  !important; }
-  .bg-green-500\/20    { background-color: rgb(34 197 94 / 0.18)  !important; }
-  .bg-red-500\/10      { background-color: rgb(239 68 68 / 0.12)  !important; }
-  .bg-red-500\/20      { background-color: rgb(239 68 68 / 0.16)  !important; }
-  .bg-yellow-500\/10   { background-color: rgb(234 179 8 / 0.14)  !important; }
-  .bg-yellow-500\/20   { background-color: rgb(234 179 8 / 0.18)  !important; }
-  .bg-amber-500\/20    { background-color: rgb(245 158 11 / 0.16) !important; }
-  .bg-blue-500\/20     { background-color: rgb(59 130 246 / 0.15) !important; }
-  .bg-orange-500\/20   { background-color: rgb(249 115 22 / 0.15) !important; }
+  /* ── Fondos de badge/alerta ── */
+  .bg-green-500\/10  { background-color: rgb(34 197 94 / 0.15)  !important; }
+  .bg-green-500\/20  { background-color: rgb(34 197 94 / 0.18)  !important; }
+  .bg-red-500\/10    { background-color: rgb(239 68 68 / 0.12)  !important; }
+  .bg-red-500\/20    { background-color: rgb(239 68 68 / 0.16)  !important; }
+  .bg-yellow-500\/10 { background-color: rgb(234 179 8 / 0.14)  !important; }
+  .bg-yellow-500\/20 { background-color: rgb(234 179 8 / 0.18)  !important; }
+  .bg-amber-500\/20  { background-color: rgb(245 158 11 / 0.16) !important; }
+  .bg-blue-500\/20   { background-color: rgb(59 130 246 / 0.15) !important; }
+  .bg-orange-500\/20 { background-color: rgb(249 115 22 / 0.15) !important; }
 
   /* ── Bordes de badge/alerta ── */
   .border-green-500\/20  { border-color: rgb(34 197 94 / 0.35)  !important; }
@@ -237,8 +300,34 @@ button {
   .border-yellow-500\/20 { border-color: rgb(234 179 8 / 0.40)  !important; }
   .border-amber-500\/30  { border-color: rgb(245 158 11 / 0.40) !important; }
 
-  /* ── card-hover shadow más suave en light ── */
-  .card-hover:hover {
-    box-shadow: var(--card-shadow);
+  /* ── card-hover shadow suave en light ── */
+  .card-hover:hover { box-shadow: var(--card-shadow); }
+
+  /* ── FullCalendar en light: texto del grid más visible ── */
+  .fc .fc-col-header-cell-cushion,
+  .fc .fc-daygrid-day-number {
+    color: var(--text-muted) !important;
+    font-weight: 500 !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   TEMA OSCURO ESPECIAL — medianoche (acento índigo claro)
+   ───────────────────────────────────────────────────────────────────────── */
+[data-theme="medianoche"] {
+  /* Badge de IA / plan activo — asegura que el color de la fuente sea legible */
+  .text-primary-light { color: var(--primary-light) !important; }
+
+  /* Glow del botón principal — usa el color del tema actual */
+  .shadow-primary\/30 {
+    --tw-shadow-color: color-mix(in srgb, var(--primary) 30%, transparent);
+    box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000),
+                var(--tw-ring-shadow, 0 0 #0000),
+                var(--tw-shadow);
+  }
+
+  /* Fondo del día de hoy en calendar oscuro */
+  .fc .fc-daygrid-day.fc-day-today {
+    background-color: var(--primary-subtle) !important;
   }
 }

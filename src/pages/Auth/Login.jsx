@@ -62,26 +62,24 @@ const Login = () => {
       <div className="relative w-full max-w-md">
         <div className="bg-bg-card border border-border rounded-3xl p-8 shadow-2xl">
 
-          {/* Logo + selector de tema en la misma fila */}
-          <div className="flex items-start justify-between mb-8">
-            <div className="flex-1 text-center pr-8">
-              <img
-                src="/logos/logo.png"
-                alt="Stratega Planner"
-                className="w-20 h-20 object-contain mx-auto mb-4"
-              />
-              <h1 className="text-2xl font-bold text-text-main tracking-tight">Stratega Planner</h1>
-              <p className="text-text-muted text-sm mt-1">{t("auth.login_tagline")}</p>
-            </div>
+          {/* Logo — centrado, selector de tema en absoluto top-right */}
+          <div className="relative text-center mb-8">
+            <img
+              src="/logos/logo.png"
+              alt="Stratega Planner"
+              className="w-20 h-20 object-contain mx-auto mb-4"
+            />
+            <h1 className="text-2xl font-bold text-text-main tracking-tight">Stratega Planner</h1>
+            <p className="text-text-muted text-sm mt-1">{t("auth.login_tagline")}</p>
 
-            {/* ── Selector de tema dentro de la card ── */}
-            <div className="relative flex-shrink-0">
+            {/* ── Selector de tema ── */}
+            <div className="absolute top-0 right-0">
               <button
                 onClick={() => setThemeOpen(o => !o)}
                 className={`w-9 h-9 rounded-xl flex items-center justify-center border transition-all
                   ${themeOpen
                     ? "bg-primary/20 border-primary/40 text-primary-light"
-                    : "bg-bg-hover border-border text-text-muted hover:text-text-main hover:border-border/80"
+                    : "bg-bg-hover border-border text-text-muted hover:text-text-main"
                   }`}
               >
                 <Palette size={15} />
@@ -90,30 +88,29 @@ const Login = () => {
               {themeOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setThemeOpen(false)} />
-                  <div className="absolute top-11 right-0 z-50 bg-bg-card border border-border rounded-2xl shadow-2xl p-2 w-44 animate-scale-in">
-                    <p className="text-[10px] text-text-muted uppercase tracking-widest px-2 pb-2">Tema</p>
-                    {Object.values(THEMES).map(th => (
-                      <button
-                        key={th.id}
-                        onClick={() => { setTheme(th.id); setThemeOpen(false) }}
-                        className={`w-full flex items-center gap-3 px-2 py-2 rounded-xl transition-all text-left
-                          ${theme === th.id ? "bg-primary/10" : "hover:bg-bg-hover"}`}
-                      >
-                        <div
-                          className="w-7 h-7 rounded-lg flex-shrink-0 border border-white/10 flex items-center justify-center"
-                          style={{ backgroundColor: th.vars["--bg-card"] }}
+                  <div className="absolute top-11 right-0 z-50 bg-bg-card border border-border rounded-2xl shadow-2xl p-2 w-48 animate-scale-in overflow-hidden">
+                    <p className="text-[10px] text-text-muted uppercase tracking-widest px-2 pb-1.5">Tema</p>
+                    <div className="max-h-72 overflow-y-auto space-y-0.5">
+                      {Object.values(THEMES).map(th => (
+                        <button
+                          key={th.id}
+                          onClick={() => { setTheme(th.id); setThemeOpen(false) }}
+                          className={`w-full flex items-center gap-3 px-2 py-1.5 rounded-xl transition-all text-left
+                            ${theme === th.id ? "bg-primary/10" : "hover:bg-bg-hover"}`}
                         >
                           <div
-                            className="w-3 h-3 rounded-full"
-                            style={{ backgroundColor: th.vars["--primary"] }}
-                          />
-                        </div>
-                        <span className={`text-xs font-medium flex-1 ${theme === th.id ? "text-primary-light" : "text-text-muted"}`}>
-                          {th.nombre}
-                        </span>
-                        {theme === th.id && <Check size={12} className="text-primary-light flex-shrink-0" />}
-                      </button>
-                    ))}
+                            className="w-7 h-7 rounded-lg flex-shrink-0 border border-black/10 flex items-center justify-center"
+                            style={{ backgroundColor: th.vars["--bg-card"] }}
+                          >
+                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: th.vars["--primary"] }} />
+                          </div>
+                          <span className={`text-xs font-medium flex-1 ${theme === th.id ? "text-primary-light" : "text-text-muted"}`}>
+                            {th.emoji} {th.nombre}
+                          </span>
+                          {theme === th.id && <Check size={12} className="text-primary-light flex-shrink-0" />}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </>
               )}

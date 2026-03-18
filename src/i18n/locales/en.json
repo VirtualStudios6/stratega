@@ -472,7 +472,7 @@
   "notifications": {
     "week_missing_1": "Your {{day}} content is not planned yet 📅",
     "week_missing_2": "Your content for {{day1}} and {{day2}} is not planned yet 📅",
-    "week_missing_many": "You have {{count}} days this week without planned content 📅",
+    "week_missing_many": "Your week is incomplete… plan it now 📅",
     "month_missing": "{{month}} has no planned content yet 🗓️"
   },
 

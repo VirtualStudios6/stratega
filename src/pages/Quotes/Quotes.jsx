@@ -12,7 +12,19 @@ import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
 import { FileText, Building2, Pencil, Receipt, Monitor, Download, Trash2, X, ImagePlus, Palette, Pipette } from "lucide-react"
 
-const MONEDAS = ["USD", "DOP", "EUR"]
+const MONEDAS = [
+  // Más usadas
+  "USD", "EUR", "GBP", "CAD", "AUD", "CHF", "JPY",
+  // América Latina & Caribe
+  "DOP", "MXN", "COP", "CLP", "ARS", "BRL", "PEN",
+  "BOB", "PYG", "UYU", "CRC", "GTQ", "HNL", "NIO", "PAB", "CUP",
+  // Asia / Pacífico
+  "CNY", "INR", "KRW", "SGD", "HKD", "NZD", "TWD", "THB", "MYR", "IDR",
+  // Europa
+  "SEK", "NOK", "DKK", "PLN", "CZK", "HUF", "RON", "TRY", "RUB",
+  // Medio Oriente & África
+  "AED", "SAR", "QAR", "KWD", "ZAR",
+]
 const ESTADOS = [
   { label: "Borrador",  color: "bg-bg-hover text-text-muted border-border" },
   { label: "Enviada",   color: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
@@ -33,10 +45,18 @@ const TEMPLATES = [
 ]
 
 const FONTS = [
-  { value: "helvetica", label: "Helvetica — Moderna" },
-  { value: "times",     label: "Times — Clásica" },
-  { value: "courier",   label: "Courier — Monoespaciada" },
+  { id: "helvetica",  pdfFont: "helvetica", label: "Helvetica",        desc: "Sans-serif moderna" },
+  { id: "arial",      pdfFont: "helvetica", label: "Arial",            desc: "Sans-serif limpia" },
+  { id: "opensans",   pdfFont: "helvetica", label: "Open Sans",        desc: "Sans-serif amigable" },
+  { id: "lato",       pdfFont: "helvetica", label: "Lato",             desc: "Sans-serif profesional" },
+  { id: "times",      pdfFont: "times",     label: "Times New Roman",  desc: "Serif clásica" },
+  { id: "georgia",    pdfFont: "times",     label: "Georgia",          desc: "Serif legible" },
+  { id: "garamond",   pdfFont: "times",     label: "Garamond",         desc: "Serif editorial" },
+  { id: "courier",    pdfFont: "courier",   label: "Courier New",      desc: "Monoespaciada" },
 ]
+
+const resolvePdfFont = (id) =>
+  (FONTS.find(f => f.id === id || f.pdfFont === id) || FONTS[0]).pdfFont
 
 // ── Color helpers ─────────────────────────────────────────────────────────
 const hexToRgb = (hex = "#6022EC") => {
@@ -47,31 +67,94 @@ const hexToRgb = (hex = "#6022EC") => {
 const lighten = (rgb, factor = 0.92) =>
   rgb.map(c => Math.round(c + (255 - c) * factor))
 
-const extractColorFromImage = (src) =>
+// Interpola entre un array de colores en t ∈ [0,1]
+const interpolateColors = (hexColors, t) => {
+  if (hexColors.length === 1) return hexToRgb(hexColors[0])
+  const segCount = hexColors.length - 1
+  const seg = Math.min(Math.floor(t * segCount), segCount - 1)
+  const segT = t * segCount - seg
+  const c1 = hexToRgb(hexColors[seg])
+  const c2 = hexToRgb(hexColors[seg + 1])
+  return [
+    Math.round(c1[0] + (c2[0] - c1[0]) * segT),
+    Math.round(c1[1] + (c2[1] - c1[1]) * segT),
+    Math.round(c1[2] + (c2[2] - c1[2]) * segT),
+  ]
+}
+
+// Dibuja un degradado simulado (horizontal o vertical) en el PDF
+const drawGradientRect = (pdf, hexColors, x, y, w, h, dir = "h") => {
+  if (!hexColors || hexColors.length < 2) {
+    pdf.setFillColor(...hexToRgb(hexColors?.[0] || "#6022EC"))
+    pdf.rect(x, y, w, h, "F")
+    return
+  }
+  const steps = 60
+  if (dir === "h") {
+    const slice = w / steps
+    for (let i = 0; i < steps; i++) {
+      pdf.setFillColor(...interpolateColors(hexColors, i / (steps - 1)))
+      pdf.rect(x + i * slice, y, slice + 0.5, h, "F")
+    }
+  } else {
+    const slice = h / steps
+    for (let i = 0; i < steps; i++) {
+      pdf.setFillColor(...interpolateColors(hexColors, i / (steps - 1)))
+      pdf.rect(x, y + i * slice, w, slice + 0.5, "F")
+    }
+  }
+}
+
+// Extrae 2–4 colores dominantes y visualmente distintos del logo
+const extractColorsFromImage = (src) =>
   new Promise((resolve) => {
     const img = new Image()
     img.onload = () => {
       const canvas = document.createElement("canvas")
-      canvas.width = 80; canvas.height = 80
+      canvas.width = 120; canvas.height = 120
       const ctx = canvas.getContext("2d")
-      ctx.drawImage(img, 0, 0, 80, 80)
-      const data = ctx.getImageData(0, 0, 80, 80).data
+      ctx.drawImage(img, 0, 0, 120, 120)
+      const data = ctx.getImageData(0, 0, 120, 120).data
       const map = {}
       for (let i = 0; i < data.length; i += 4) {
-        const [r, g, b, a] = [data[i], data[i + 1], data[i + 2], data[i + 3]]
-        if (a < 100) continue
-        if (r > 225 && g > 225 && b > 225) continue // skip near-white
-        if (r < 30 && g < 30 && b < 30) continue   // skip near-black
-        const k = `${Math.round(r / 20) * 20},${Math.round(g / 20) * 20},${Math.round(b / 20) * 20}`
+        const [r, g, b, a] = [data[i], data[i+1], data[i+2], data[i+3]]
+        if (a < 120) continue
+        if (r > 228 && g > 228 && b > 228) continue // skip near-white
+        if (r < 28 && g < 28 && b < 28) continue   // skip near-black
+        // Quantize in 28-step buckets
+        const k = `${Math.round(r/28)*28},${Math.round(g/28)*28},${Math.round(b/28)*28}`
         map[k] = (map[k] || 0) + 1
       }
-      const top = Object.entries(map).sort((a, b) => b[1] - a[1])[0]
-      if (top) {
-        const [r, g, b] = top[0].split(",").map(Number)
-        resolve(`#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`)
-      } else {
-        resolve("#6022EC")
+      const sorted = Object.entries(map).sort((a, b) => b[1] - a[1])
+      const toHex = ([r, g, b]) =>
+        `#${r.toString(16).padStart(2,"0")}${g.toString(16).padStart(2,"0")}${b.toString(16).padStart(2,"0")}`
+      const toHsl = ([r, g, b]) => {
+        const rn = r/255, gn = g/255, bn = b/255
+        const max = Math.max(rn, gn, bn), min = Math.min(rn, gn, bn)
+        const l = (max + min) / 2
+        if (max === min) return [0, 0, l]
+        const d = max - min
+        const s = d / (l > 0.5 ? 2 - max - min : max + min)
+        let h = max === rn ? (gn - bn) / d + (gn < bn ? 6 : 0)
+              : max === gn ? (bn - rn) / d + 2
+              :               (rn - gn) / d + 4
+        return [h / 6, s, l]
       }
+      // Pick colors that are visually distinct (Euclidean dist > 55 in RGB space)
+      const picked = []
+      for (const [key] of sorted) {
+        if (picked.length >= 4) break
+        const rgb = key.split(",").map(Number)
+        const distinct = picked.every(p => {
+          const [dr, dg, db] = [rgb[0]-p[0], rgb[1]-p[1], rgb[2]-p[2]]
+          return Math.sqrt(dr*dr + dg*dg + db*db) > 55
+        })
+        if (distinct || picked.length === 0) picked.push(rgb)
+      }
+      if (picked.length === 0) { resolve(["#6022EC"]); return }
+      // Sort by hue for a smooth, natural-looking gradient
+      picked.sort((a, b) => toHsl(a)[0] - toHsl(b)[0])
+      resolve(picked.map(toHex))
     }
     img.src = src
   })
@@ -80,17 +163,17 @@ const extractColorFromImage = (src) =>
 
 const generateMinimalPDF = (quote, company) => {
   const pdf    = new jsPDF()
-  const accent = hexToRgb(company.brandColor || "#6022EC")
+  const colors = company.brandColors?.length > 1 ? company.brandColors : [company.brandColor || "#6022EC"]
+  const accent = hexToRgb(colors[0])
   const light  = lighten(accent)
   const gray   = [100, 100, 120]
   const dark   = [20, 20, 35]
-  const font   = company.fontStyle || "helvetica"
+  const font   = resolvePdfFont(company.fontStyle)
   const footer = company.footerText || "Generado con Stratega Planner"
 
   pdf.setFillColor(255, 255, 255)
   pdf.rect(0, 0, 210, 297, "F")
-  pdf.setFillColor(...accent)
-  pdf.rect(0, 0, 210, 4, "F")
+  drawGradientRect(pdf, colors, 0, 0, 210, 4)
 
   let startY = 20
   if (company.logoBase64) {
@@ -175,18 +258,19 @@ const generateMinimalPDF = (quote, company) => {
 
 const generateDarkPDF = (quote, company) => {
   const pdf     = new jsPDF()
-  const accent  = hexToRgb(company.brandColor || "#8B5CF6")
+  const colors  = company.brandColors?.length > 1 ? company.brandColors : [company.brandColor || "#8B5CF6"]
+  const accent  = hexToRgb(colors[0])
   const bg      = [13, 13, 24]
   const bgCard  = [19, 19, 31]
   const bgLight = [30, 30, 46]
   const muted   = [107, 107, 138]
   const white   = [238, 238, 242]
-  const font    = company.fontStyle || "helvetica"
+  const font    = resolvePdfFont(company.fontStyle)
   const footer  = company.footerText || "Generado con Stratega Planner"
 
   pdf.setFillColor(...bg); pdf.rect(0, 0, 210, 297, "F")
   pdf.setFillColor(...bgCard); pdf.rect(0, 0, 210, 50, "F")
-  pdf.setFillColor(...accent); pdf.rect(0, 0, 4, 50, "F")
+  drawGradientRect(pdf, colors, 0, 0, 4, 50, "v")
 
   if (company.logoBase64) {
     try { pdf.addImage(company.logoBase64, "PNG", 12, 10, 28, 14) } catch {}
@@ -271,15 +355,16 @@ const generateDarkPDF = (quote, company) => {
 
 const generateClassicPDF = (quote, company) => {
   const pdf    = new jsPDF()
-  const accent = hexToRgb(company.brandColor || "#1E40AF")
+  const colors = company.brandColors?.length > 1 ? company.brandColors : [company.brandColor || "#1E40AF"]
+  const accent = hexToRgb(colors[0])
   const light  = lighten(accent, 0.88)
   const gray   = [80, 90, 110]
   const dark   = [20, 30, 50]
-  const font   = company.fontStyle || "helvetica"
+  const font   = resolvePdfFont(company.fontStyle)
   const footer = company.footerText || "Generado con Stratega Planner"
 
   pdf.setFillColor(255, 255, 255); pdf.rect(0, 0, 210, 297, "F")
-  pdf.setFillColor(...accent); pdf.rect(0, 0, 210, 45, "F")
+  drawGradientRect(pdf, colors, 0, 0, 210, 45)
   // slightly darker strip at bottom of header
   pdf.setFillColor(...accent.map(c => Math.max(0, c - 30))); pdf.rect(0, 38, 210, 7, "F")
 
@@ -408,7 +493,7 @@ const Quotes = () => {
 
   const [company, setCompany] = useState({
     nombre: "", tagline: "", email: "", telefono: "", direccion: "", web: "", rnc: "",
-    logoBase64: "", brandColor: "#6022EC", fontStyle: "helvetica", footerText: ""
+    logoBase64: "", brandColor: "#6022EC", brandColors: [], fontStyle: "helvetica", footerText: ""
   })
   const [companyDraft,  setCompanyDraft]  = useState({ ...company })
   const [logoPreview,   setLogoPreview]   = useState("")
@@ -430,7 +515,7 @@ const Quotes = () => {
     const snap = await getDoc(doc(db, "company_profiles", user.uid))
     if (snap.exists()) {
       const data = { nombre: "", tagline: "", email: "", telefono: "", direccion: "", web: "", rnc: "",
-        logoBase64: "", brandColor: "#6022EC", fontStyle: "helvetica", footerText: "", ...snap.data() }
+        logoBase64: "", brandColor: "#6022EC", brandColors: [], fontStyle: "helvetica", footerText: "", ...snap.data() }
       setCompany(data); setCompanyDraft(data)
       if (data.logoBase64) setLogoPreview(data.logoBase64)
     }
@@ -454,8 +539,8 @@ const Quotes = () => {
   const handleExtractColor = async () => {
     if (!logoPreview) return
     setExtracting(true)
-    const color = await extractColorFromImage(logoPreview)
-    setCompanyDraft(prev => ({ ...prev, brandColor: color }))
+    const colors = await extractColorsFromImage(logoPreview)
+    setCompanyDraft(prev => ({ ...prev, brandColor: colors[0], brandColors: colors }))
     setExtracting(false)
   }
 
@@ -800,14 +885,24 @@ const Quotes = () => {
                         <input
                           type="color"
                           value={companyDraft.brandColor || "#6022EC"}
-                          onChange={e => setCompanyDraft(p => ({ ...p, brandColor: e.target.value }))}
+                          onChange={e => setCompanyDraft(p => ({ ...p, brandColor: e.target.value, brandColors: [] }))}
                           className="w-12 h-12 rounded-xl cursor-pointer border border-border bg-bg-input p-1"
                           title="Elige un color"
                         />
                       </div>
-                      <div className="flex-1">
-                        <p className="text-text-main text-sm font-mono font-medium">{companyDraft.brandColor || "#6022EC"}</p>
-                        <p className="text-text-muted text-[11px] mt-0.5">Se aplica a encabezados, tablas y títulos del PDF</p>
+                      <div className="flex-1 min-w-0">
+                        {companyDraft.brandColors?.length > 1 ? (
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="h-5 flex-1 rounded-full border border-black/10"
+                              style={{ background: `linear-gradient(to right, ${companyDraft.brandColors.join(", ")})` }}
+                            />
+                            <span className="text-text-muted text-[11px] shrink-0">{companyDraft.brandColors.length} colores</span>
+                          </div>
+                        ) : (
+                          <p className="text-text-main text-sm font-mono font-medium">{companyDraft.brandColor || "#6022EC"}</p>
+                        )}
+                        <p className="text-text-muted text-[11px] mt-0.5">Se aplica a encabezados y plantillas del PDF</p>
                       </div>
                       {logoPreview && (
                         <button
@@ -822,30 +917,43 @@ const Quotes = () => {
                       )}
                     </div>
 
-                    {/* Preview de colores de plantilla */}
+                    {/* Preview swatches */}
                     <div className="flex gap-2 mt-3">
                       {["#6022EC","#1E40AF","#0F766E","#B45309","#BE123C","#1D4ED8","#7C3AED","#059669"].map(c => (
                         <button
                           key={c}
-                          onClick={() => setCompanyDraft(p => ({ ...p, brandColor: c }))}
+                          onClick={() => setCompanyDraft(p => ({ ...p, brandColor: c, brandColors: [] }))}
                           title={c}
-                          className={`w-7 h-7 rounded-lg border-2 transition focus:outline-none ${companyDraft.brandColor === c ? "border-white scale-110" : "border-transparent hover:scale-105"}`}
+                          className={`w-7 h-7 rounded-lg border-2 transition focus:outline-none ${companyDraft.brandColor === c && !companyDraft.brandColors?.length ? "border-white scale-110" : "border-transparent hover:scale-105"}`}
                           style={{ backgroundColor: c }}
                         />
                       ))}
                     </div>
                   </div>
 
-                  {/* Fuente */}
-                  <div>
-                    <label className="block text-xs text-text-muted mb-1.5">Fuente del documento</label>
-                    <select
-                      value={companyDraft.fontStyle || "helvetica"}
-                      onChange={e => setCompanyDraft(p => ({ ...p, fontStyle: e.target.value }))}
-                      className="w-full bg-bg-input border border-border text-text-main rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                    >
-                      {FONTS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
-                    </select>
+                  {/* Tipografía */}
+                  <div className="col-span-2">
+                    <label className="block text-xs text-text-muted mb-2">Tipografía del documento</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {FONTS.map(f => (
+                        <button
+                          key={f.id}
+                          type="button"
+                          onClick={() => setCompanyDraft(p => ({ ...p, fontStyle: f.id }))}
+                          className={`flex items-center gap-2.5 px-3 py-2 rounded-xl border text-left transition focus:outline-none ${
+                            (companyDraft.fontStyle || "helvetica") === f.id
+                              ? "bg-primary/10 border-primary/40 text-primary-light"
+                              : "bg-bg-input border-border text-text-muted hover:border-primary/30 hover:text-text-main"
+                          }`}
+                        >
+                          <span className="text-base leading-none w-5 text-center font-bold" style={{ fontFamily: f.label }}>A</span>
+                          <div className="min-w-0">
+                            <p className="text-xs font-medium truncate">{f.label}</p>
+                            <p className="text-[10px] opacity-60 truncate">{f.desc}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   {/* Pie de página */}
