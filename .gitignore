@@ -35,3 +35,9 @@ build/
 
 # Mac / Windows
 Thumbs.db
+
+# Capacitor native platforms
+# (Estos se regeneran con `npx cap add android` / `npx cap add ios`)
+# Descomenta si quieres versionar el código nativo:
+# android/
+# ios/

@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1022294410705",
+    "project_id": "stratega-planner",
+    "storage_bucket": "stratega-planner.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1022294410705:android:b1617e83daae5fd9298cf0",
+        "android_client_info": {
+          "package_name": "com.stratega.planner"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1022294410705-ddhsmti1vn8k1d9m9423b1s1ni2ta361.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.stratega.planner",
+            "certificate_hash": "ba3c354758863f7483468a5ce413269251cae8af"
+          }
+        },
+        {
+          "client_id": "1022294410705-mcgava6mdjdah9hd9gpj6ovt6aia55uq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB0IpfgHuEUmVpvlJpksePlbDbwkK0B2TI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1022294410705-mcgava6mdjdah9hd9gpj6ovt6aia55uq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
