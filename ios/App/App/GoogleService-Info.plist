@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>1022294410705-oo4il4e2c71l7spao9p1dhltleu1d6gt.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.1022294410705-oo4il4e2c71l7spao9p1dhltleu1d6gt</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>1022294410705-ddhsmti1vn8k1d9m9423b1s1ni2ta361.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyBo0W6InNbqafFvWXocGpd-sH8S2vPL77M</string>
+	<key>GCM_SENDER_ID</key>
+	<string>1022294410705</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.stratega.planner</string>
+	<key>PROJECT_ID</key>
+	<string>stratega-planner</string>
+	<key>STORAGE_BUCKET</key>
+	<string>stratega-planner.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:1022294410705:ios:f7f901b9e7b976a0298cf0</string>
+</dict>
+</plist>
