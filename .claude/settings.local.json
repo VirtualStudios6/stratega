@@ -8,7 +8,13 @@
       "Bash(node check-colors.cjs)",
       "Bash(node -e \":*)",
       "Bash(grep -rn \"\"\"border\"\"\" --include=\"*.jsx\")",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\" -X POST \"https://api.groq.com/openai/v1/chat/completions\" -H \"Content-Type: application/json\" -H \"Authorization: Bearer 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\" -d '{\"\"model\"\":\"\"llama-3.1-8b-instant\"\",\"\"messages\"\":[{\"\"role\"\":\"\"user\"\",\"\"content\"\":\"\"test\"\"}],\"\"max_tokens\"\":10}')"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" -X POST \"https://api.groq.com/openai/v1/chat/completions\" -H \"Content-Type: application/json\" -H \"Authorization: Bearer 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\" -d '{\"\"model\"\":\"\"llama-3.1-8b-instant\"\",\"\"messages\"\":[{\"\"role\"\":\"\"user\"\",\"\"content\"\":\"\"test\"\"}],\"\"max_tokens\"\":10}')",
+      "Bash(grep -r meta.*viewport /c/Users/VirtualStudios/Desktop/Stratega-Planner --include=*.html --include=*.jsx --include=*.js)",
+      "Bash(grep -r \"onKeyDown\\\\|keyCode\\\\|key ===\" /c/Users/VirtualStudios/Desktop/Stratega-Planner/src --include=*.jsx --include=*.js)",
+      "Bash(grep -r \"vh\\\\|100vh\\\\|screen\\\\|viewport\" /c/Users/VirtualStudios/Desktop/Stratega-Planner/src/index.css --include=*.css)",
+      "Bash(npm run:*)",
+      "Bash(npx cap:*)",
+      "Read(//c/Users/VirtualStudios/AppData/Local/Temp/claude/c--Users-VirtualStudios-Desktop-Stratega-Planner/467492c4-d905-4341-985e-2c3370d7f45d/tasks/**)"
     ]
   }
 }

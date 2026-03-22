@@ -28,7 +28,7 @@ const config: CapacitorConfig = {
     contentInset: "always",
     // Desactiva rebote al hacer scroll en la raíz (app-like feel)
     scrollEnabled: false,
-    limitsNavigationsToAppBoundDomains: true,
+    limitsNavigationsToAppBoundDomains: false,
     // Dominios permitidos para navegación (Firebase Auth, Lemon Squeezy, Groq)
     appendUserAgent: "StrategaPlanner/1.0",
   },

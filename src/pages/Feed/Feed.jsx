@@ -40,17 +40,18 @@ const SortableImage = ({ item, onDelete, onPreview, index }) => {
           <span className="text-white text-[8px] font-bold tracking-wide">VIDEO</span>
         </div>
       )}
-      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-2 p-3">
+      {/* Overlay de acciones — hover en desktop, siempre visible en táctil (no hay hover) */}
+      <div className="feed-item-actions absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-2 p-3">
         {item.caption && (
           <p className="text-white text-xs text-center leading-relaxed line-clamp-2 pointer-events-none">{item.caption}</p>
         )}
         <div className="flex gap-2">
           <button onPointerDown={e => e.stopPropagation()} onClick={() => onPreview(item)}
-            className="bg-white/20 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-lg hover:bg-white/30 transition font-medium border border-white/30">
+            className="bg-white/20 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-lg hover:bg-white/30 active:bg-white/40 transition font-medium border border-white/30">
             Ver
           </button>
           <button onPointerDown={e => e.stopPropagation()} onClick={() => onDelete(item)}
-            className="bg-red-500 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-red-400 transition font-medium">
+            className="bg-red-500 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-red-400 active:bg-red-600 transition font-medium">
             Eliminar
           </button>
         </div>
@@ -111,8 +112,10 @@ const Feed = () => {
   const avatarHeaderRef = useRef(null)
   const avatarModalRef = useRef(null)
 
+  // Threshold de 10px antes de activar el drag.
+  // Sin esto en táctil, cualquier tap se convierte en arrastre accidental.
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, { activationConstraint: { distance: 10 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   )
 
@@ -909,9 +912,22 @@ const Feed = () => {
               <button
                 onClick={async () => {
                   if (!previewItem.caption) return
-                  await navigator.clipboard.writeText(previewItem.caption)
-                  setCopiedCaption(true)
-                  setTimeout(() => setCopiedCaption(false), 2000)
+                  try {
+                    if (navigator.clipboard?.writeText) {
+                      await navigator.clipboard.writeText(previewItem.caption)
+                    } else {
+                      // Fallback para Android WebView antiguo
+                      const el = document.createElement("textarea")
+                      el.value = previewItem.caption
+                      el.style.cssText = "position:fixed;opacity:0"
+                      document.body.appendChild(el)
+                      el.focus(); el.select()
+                      document.execCommand("copy")
+                      document.body.removeChild(el)
+                    }
+                    setCopiedCaption(true)
+                    setTimeout(() => setCopiedCaption(false), 2000)
+                  } catch { /* silencioso */ }
                 }}
                 disabled={!previewItem.caption}
                 className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-medium transition ${

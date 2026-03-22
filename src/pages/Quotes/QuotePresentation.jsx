@@ -48,8 +48,21 @@ const QuotePresentation = () => {
     setLoading(false)
   }
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(window.location.href)
+  const handleCopy = async () => {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(window.location.href)
+      } else {
+        // Fallback para Android WebView sin Clipboard API
+        const el = document.createElement("textarea")
+        el.value = window.location.href
+        el.style.cssText = "position:fixed;opacity:0"
+        document.body.appendChild(el)
+        el.focus(); el.select()
+        document.execCommand("copy")
+        document.body.removeChild(el)
+      }
+    } catch { /* silencioso */ }
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }

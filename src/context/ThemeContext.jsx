@@ -188,6 +188,17 @@ export const ThemeProvider = ({ children }) => {
     document.body.style.backgroundColor = vars["--bg-main"]
     document.body.style.color = vars["--text-main"]
     localStorage.setItem("stratega-theme", theme)
+
+    // Sincronizar StatusBar nativa (Android/iOS) con el color del tema actual.
+    // Style.Light = iconos blancos (para fondos oscuros)
+    // Style.Dark  = iconos oscuros (para fondos claros)
+    const darkThemes = ["oscuro", "medianoche"]
+    import("@capacitor/status-bar")
+      .then(({ StatusBar, Style }) => {
+        StatusBar.setBackgroundColor({ color: vars["--bg-main"] })
+        StatusBar.setStyle({ style: darkThemes.includes(theme) ? Style.Light : Style.Dark })
+      })
+      .catch(() => { /* no es entorno nativo — se ignora */ })
   }, [theme])
 
   return (

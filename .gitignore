@@ -41,3 +41,8 @@ Thumbs.db
 # Descomenta si quieres versionar el código nativo:
 # android/
 # ios/
+
+# Package.swift es regenerado por `npx cap sync` con rutas relativas del SO.
+# Windows usa \ y macOS usa / — ignorarlo evita conflictos de plataforma.
+# Antes de abrir en Xcode en macOS: ejecutar `npm run build && npx cap sync` en Mac.
+ios/App/CapApp-SPM/Package.swift

@@ -1,31 +1,58 @@
 import { useEffect } from "react"
 import { useAuth } from "../context/AuthContext"
 import { initFCM, onForegroundMessage } from "../firebase/notifications"
+import { Capacitor } from "@capacitor/core"
 
 /**
- * Registers the FCM service worker, requests notification permission,
- * saves the FCM token to Firestore, and handles foreground messages.
+ * Gestiona las notificaciones push según la plataforma:
  *
- * Background messages are handled automatically by firebase-messaging-sw.js
- * (fires when the tab is closed or the browser is in the background).
+ * • WEB        → registra firebase-messaging-sw.js + escucha mensajes en primer plano
+ * • ANDROID/iOS → solicita permiso nativo con @capacitor/push-notifications
+ *                 (los service workers no funcionan en WebView nativo de Capacitor)
  */
 export const useFCM = () => {
   const { user } = useAuth()
 
   useEffect(() => {
     if (!user) return
+
+    // ── NATIVO (Android / iOS) ──────────────────────────────────────────────
+    if (Capacitor.isNativePlatform()) {
+      import("@capacitor/push-notifications")
+        .then(({ PushNotifications }) => {
+          PushNotifications.checkPermissions().then((status) => {
+            const doRegister = () =>
+              PushNotifications.register().catch((err) =>
+                console.warn("[FCM native] Register error:", err)
+              )
+
+            if (status.receive === "prompt") {
+              PushNotifications.requestPermissions().then((result) => {
+                if (result.receive === "granted") doRegister()
+              })
+            } else if (status.receive === "granted") {
+              doRegister()
+            }
+          })
+        })
+        .catch(() => {
+          // Plugin no disponible — se ignora silenciosamente
+        })
+      return
+    }
+
+    // ── WEB ─────────────────────────────────────────────────────────────────
     if (!("serviceWorker" in navigator)) return
 
     navigator.serviceWorker
       .register("/firebase-messaging-sw.js")
       .then(() => initFCM(user.uid))
-      .catch((err) => console.warn("Service Worker registration failed:", err))
+      .catch((err) => console.warn("[FCM web] Service Worker registration failed:", err))
 
     const unsub = onForegroundMessage((payload) => {
       const title = payload.notification?.title || "Recordatorio"
       const body  = payload.notification?.body  || ""
 
-      // Use the service worker's showNotification for better compatibility
       navigator.serviceWorker.ready.then((reg) => {
         reg.showNotification(title, {
           body,

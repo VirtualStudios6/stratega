@@ -216,6 +216,15 @@ button { transition: all 0.15s ease; }
 @media (hover: none) {
   .group:active .group-hover\:opacity-100 { opacity: 1; }
   button:active { opacity: 0.85; }
+
+  /* Feed: en táctil no hay hover — mostrar overlay de acciones siempre
+     como gradiente desde abajo (imagen sigue siendo visible) */
+  .feed-item-actions {
+    opacity: 1 !important;
+    background: linear-gradient(to top, rgba(0,0,0,0.78) 0%, transparent 65%) !important;
+    justify-content: flex-end !important;
+    padding-bottom: 10px !important;
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────

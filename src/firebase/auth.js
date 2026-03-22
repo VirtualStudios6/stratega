@@ -61,7 +61,14 @@ export const loginWithGoogle = async () => {
 }
 
 // ── Facebook Sign-In ──────────────────────────────────────────────────────────
-// (solo web por ahora — se puede ampliar igual que Google cuando sea necesario)
+// signInWithPopup no funciona correctamente en WebView nativo de Capacitor.
+// En native lanzamos un error claro para que el UI pueda informar al usuario.
 
-export const loginWithFacebook = () =>
-  signInWithPopup(auth, facebookProvider)
+export const loginWithFacebook = () => {
+  if (isNative()) {
+    return Promise.reject(
+      new Error("Facebook login no está disponible en la app nativa por el momento.")
+    )
+  }
+  return signInWithPopup(auth, facebookProvider)
+}

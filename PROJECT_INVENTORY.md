@@ -1,5 +1,5 @@
 # PROJECT INVENTORY — Stratega Planner
-**Fecha de auditoría:** 2026-03-18
+**Última actualización:** 2026-03-21
 **Versión del proyecto:** 0.0.0 (package.json)
 **URL de producción:** https://virtualstudios6.github.io/stratega/
 **Repositorio:** GitHub (deploy via `gh-pages`)
@@ -14,24 +14,37 @@ stratega-planner/
 ├── index.html                    # Entry point HTML
 ├── package.json
 ├── vite.config.js
+├── capacitor.config.ts           # ★ NUEVO — Configuración Capacitor (Android + iOS)
 ├── tailwind.config.js
 ├── postcss.config.js
 ├── eslint.config.js
+├── PROJECT_INVENTORY.md          # Este archivo
 ├── subir.bat                     # Script Windows para deploy manual
 │
 ├── public/
-│   ├── firebase-messaging-sw.js  # Service Worker para FCM (push notifications)
+│   ├── firebase-messaging-sw.js  # Service Worker para FCM (push notifications web)
 │   ├── vite.svg
 │   ├── iconos/                   # Iconos de la PWA (manifest icons)
 │   ├── images/                   # Imágenes estáticas del landing
 │   └── logos/                    # Logo de la app (logo.png)
+│
+├── android/                      # ★ NUEVO — Proyecto nativo Android (Capacitor)
+│   ├── app/
+│   │   ├── google-services.json  # Configuración Firebase para Android (no en git)
+│   │   └── src/main/
+│   │       ├── AndroidManifest.xml   # Permisos: internet, cámara, storage, notificaciones
+│   │       ├── java/com/stratega/planner/MainActivity.java
+│   │       └── res/
+│   │           └── values/styles.xml  # Colores del splash y status bar (#080810)
+│   ├── gradle.properties         # buildDir redirigido a C:\gb\s\ para evitar MAX_PATH
+│   └── [otros archivos Gradle generados por Capacitor]
 │
 ├── functions/
 │   ├── index.js                  # Cloud Function: recordatorios programados (cada 5 min)
 │   └── package.json              # Dependencias de la función (firebase-admin, firebase-functions)
 │
 └── src/
-    ├── main.jsx                  # Punto de entrada React (BrowserRouter, ThemeProvider, i18n)
+    ├── main.jsx                  # Entrada React + listener botón "atrás" Android (Capacitor)
     ├── App.jsx                   # Router principal con todas las rutas
     ├── App.css                   # Estilos mínimos base
     ├── index.css                 # CSS global: variables, keyframes, clases utilitarias
@@ -41,9 +54,9 @@ stratega-planner/
     │
     ├── components/
     │   ├── layout/
-    │   │   ├── DashboardLayout.jsx   # Layout principal con sidebar + topbar
-    │   │   ├── Sidebar.jsx           # Menú lateral (desktop colapsable + móvil overlay)
-    │   │   └── BottomNav.jsx         # Navegación inferior (actualmente NO usada — desactivada)
+    │   │   ├── DashboardLayout.jsx   # Layout principal: sidebar fijo desktop + hamburger móvil
+    │   │   ├── Sidebar.jsx           # Menú lateral (desktop colapsable + overlay móvil deslizante)
+    │   │   └── BottomNav.jsx         # Navegación inferior — creado pero NO activo en el layout
     │   └── shared/
     │       ├── AIAssistant.jsx       # Chat IA flotante (Groq/Llama)
     │       ├── AppTour.jsx           # Tour guiado de onboarding paso a paso
@@ -64,7 +77,7 @@ stratega-planner/
     │
     ├── firebase/
     │   ├── config.js             # Inicialización Firebase (app, db, storage, auth)
-    │   ├── auth.js               # Funciones de autenticación (email, Google, Facebook)
+    │   ├── auth.js               # ★ ACTUALIZADO — Google: signInWithPopup (web) / FirebaseAuthentication nativo (Android/iOS)
     │   ├── firestore.js          # [VACÍO — 1 línea] Sin exports útiles
     │   ├── storage.js            # [VACÍO — 1 línea] Sin exports útiles
     │   ├── notifications.js      # FCM: initFCM(), onForegroundMessage()
@@ -232,13 +245,12 @@ stratega-planner/
   - Perfil de empresa persistente (logo, nombre, email, teléfono, dirección, web)
   - Extracción de colores dominantes del logo (Canvas API) — genera gradientes inteligentes
   - 44 monedas disponibles
-  - 8 tipografías (mapeadas a 3 fuentes nativas de jsPDF)
+  - 8 tipografías (mapeadas a 3 fuentes nativas de jsPDF: helvetica, times, courier)
   - Estados de cotización: Borrador, Enviada, Aprobada, Rechazada
   - Estados de factura: Borrador, Emitida, Pagada, Anulada
   - CRUD completo de cotizaciones y facturas
   - Descarga PDF
   - Link público de presentación (`/quotes/ver/:id`)
-  - Exportación por secciones del documento
 - **Estado:** ✅ Completo
 
 ---
@@ -272,7 +284,7 @@ stratega-planner/
 #### Equipo — `/team`
 - **Archivo:** `Team.jsx` (29 líneas)
 - **Funcionalidades implementadas:** Ninguna
-- **Estado:** ❌ PLACEHOLDER — Muestra mensaje "Sección en mantenimiento / Próximamente disponible". La ruta es accesible y está en el menú de navegación.
+- **Estado:** ❌ PLACEHOLDER — Muestra "Sección en mantenimiento / Próximamente disponible". La ruta es accesible y está en el menú de navegación.
 
 ---
 
@@ -306,12 +318,12 @@ stratega-planner/
 ---
 
 #### Landing — `/`
-- **Archivo:** `Landing.jsx` (303 líneas) + `Landing.css`
+- **Archivo:** `Landing.jsx` + `Landing.css`
 - **Funcionalidades implementadas:**
-  - Hero con badge, CTA principal y secundario
+  - Hero con badge "7 días gratis", CTA principal y secundario
   - Sección de estadísticas (módulos, cloud, IA, días gratis)
-  - Sección de features con iconos Lucide reales
-  - Demo de chat IA
+  - Sección de features con iconos Lucide reales (CalendarDays, Image, FileText, Wallet, Users, Bell)
+  - Demo de chat IA con icono Bot
   - Tabla comparativa de planes con precios
   - CTA final
   - Selector de idioma (6 idiomas)
@@ -353,7 +365,8 @@ stratega-planner/
 | Proveedor | Estado |
 |-----------|--------|
 | Email / Contraseña | ✅ Activo |
-| Google (OAuth) | ✅ Activo |
+| Google (OAuth) — Web | ✅ `signInWithPopup` |
+| Google (OAuth) — Android/iOS | ✅ `@capacitor-firebase/authentication` → `signInWithCredential` |
 | Facebook (OAuth) | ✅ Activo en código — requiere app de Facebook configurada en Firebase Console |
 
 ### Firebase Cloud Functions
@@ -364,14 +377,79 @@ stratega-planner/
 
 ### Firebase Cloud Messaging (FCM)
 
-- Service Worker registrado en `public/firebase-messaging-sw.js`
+- **Web:** Service Worker registrado en `public/firebase-messaging-sw.js`
+- **Android/iOS:** Plugin `@capacitor/push-notifications` (nativo, reemplaza el SW en mobile)
 - Tokens FCM guardados en `users/{uid}.fcmToken`
 - Notificaciones en primer plano: `onForegroundMessage` (hook `useFCM`)
 - Notificaciones del navegador nativas: `useReminderNotifications` (comprueba cada minuto)
 
 ---
 
-## 4. INTEGRACIONES EXTERNAS
+## 4. CAPACITOR (MOBILE)
+
+### Estado
+
+| Plataforma | Estado |
+|-----------|--------|
+| Android | ✅ Configurado — carpeta `android/` generada y sincronizada |
+| iOS | ⏳ Pendiente — paquete instalado, requiere ejecutar `npx cap add ios` desde macOS |
+
+### Configuración (`capacitor.config.ts`)
+
+| Campo | Valor |
+|-------|-------|
+| `appId` | `com.stratega.planner` |
+| `appName` | `Stratega Planner` |
+| `webDir` | `dist` |
+| `android.backgroundColor` | `#080810` |
+| `android.captureInput` | `true` |
+
+### Plugins instalados
+
+| Plugin | Versión | Función |
+|--------|---------|---------|
+| `@capacitor/core` | ^8.2.0 | Core del framework |
+| `@capacitor/cli` | ^8.2.0 | CLI para sync/build |
+| `@capacitor/android` | ^8.2.0 | Plataforma Android |
+| `@capacitor/ios` | ^8.2.0 | Plataforma iOS |
+| `@capacitor/app` | ^8.0.1 | Botón "atrás" Android, estado de la app |
+| `@capacitor/keyboard` | ^8.0.1 | Redimensión de body con teclado virtual |
+| `@capacitor/push-notifications` | ^8.0.2 | Push nativo (FCM en Android/iOS) |
+| `@capacitor/splash-screen` | ^8.0.1 | Pantalla de carga al abrir la app |
+| `@capacitor/status-bar` | ^8.0.1 | Color y estilo de la barra de estado |
+| `@capacitor-firebase/authentication` | ^8.1.0 | Google Sign-In nativo Android/iOS |
+
+### Scripts npm para Capacitor
+
+| Script | Comando completo | Uso |
+|--------|-----------------|-----|
+| `npm run cap:build` | `npm run build && npx cap sync` | Compilar y sincronizar |
+| `npm run cap:android` | `npm run build && npx cap sync && npx cap open android` | Abrir en Android Studio |
+| `npm run cap:sync` | `npx cap sync` | Solo sincronizar assets |
+
+### Permisos Android configurados (`AndroidManifest.xml`)
+
+- `INTERNET`
+- `POST_NOTIFICATIONS` (Android 13+)
+- `RECEIVE_BOOT_COMPLETED`
+- `CAMERA`
+- `READ_MEDIA_IMAGES` / `READ_MEDIA_VIDEO` (Android 13+)
+- `READ_EXTERNAL_STORAGE` / `WRITE_EXTERNAL_STORAGE` (Android ≤12)
+- `VIBRATE`
+
+### Pasos pendientes antes de compilar en Android Studio
+
+1. Colocar `android/app/google-services.json` (descargado desde Firebase Console) ✅ Ya hecho
+2. Añadir SHA-1 del keystore en Firebase Console → Configuración → App Android
+3. Habilitar Google Sign-In en Firebase Console → Authentication → Proveedores
+4. Para rutas largas en Windows: ejecutar en PowerShell Admin:
+   ```powershell
+   New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
+   ```
+
+---
+
+## 5. INTEGRACIONES EXTERNAS
 
 ### Groq AI
 - **API:** `https://api.groq.com/openai/v1/chat/completions`
@@ -379,7 +457,7 @@ stratega-planner/
 - **Clave:** `VITE_GROQ_API_KEY` (expuesta en bundle del cliente)
 - **Uso:** Asistente IA flotante (`AIAssistant.jsx`)
 - **Parámetros:** `max_tokens: 1024`, `temperature: 0.7`
-- **Estado:** ✅ Funciona — ⚠️ La clave API es accesible desde el navegador (cualquier usuario puede inspeccionarla y usarla con cargo a la cuenta del propietario)
+- **Estado:** ✅ Funciona — ⚠️ La clave API es accesible desde el navegador
 
 ### Lemon Squeezy (pagos)
 - **Checkout URL:** `https://strategaplanner.lemonsqueezy.com/checkout/buy/{variantId}`
@@ -389,7 +467,7 @@ stratega-planner/
   - `VITE_LS_BASIC_ANNUAL`
   - `VITE_LS_PRO_MONTHLY`
   - `VITE_LS_PRO_ANNUAL`
-- **Estado:** ⚠️ Parcial — El botón de compra funciona. No hay webhook implementado para confirmar pagos ni para actualizar el plan activo del usuario en Firestore. No hay lógica de acceso por plan (cualquier usuario ve todas las funciones).
+- **Estado:** ⚠️ Parcial — El botón de compra funciona. No hay webhook implementado para confirmar pagos ni para actualizar el plan activo del usuario en Firestore.
 
 ### GitHub Pages (deployment)
 - **URL:** `https://virtualstudios6.github.io/stratega/`
@@ -398,7 +476,7 @@ stratega-planner/
 
 ---
 
-## 5. DEPENDENCIAS PRINCIPALES
+## 6. DEPENDENCIAS PRINCIPALES
 
 ### Producción
 
@@ -408,6 +486,10 @@ stratega-planner/
 | `react-dom` | ^19.2.0 | Renderizado DOM |
 | `react-router-dom` | ^7.13.1 | Enrutamiento SPA |
 | `firebase` | ^12.10.0 | Auth, Firestore, Storage, FCM |
+| `@capacitor/core` | ^8.2.0 | Capacitor — mobile nativo |
+| `@capacitor/android` | ^8.2.0 | Plataforma Android |
+| `@capacitor/ios` | ^8.2.0 | Plataforma iOS |
+| `@capacitor-firebase/authentication` | ^8.1.0 | Google Sign-In nativo |
 | `@fullcalendar/react` | ^6.1.20 | Calendario interactivo en Planner |
 | `@fullcalendar/daygrid` | ^6.1.20 | Vista mensual del calendario |
 | `@fullcalendar/timegrid` | ^6.1.20 | Vista semanal/diaria del calendario |
@@ -433,12 +515,13 @@ stratega-planner/
 | `@vitejs/plugin-react` | ^5.1.1 | Plugin React para Vite |
 | `tailwindcss` | ^3.4.19 | CSS utility-first |
 | `autoprefixer` | ^10.4.27 | PostCSS autoprefixer |
+| `typescript` | ^5.9.3 | Requerido por `capacitor.config.ts` |
 | `eslint` | ^9.39.1 | Linter |
 | `gh-pages` | ^6.3.0 | Deploy a GitHub Pages |
 
 ---
 
-## 6. VARIABLES DE ENTORNO REQUERIDAS
+## 7. VARIABLES DE ENTORNO REQUERIDAS
 
 Archivo: `.env` (no incluido en git — ⚠️ debe configurarse manualmente en cada entorno)
 
@@ -451,7 +534,7 @@ VITE_FIREBASE_STORAGE_BUCKET=
 VITE_FIREBASE_MESSAGING_SENDER_ID=
 VITE_FIREBASE_APP_ID=
 VITE_FIREBASE_MEASUREMENT_ID=       # Opcional (Analytics)
-VITE_FIREBASE_VAPID_KEY=            # Obligatorio para FCM push notifications
+VITE_FIREBASE_VAPID_KEY=            # Obligatorio para FCM push notifications (web)
 
 # IA
 VITE_GROQ_API_KEY=                  # API Key de Groq (expuesta en cliente)
@@ -467,7 +550,7 @@ VITE_LS_PRO_ANNUAL=
 
 ---
 
-## 7. TEMAS DISPONIBLES
+## 8. TEMAS DISPONIBLES
 
 | ID | Nombre | Color primario | Estado |
 |----|--------|---------------|--------|
@@ -475,9 +558,11 @@ VITE_LS_PRO_ANNUAL=
 | `claro` | Claro | `#c18c35` (dorado) | ✅ Activo (por defecto) |
 | `medianoche` | Medianoche | `#5B1FD9` (morado oscuro) | ✅ Activo |
 
+> Los temas eliminados anteriormente: `esmeralda`, `atardecer`, `ciberespacio`.
+
 ---
 
-## 8. INTERNACIONALIZACIÓN (i18n)
+## 9. INTERNACIONALIZACIÓN (i18n)
 
 | Idioma | Código | Archivo | Estado |
 |--------|--------|---------|--------|
@@ -488,11 +573,11 @@ VITE_LS_PRO_ANNUAL=
 | Alemán | `de` | `de.json` | ✅ Completo |
 | Italiano | `it` | `it.json` | ✅ Completo |
 
-> ⚠️ Varios componentes tienen strings en español hardcodeados que no usan `t()` y por tanto no se traducen al cambiar de idioma (ver sección 9).
+> ⚠️ Varios componentes tienen strings en español hardcodeados que no usan `t()` y por tanto no se traducen al cambiar de idioma (ver sección 10).
 
 ---
 
-## 9. FUNCIONALIDADES PENDIENTES O INCOMPLETAS
+## 10. FUNCIONALIDADES PENDIENTES O INCOMPLETAS
 
 ### 🔴 Crítico
 
@@ -511,25 +596,27 @@ VITE_LS_PRO_ANNUAL=
 | 6 | **Strings hardcodeados en español** que no se traducen: "Sección en mantenimiento", "Buscar", "Más", "Ocultar correo", "Ver", "Eliminar", "Subir foto", "Reiniciar chat", etc. | BottomNav, DashboardLayout, Team, Feed, Sidebar, AIAssistant, OnboardingWizard | Experiencia rota para usuarios en otros idiomas |
 | 7 | **`firestore.js` y `storage.js` están vacíos** (1 línea cada uno) | `firebase/firestore.js`, `firebase/storage.js` | Código muerto; posible confusión si alguien busca la lógica de Firestore aquí |
 | 8 | **Precios del plan hardcodeados** en `Subscription.jsx` ($6.99, $11.99, $67, $115) | `Subscription.jsx` | Actualizar precios requiere cambiar código y redesplegar |
-| 9 | **Notificaciones solo locales** — La Cloud Function está implementada pero requiere deploy manual a Firebase. Si no está desplegada, las notificaciones push solo funcionan cuando el navegador está abierto. | `functions/index.js` | Feature de recordatorios incompleta en producción si la función no está activa |
+| 9 | **Notificaciones push en mobile requieren configuración adicional** — `@capacitor/push-notifications` está instalado pero la app no llama a `PushNotifications.requestPermissions()` ni registra el token FCM de forma nativa. En Android, las notificaciones push no funcionarán hasta implementar esto. | `useFCM.js` | Feature de recordatorios incompleta en mobile |
+| 10 | **Google Sign-In Android requiere SHA-1** — El login con Google en Android fallará hasta que se añada la huella digital SHA-1 del keystore en Firebase Console. | Firebase Console → Configuración → App Android | Login de Google no funciona en APK sin este paso |
 
 ### 🟡 Mejoras de calidad
 
 | # | Problema | Ubicación |
 |---|----------|-----------|
-| 10 | Sin lazy loading de páginas — todas se cargan en el bundle inicial | `App.jsx` |
-| 11 | Sin error boundaries — un crash en cualquier componente desmonta toda la app | Global |
-| 12 | Sin paginación en listas de cotizaciones, transacciones o recordatorios — escalan mal | Quotes, Accounting, Reminders |
-| 13 | Colores duplicados definidos localmente en múltiples páginas (`PIE_COLORS`, `COLORES`) en lugar de una constante compartida | Accounting, Folders |
-| 14 | Búsqueda global (Ctrl+K) no busca en transacciones contables ni en archivos de carpetas | `GlobalSearch.jsx` |
-| 15 | `react.svg` en `/src/assets/` es el asset por defecto de Vite — no tiene uso en el proyecto | `assets/react.svg` |
-| 16 | `BottomNav.jsx` está creado pero desactivado — genera código en el bundle sin usarse | `BottomNav.jsx` |
-| 17 | Fechas clave solo incluyen años 2025-2026; habrá que actualizar manualmente cada año | `fechasClave.js` |
-| 18 | La Cloud Function hardcodea URLs de producción (`stratega-planner.web.app`) — no funciona en staging/dev | `functions/index.js:70-71` |
+| 11 | Sin lazy loading de páginas — todas se cargan en el bundle inicial (2.4 MB sin gzip) | `App.jsx` |
+| 12 | Sin error boundaries — un crash en cualquier componente desmonta toda la app | Global |
+| 13 | Sin paginación en listas de cotizaciones, transacciones o recordatorios — escalan mal | Quotes, Accounting, Reminders |
+| 14 | Colores duplicados definidos localmente en múltiples páginas (`PIE_COLORS`, `COLORES`) en lugar de una constante compartida | Accounting, Folders |
+| 15 | Búsqueda global (Ctrl+K) no busca en transacciones contables ni en archivos de carpetas | `GlobalSearch.jsx` |
+| 16 | `react.svg` en `/src/assets/` es el asset por defecto de Vite — no tiene uso en el proyecto | `assets/react.svg` |
+| 17 | `BottomNav.jsx` existe en el código pero está desactivado en `DashboardLayout.jsx` — genera código en el bundle sin usarse | `BottomNav.jsx` |
+| 18 | Fechas clave solo incluyen años 2025-2026; habrá que actualizar manualmente cada año | `fechasClave.js` |
+| 19 | La Cloud Function hardcodea URLs de producción (`stratega-planner.web.app`) — no funciona en staging/dev | `functions/index.js:70-71` |
+| 20 | iOS no añadida aún como plataforma Capacitor — requiere ejecutar `npx cap add ios` desde macOS con Xcode instalado | — |
 
 ---
 
-## 10. RESUMEN EJECUTIVO
+## 11. RESUMEN EJECUTIVO
 
 | Categoría | Módulos | Completos | Parciales | No implementados |
 |-----------|---------|-----------|-----------|-----------------|
@@ -538,7 +625,10 @@ VITE_LS_PRO_ANNUAL=
 | Integraciones | 3 | 1 (Groq) | 2 (Lemon Squeezy, FCM) | 0 |
 | i18n | 6 idiomas | 6 | 0 | 0 |
 | Temas | 3 | 3 | 0 | 0 |
+| Mobile (Capacitor) | 2 plataformas | 1 (Android) | 0 | 1 (iOS — pendiente macOS) |
 
 **Total líneas de código (src/):** ~10,400 líneas
 **Total archivos fuente:** 54
-**Tamaño estimado del bundle (sin node_modules):** Grande — FullCalendar, jsPDF, Recharts, dnd-kit y Firebase son dependencias pesadas sin code-splitting.
+**Bundle de producción:** ~2.4 MB JS (sin gzip) — sin code-splitting (FullCalendar, jsPDF, Recharts, dnd-kit, Firebase)
+**App ID Android:** `com.stratega.planner`
+**Versión Capacitor:** 8.2.0
