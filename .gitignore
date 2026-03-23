@@ -26,15 +26,22 @@ build/
 .vscode/*
 !.vscode/extensions.json
 .idea/
-.DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
 
-# Mac / Windows
+# macOS metadata (no deben estar en el repo)
+.DS_Store
+**/.DS_Store
+._*
+**/._*
+
+# Windows
 Thumbs.db
+ehthumbs.db
+Desktop.ini
 
 # Capacitor native platforms
 # (Estos se regeneran con `npx cap add android` / `npx cap add ios`)

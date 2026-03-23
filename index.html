@@ -12,6 +12,23 @@
     <title>Stratega Planner</title>
   </head>
   <body>
+    <!-- Aplica el color de fondo del tema guardado antes de que React monte.
+         Evita el flash negro/blanco en iOS y Android al arrancar la app. -->
+    <script>
+      (function () {
+        var bg = {
+          oscuro:      "#080810",
+          medianoche:  "#01040F",
+          claro:       "#F2F2F7",
+          rosa:        "#FFF0F5",
+          azul:        "#EEF4FF",
+          cafe:        "#FAF5EF",
+          menta:       "#F0FBF5",
+        };
+        var theme = localStorage.getItem("stratega-theme") || "claro";
+        document.body.style.backgroundColor = bg[theme] || bg.claro;
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

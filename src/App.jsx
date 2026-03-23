@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import { Routes, Route } from "react-router-dom"
 import Landing from "./pages/Landing/Landing"
 import Login from "./pages/Auth/Login"
@@ -21,6 +22,14 @@ import { useReminderNotifications } from "./hooks/useReminderNotifications"
 function App() {
   useFCM()
   useReminderNotifications()
+
+  // Oculta el splash screen nativo solo cuando React ya terminó de renderizar.
+  // launchAutoHide está en false en capacitor.config.ts para evitar pantalla negra en iOS.
+  useEffect(() => {
+    import("@capacitor/splash-screen")
+      .then(({ SplashScreen }) => SplashScreen.hide({ fadeOutDuration: 300 }))
+      .catch(() => { /* entorno web — se ignora */ })
+  }, [])
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
