@@ -11,11 +11,20 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // Timeout de seguridad: si onAuthStateChanged no dispara en 8 s
+    // (p.ej. fallo de init del plugin nativo en iOS), desbloqueamos el render.
+    const timeout = setTimeout(() => setLoading(false), 8000)
+
     const unsub = onAuthStateChanged(auth, (currentUser) => {
+      clearTimeout(timeout)
       setUser(currentUser)
       setLoading(false)
     })
-    return unsub
+
+    return () => {
+      clearTimeout(timeout)
+      unsub()
+    }
   }, [])
 
   const refreshUser = async () => {

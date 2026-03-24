@@ -1,6 +1,8 @@
 import { useEffect } from "react"
 import { Routes, Route } from "react-router-dom"
 import Landing from "./pages/Landing/Landing"
+import Terms from "./pages/Legal/Terms"
+import Privacy from "./pages/Legal/Privacy"
 import Login from "./pages/Auth/Login"
 import Register from "./pages/Auth/Register"
 import ForgotPassword from "./pages/Auth/ForgotPassword"
@@ -33,6 +35,8 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
+      <Route path="/terms" element={<Terms />} />
+      <Route path="/privacy" element={<Privacy />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />

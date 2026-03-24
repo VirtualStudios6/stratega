@@ -16,7 +16,9 @@
       "Bash(npx cap:*)",
       "Read(//c/Users/VirtualStudios/AppData/Local/Temp/claude/c--Users-VirtualStudios-Desktop-Stratega-Planner/467492c4-d905-4341-985e-2c3370d7f45d/tasks/**)",
       "Bash(find . -name \"._*\" ! -path \"./.git/*\" ! -path \"./node_modules/*\" -delete)",
-      "Bash(find . -name \".DS_Store\" ! -path \"./.git/*\" ! -path \"./node_modules/*\" -delete)"
+      "Bash(find . -name \".DS_Store\" ! -path \"./.git/*\" ! -path \"./node_modules/*\" -delete)",
+      "Bash(find c:/Users/VirtualStudios/Desktop/Stratega-Planner/src -name *.ts -o -name *.tsx)",
+      "Bash(find c:/Users/VirtualStudios/Desktop/Stratega-Planner/android -name *.png)"
     ]
   }
 }

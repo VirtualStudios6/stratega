@@ -53,7 +53,10 @@
     "feat1": "Idées de contenu personnalisées pour votre niche",
     "feat2": "Analyse de votre feed Instagram avec suggestions",
     "feat3": "Résumé quotidien intelligent de votre productivité",
-    "feat4": "Suggestions de tarifs pour vos services"
+    "feat4": "Suggestions de tarifs pour vos services",
+    "chat_msg1": "Bonjour ! J'ai analysé votre feed. 3 publications ont peu d'engagement. Alternez couleurs chaudes et froides ✨",
+    "chat_user1": "Combien facturer pour un forfait réseaux sociaux ?",
+    "chat_msg2": "Basique 300–500€/mois (3 réseaux, 12 posts), Pro 600–900€/mois (5 réseaux, 20 posts + stories) 💡"
   },
 
   "pricing": {

@@ -53,7 +53,10 @@
     "feat1": "Personalized content ideas for your niche",
     "feat2": "Instagram feed analysis with suggestions",
     "feat3": "Smart daily summary of your productivity",
-    "feat4": "Pricing suggestions for your services"
+    "feat4": "Pricing suggestions for your services",
+    "chat_msg1": "Hi! I analyzed your feed. 3 posts have low engagement. Try alternating warm and cool colors ✨",
+    "chat_user1": "How much should I charge for a social media package?",
+    "chat_msg2": "Basic $300–500/mo (3 networks, 12 posts), Pro $600–900/mo (5 networks, 20 posts + stories) 💡"
   },
 
   "pricing": {

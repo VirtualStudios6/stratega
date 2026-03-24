@@ -53,7 +53,10 @@
     "feat1": "Personalisierte Inhaltsideen für deine Nische",
     "feat2": "Instagram-Feed-Analyse mit Vorschlägen",
     "feat3": "Intelligente tägliche Zusammenfassung deiner Produktivität",
-    "feat4": "Preisvorschläge für deine Dienstleistungen"
+    "feat4": "Preisvorschläge für deine Dienstleistungen",
+    "chat_msg1": "Hallo! Ich habe deinen Feed analysiert. 3 Posts haben geringes Engagement. Wechsle zwischen warmen und kühlen Farben ✨",
+    "chat_user1": "Wie viel sollte ich für ein Social-Media-Paket berechnen?",
+    "chat_msg2": "Basic 300–500€/Monat (3 Netzwerke, 12 Posts), Pro 600–900€/Monat (5 Netzwerke, 20 Posts + Stories) 💡"
   },
 
   "pricing": {

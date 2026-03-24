@@ -70,10 +70,12 @@ const config: CapacitorConfig = {
     App: {},
 
     // Google Sign-In nativo para Android e iOS
-    // serverClientId = Web Client ID (tipo 3) del google-services.json
+    // clientId = iOS CLIENT_ID del GoogleService-Info.plist
     FirebaseAuthentication: {
       skipNativeAuth: false,
       providers: ["google.com"],
+      // Necesario para que el plugin inicialice correctamente en iOS
+      googleClientId: "1022294410705-oo4il4e2c71l7spao9p1dhltleu1d6gt.apps.googleusercontent.com",
     },
   },
 }

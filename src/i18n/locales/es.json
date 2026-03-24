@@ -53,7 +53,10 @@
     "feat1": "Ideas de contenido personalizadas para tu nicho",
     "feat2": "Análisis de tu feed de Instagram con sugerencias",
     "feat3": "Resumen diario inteligente de tu productividad",
-    "feat4": "Sugerencias de precios para tus servicios"
+    "feat4": "Sugerencias de precios para tus servicios",
+    "chat_msg1": "¡Hola! Analicé tu feed. Tienes 3 posts con bajo engagement. Te recomiendo alternar colores cálidos y fríos ✨",
+    "chat_user1": "¿Cuánto debería cobrar por un paquete de social media?",
+    "chat_msg2": "Básico $300–500/mes (3 redes, 12 posts), Pro $600–900/mes (5 redes, 20 posts + stories) 💡"
   },
 
   "pricing": {
