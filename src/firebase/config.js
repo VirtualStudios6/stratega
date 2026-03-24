@@ -16,6 +16,16 @@ const firebaseConfig = {
 export const app = initializeApp(firebaseConfig)
 
 export const auth = getAuth(app)
-// Offline persistence: la app funciona sin conexión y sincroniza al reconectar
-export const db = initializeFirestore(app, { localCache: persistentLocalCache() })
+
+// Offline persistence: la app funciona sin conexión y sincroniza al reconectar.
+// Fallback a configuración básica si persistentLocalCache falla en el WebView
+// (puede ocurrir en algunos dispositivos Android con IndexedDB restringido).
+let db
+try {
+  db = initializeFirestore(app, { localCache: persistentLocalCache() })
+} catch {
+  db = initializeFirestore(app, {})
+}
+export { db }
+
 export const storage = getStorage(app)

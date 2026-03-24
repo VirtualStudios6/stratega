@@ -25,7 +25,10 @@ const config: CapacitorConfig = {
   // ── iOS ──────────────────────────────────────────────────────────────────
   ios: {
     backgroundColor: "#080810",
-    contentInset: "always",
+    // "never" para que iOS no añada su propio inset al scroll view;
+    // el safe area lo gestionamos nosotros con env(safe-area-inset-top) en CSS.
+    // "always" causaba doble padding en iPhone X/14 Pro con nuestra regla #root.
+    contentInset: "never",
     // Desactiva rebote al hacer scroll en la raíz (app-like feel)
     scrollEnabled: false,
     limitsNavigationsToAppBoundDomains: false,
@@ -39,7 +42,12 @@ const config: CapacitorConfig = {
     StatusBar: {
       style: "Dark",          // texto blanco sobre barra oscura
       backgroundColor: "#080810",
-      overlaysWebView: false,
+      // true = WebView se extiende edge-to-edge detrás del status bar.
+      // Con false se suponía que el WebView empezaba debajo del status bar,
+      // pero Android 15 (API 35) fuerza edge-to-edge ignorando esta flag.
+      // Al optar explícitamente por true, env(safe-area-inset-top) en CSS
+      // recibe el valor correcto (altura del status bar) en todos los dispositivos.
+      overlaysWebView: true,
     },
 
     // Pantalla de splash

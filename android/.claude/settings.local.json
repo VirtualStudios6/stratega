@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls /c/Users/VirtualStudios/Desktop/Stratega-Planner/.env*)",
+      "Bash(find /c/Users/VirtualStudios/Desktop/Stratega-Planner/android -name capacitor.settings.gradle -o -name *.capacitor.gradle)",
+      "Bash(grep:*)"
+    ]
+  }
+}

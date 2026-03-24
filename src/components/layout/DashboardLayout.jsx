@@ -66,6 +66,10 @@ const DashboardLayout = ({ children }) => {
     <div className="flex min-h-screen bg-bg-main">
 
       {/* ── Sidebar desktop fijo ── */}
+      {/* top-0 h-screen mantienen el sidebar pegado al borde superior y con
+          altura completa. El padding-top interno compensa el safe area para
+          que el contenido del sidebar no quede detrás del status bar cuando
+          overlaysWebView: true está activo (incluido Android 15 edge-to-edge). */}
       <aside
         className={`
           hidden lg:flex flex-col fixed left-0 top-0 h-screen
@@ -73,6 +77,7 @@ const DashboardLayout = ({ children }) => {
           transition-[width] duration-300 ease-in-out
           ${sidebarWidth}
         `}
+        style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
       >
         <Sidebar
           open={true}
@@ -83,10 +88,14 @@ const DashboardLayout = ({ children }) => {
       </aside>
 
       {/* Toggle pill desktop */}
+      {/* top calculado: safe-area-inset-top + 14px para quedar siempre
+          14 px por debajo del borde inferior del status bar, sea cual sea
+          su altura (notch de iPhone, pastilla del Dynamic Island, Android). */}
       <button
         onClick={toggleDesktop}
+        style={{ top: 'calc(env(safe-area-inset-top, 0px) + 14px)' }}
         className={`
-          hidden lg:flex fixed top-[14px] z-40
+          hidden lg:flex fixed z-40
           w-8 h-8 bg-bg-card border border-border rounded-lg
           items-center justify-center shadow-sm
           text-text-muted hover:text-primary-light hover:border-primary/40

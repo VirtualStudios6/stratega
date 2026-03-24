@@ -1,4 +1,3 @@
-import { useEffect } from "react"
 import { Routes, Route, Navigate } from "react-router-dom"
 import { Capacitor } from "@capacitor/core"
 import { useAuth } from "./context/AuthContext"
@@ -46,14 +45,6 @@ function GuestRoute({ children }) {
 function App() {
   useFCM()
   useReminderNotifications()
-
-  // Oculta el splash screen nativo solo cuando React ya terminó de renderizar.
-  // launchAutoHide está en false en capacitor.config.ts para evitar pantalla negra en iOS.
-  useEffect(() => {
-    import("@capacitor/splash-screen")
-      .then(({ SplashScreen }) => SplashScreen.hide({ fadeOutDuration: 300 }))
-      .catch(() => { /* entorno web — se ignora */ })
-  }, [])
 
   return (
     <Routes>
