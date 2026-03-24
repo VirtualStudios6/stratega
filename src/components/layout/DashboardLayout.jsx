@@ -111,7 +111,12 @@ const DashboardLayout = ({ children }) => {
       >
 
         {/* ── Topbar MÓVIL ── */}
-        <header className="lg:hidden sticky top-0 z-30 flex items-center justify-between px-4 h-14 bg-bg-card/96 backdrop-blur-xl border-b border-border">
+        {/* sticky con top: env(safe-area-inset-top) para que el header quede
+            justo debajo del status bar nativo (iOS/Android) y no se deslice bajo él al hacer scroll */}
+        <header
+          className="lg:hidden sticky z-30 flex items-center justify-between px-4 h-14 bg-bg-card/96 backdrop-blur-xl border-b border-border"
+          style={{ top: 'env(safe-area-inset-top)' }}
+        >
           {/* Hamburguesa + logo */}
           <div className="flex items-center gap-2.5">
             <button
@@ -143,7 +148,10 @@ const DashboardLayout = ({ children }) => {
         </header>
 
         {/* ── Topbar DESKTOP ── */}
-        <header className="hidden lg:flex items-center justify-between px-6 h-[52px] bg-bg-card/80 backdrop-blur-md border-b border-border sticky top-0 z-20">
+        <header
+          className="hidden lg:flex items-center justify-between px-6 h-[52px] bg-bg-card/80 backdrop-blur-md border-b border-border sticky z-20"
+          style={{ top: 'env(safe-area-inset-top)' }}
+        >
           <span className="text-text-muted text-sm capitalize select-none">
             {new Date().toLocaleDateString(
               i18n.language === "es" ? "es-ES" : "en-US",

@@ -29,6 +29,18 @@
   --primary-subtle:       rgba(193, 140, 53, 0.09);
 }
 
+/* ── Safe area — contenedor raíz ──
+   env(safe-area-inset-top) vale 0 en web de escritorio y browsers sin notch,
+   por lo que no afecta la experiencia web normal.
+   En iOS/Android nativo desplaza el contenido por debajo del status bar.
+   El background-color aquí asegura que la zona del status bar muestre el
+   color del tema y no quede transparente o en negro. ── */
+#root {
+  padding-top: env(safe-area-inset-top);
+  background-color: var(--bg-main);
+  min-height: 100dvh;
+}
+
 /* ── Reset ── */
 *, *::before, *::after {
   margin: 0;
