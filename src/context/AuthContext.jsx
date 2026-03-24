@@ -7,12 +7,14 @@ const AuthContext = createContext()
 export const useAuth = () => useContext(AuthContext)
 
 // Oculta el splash nativo tan pronto como el estado de auth es conocido.
-// Se llama aquí (en lugar de en App.jsx) para garantizar que se ejecute
-// incluso si hay errores posteriores en el árbol de componentes.
-const hideSplash = () => {
+// Reintenta hasta 3 veces con delay porque en algunos dispositivos Android
+// el plugin no está listo en el primer intento.
+const hideSplash = (attempt = 0) => {
   import("@capacitor/splash-screen")
     .then(({ SplashScreen }) => SplashScreen.hide({ fadeOutDuration: 300 }))
-    .catch(() => {})
+    .catch(() => {
+      if (attempt < 3) setTimeout(() => hideSplash(attempt + 1), 500)
+    })
 }
 
 export const AuthProvider = ({ children }) => {

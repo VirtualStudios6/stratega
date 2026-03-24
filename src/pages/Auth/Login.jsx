@@ -65,14 +65,12 @@ const Login = () => {
           {/* Logo — centrado, selector de tema en absoluto top-right */}
           <div className="relative text-center mb-8">
             <img
-              src="/logos/logo2d-512x512-con-fondo.png"
+              src="/logos/logo2d-512x512-sin-fondo.png"
               alt="Stratega Planner"
               className="w-32 h-32 object-contain mx-auto mb-4"
               onError={(e) => {
                 const s = e.target.src
-                if (s.includes('.png')) e.target.src = '/logos/logo2d-512x512-con-fondo.jpg'
-                else if (s.includes('.jpg')) e.target.src = '/logos/logo2d-512x512-con-fondo.webp'
-                else if (s.includes('.webp')) e.target.src = '/logos/logo.png'
+                if (s.includes('.png')) e.target.src = '/logos/logo.png'
               }}
             />
             <h1 className="text-2xl font-bold text-text-main tracking-tight">Stratega Planner</h1>

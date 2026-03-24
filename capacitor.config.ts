@@ -83,7 +83,7 @@ const config: CapacitorConfig = {
       skipNativeAuth: false,
       providers: ["google.com"],
       // Necesario para que el plugin inicialice correctamente en iOS
-      googleClientId: "1022294410705-oo4il4e2c71l7spao9p1dhltleu1d6gt.apps.googleusercontent.com",
+      googleClientId: "1022294410705-mcgava6mdjdah9hd9gpj6ovt6aia55uq.apps.googleusercontent.com",
     },
   },
 }

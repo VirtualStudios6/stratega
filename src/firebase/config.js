@@ -2,6 +2,7 @@ import { initializeApp } from "firebase/app"
 import { getAuth } from "firebase/auth"
 import { initializeFirestore, persistentLocalCache } from "firebase/firestore"
 import { getStorage } from "firebase/storage"
+import { Capacitor } from "@capacitor/core"
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -17,12 +18,12 @@ export const app = initializeApp(firebaseConfig)
 
 export const auth = getAuth(app)
 
-// Offline persistence: la app funciona sin conexión y sincroniza al reconectar.
-// Fallback a configuración básica si persistentLocalCache falla en el WebView
-// (puede ocurrir en algunos dispositivos Android con IndexedDB restringido).
+// Offline persistence: activa solo en web. En Android/iOS nativo el
+// persistentLocalCache bloquea el hilo principal del WebView al arrancar.
 let db
 try {
-  db = initializeFirestore(app, { localCache: persistentLocalCache() })
+  const useCache = !Capacitor.isNativePlatform()
+  db = initializeFirestore(app, useCache ? { localCache: persistentLocalCache() } : {})
 } catch {
   db = initializeFirestore(app, {})
 }
