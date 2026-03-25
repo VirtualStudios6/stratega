@@ -30,7 +30,13 @@ export const loginWithEmail = (email, password) =>
 export const resetPassword = (email) =>
   sendPasswordResetEmail(auth, email)
 
-export const logout = () => signOut(auth)
+export const logout = async () => {
+  if (isNative()) {
+    const { FirebaseAuthentication } = await import("@capacitor-firebase/authentication")
+    await FirebaseAuthentication.signOut()
+  }
+  return signOut(auth)
+}
 
 // ── Google Sign-In ────────────────────────────────────────────────────────────
 //
@@ -51,24 +57,39 @@ export const loginWithGoogle = async () => {
   // Abre el selector de cuentas de Google nativo
   const result = await FirebaseAuthentication.signInWithGoogle()
 
-  // Extrae el idToken que devuelve el plugin
+  // Extrae el idToken (y opcionalmente el accessToken) que devuelve el plugin
   const idToken = result.credential?.idToken
+  const accessToken = result.credential?.accessToken
   if (!idToken) throw new Error("Google Sign-In: no se recibió idToken")
 
-  // Autentica en Firebase usando ese token (crea o reanuda la sesión)
-  const credential = GoogleAuthProvider.credential(idToken)
+  // Autentica en Firebase web usando ese token (sincroniza el estado con el SDK nativo)
+  const credential = GoogleAuthProvider.credential(idToken, accessToken)
   return signInWithCredential(auth, credential)
 }
 
 // ── Facebook Sign-In ──────────────────────────────────────────────────────────
-// signInWithPopup no funciona correctamente en WebView nativo de Capacitor.
-// En native lanzamos un error claro para que el UI pueda informar al usuario.
+//
+//  • Web        → Firebase signInWithPopup (flujo original)
+//  • Android/iOS → @capacitor-firebase/authentication abre el flujo nativo de
+//                  Facebook y devuelve un accessToken que Firebase valida
+//
 
-export const loginWithFacebook = () => {
-  if (isNative()) {
-    return Promise.reject(
-      new Error("Facebook login no está disponible en la app nativa por el momento.")
-    )
+export const loginWithFacebook = async () => {
+  if (!isNative()) {
+    return signInWithPopup(auth, facebookProvider)
   }
-  return signInWithPopup(auth, facebookProvider)
+
+  // ── ANDROID / iOS ─────────────────────────────────────────────────────────
+  const { FirebaseAuthentication } = await import("@capacitor-firebase/authentication")
+
+  // Abre el flujo nativo de Facebook
+  const result = await FirebaseAuthentication.signInWithFacebook()
+
+  // Facebook devuelve un accessToken (no idToken)
+  const accessToken = result.credential?.accessToken
+  if (!accessToken) throw new Error("Facebook Sign-In: no se recibió accessToken")
+
+  // Autentica en Firebase web usando ese token
+  const credential = FacebookAuthProvider.credential(accessToken)
+  return signInWithCredential(auth, credential)
 }
