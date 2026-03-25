@@ -18,7 +18,8 @@
       "Bash(find . -name \"._*\" ! -path \"./.git/*\" ! -path \"./node_modules/*\" -delete)",
       "Bash(find . -name \".DS_Store\" ! -path \"./.git/*\" ! -path \"./node_modules/*\" -delete)",
       "Bash(find c:/Users/VirtualStudios/Desktop/Stratega-Planner/src -name *.ts -o -name *.tsx)",
-      "Bash(find c:/Users/VirtualStudios/Desktop/Stratega-Planner/android -name *.png)"
+      "Bash(find c:/Users/VirtualStudios/Desktop/Stratega-Planner/android -name *.png)",
+      "Bash(find c:UsersVirtualStudiosDesktopStratega-Plannersrc -type f \\\\\\(-name *.jsx -o -name *.js \\\\\\))"
     ]
   }
 }
