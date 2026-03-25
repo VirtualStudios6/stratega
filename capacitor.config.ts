@@ -52,8 +52,8 @@ const config: CapacitorConfig = {
 
     // Pantalla de splash
     SplashScreen: {
-      launchShowDuration: 0,             // no auto-ocultar por tiempo
-      launchAutoHide: false,             // lo ocultamos manualmente desde App.jsx
+      launchShowDuration: 2000,          // auto-ocultar tras 2 s
+      launchAutoHide: true,              // ocultar automáticamente
       backgroundColor: "#080810",
       androidScaleType: "CENTER_CROP",
       showSpinner: false,

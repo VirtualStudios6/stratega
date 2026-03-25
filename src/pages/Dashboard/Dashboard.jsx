@@ -11,8 +11,8 @@ import {
 import SmartNotifications from "../../components/shared/SmartNotifications"
 import {
   Bell, Wallet, CalendarDays, XCircle,
-  CheckCircle2, FileText, Crown, TrendingUp, TrendingDown,
-  DollarSign, RefreshCw, Folder, Building2
+  CheckCircle2, FileText, Crown,
+  RefreshCw, Folder, Building2
 } from "lucide-react"
 
 const fmt = (n, decimals = 2) =>
@@ -275,14 +275,13 @@ const Dashboard = () => {
 
   return (
     <DashboardLayout>
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto space-y-4">
 
         {/* ── Header ────────────────────────────────────────────────── */}
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+        <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs text-text-muted capitalize mb-0.5">{todayLabel}</p>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl sm:text-3xl font-bold text-text-main">
+              <h1 className="text-xl sm:text-2xl font-bold text-text-main">
                 {greeting}, {firstName} 👋
               </h1>
               {userPlan !== "free" && (
@@ -291,16 +290,16 @@ const Dashboard = () => {
                 </span>
               )}
             </div>
-            <p className="text-text-muted text-sm mt-1">Aquí tienes el resumen de tu actividad</p>
+            <p className="text-text-muted text-xs mt-0.5 capitalize">{todayLabel}</p>
           </div>
 
           <button
             onClick={fetchAllData}
             disabled={loading}
-            className="self-start flex items-center gap-2 px-4 py-2 text-sm bg-bg-input border border-border rounded-xl text-text-muted hover:text-text-main hover:border-primary/30 transition disabled:opacity-50 flex-shrink-0"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-bg-input border border-border rounded-xl text-text-muted hover:text-text-main hover:border-primary/30 transition disabled:opacity-50 flex-shrink-0"
           >
-            <RefreshCw size={13} className={loading ? "animate-spin" : ""} />
-            Actualizar
+            <RefreshCw size={12} className={loading ? "animate-spin" : ""} />
+            <span className="hidden sm:inline">Actualizar</span>
           </button>
         </div>
 
@@ -626,61 +625,7 @@ const Dashboard = () => {
 
         </div>
 
-        {/* ── Financial summary ─────────────────────────────────────── */}
-        <div className="bg-bg-card border border-border rounded-2xl p-5">
-          <SectionHeader
-            title="Balance mensual"
-            icon="💰"
-            onViewAll={() => navigate("/accounting")}
-            viewAllLabel="Ver contabilidad"
-          />
-          {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {[1,2,3].map(i => (
-                <div key={i} className="rounded-xl p-4 bg-bg-input border border-border space-y-2">
-                  <Skel w="w-2/3" h="h-3" /><Skel w="w-full" h="h-6" />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="bg-green-500/8 border border-green-500/15 rounded-xl p-4 flex items-center gap-4">
-                <div className="w-9 h-9 rounded-xl bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                  <TrendingUp size={16} className="text-green-400" />
-                </div>
-                <div>
-                  <p className="text-green-400 text-xs font-medium mb-0.5">Ingresos</p>
-                  <p className="text-green-400 font-bold text-xl">+${fmt(balance.ingresos)}</p>
-                </div>
-              </div>
-              <div className="bg-red-500/8 border border-red-500/15 rounded-xl p-4 flex items-center gap-4">
-                <div className="w-9 h-9 rounded-xl bg-red-500/20 flex items-center justify-center flex-shrink-0">
-                  <TrendingDown size={16} className="text-red-400" />
-                </div>
-                <div>
-                  <p className="text-red-400 text-xs font-medium mb-0.5">Gastos</p>
-                  <p className="text-red-400 font-bold text-xl">-${fmt(balance.gastos)}</p>
-                </div>
-              </div>
-              <div className="bg-primary/8 border border-primary/15 rounded-xl p-4 flex items-center gap-4">
-                <div className="w-9 h-9 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
-                  <DollarSign size={16} className="text-primary-light" />
-                </div>
-                <div>
-                  <p className="text-primary-light text-xs font-medium mb-0.5">Balance neto</p>
-                  <div className="flex items-center gap-2">
-                    <p className={`font-bold text-xl ${balanceTotal >= 0 ? "text-primary-light" : "text-red-400"}`}>
-                      ${fmt(balanceTotal)}
-                    </p>
-                    <SparkLine data={sparklineData} positive={balanceTotal >= 0} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* ── Plan upgrade ──────────────────────────────────────────── */}
+{/* ── Plan upgrade ──────────────────────────────────────────── */}
         {userPlan === "free" && (
           <div className="relative bg-bg-card border border-primary/20 rounded-2xl p-5 overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-primary/8 via-transparent to-transparent pointer-events-none rounded-2xl" />

@@ -37,6 +37,8 @@
    color del tema y no quede transparente o en negro. ── */
 #root {
   padding-top: env(safe-area-inset-top);
+  /* Evita que el home indicator (iOS) o la barra de gestos (Android) tape el contenido */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   background-color: var(--bg-main);
   min-height: 100dvh;
 }

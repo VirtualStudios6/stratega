@@ -3,7 +3,11 @@
     "allow": [
       "Bash(ls /c/Users/VirtualStudios/Desktop/Stratega-Planner/.env*)",
       "Bash(find /c/Users/VirtualStudios/Desktop/Stratega-Planner/android -name capacitor.settings.gradle -o -name *.capacitor.gradle)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(mkdir -p /c/Users/VirtualStudios/Desktop/Stratega-Planner/assets)",
+      "Bash(cp /c/Users/VirtualStudios/Desktop/Stratega-Planner/public/logos/logo2d-512x512-con-fondo.png /c/Users/VirtualStudios/Desktop/Stratega-Planner/assets/icon-only.png)",
+      "Bash(cp /c/Users/VirtualStudios/Desktop/Stratega-Planner/public/logos/logo2d-512x512-con-fondo.png /c/Users/VirtualStudios/Desktop/Stratega-Planner/assets/splash.png)",
+      "Bash(npx capacitor-assets:*)"
     ]
   }
 }

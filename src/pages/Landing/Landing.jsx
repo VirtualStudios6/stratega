@@ -133,6 +133,30 @@ const Landing = () => {
         </div>
         <p className="lp-hero-trust">{t("hero.trust")}</p>
 
+        <div className="lp-download-badges">
+          <a href="#" className="lp-download-btn" aria-label="Descargar en App Store">
+            <svg width="22" height="22" viewBox="0 0 814 1000" fill="currentColor">
+              <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76.5 0-103.7 40.8-165.9 40.8s-105-57.8-155.5-127.4C46 790.7 0 663 0 541.8c0-207.6 136.4-317 270.5-317 99.5 0 182.4 65.4 238.4 65.4 54.3 0 140.4-69 248.3-69 37.1 0 166.3 3.2 247.5 137.9zm-136.9-130.2c-10.9-52.5-31.6-107-68.1-150.7-51-58.7-120.9-97.5-185.3-97.5-4.5 0-9.1.4-13.6.9 0 0 .6 50.4 26.1 100.3 18.5 36.2 49.2 75.8 91.7 103.7 38.9 25.9 90.8 42.3 149.2 43.3z"/>
+            </svg>
+            <div>
+              <span className="lp-download-sub">Disponible en</span>
+              <span className="lp-download-store">App Store</span>
+            </div>
+          </a>
+          <a href="#" className="lp-download-btn" aria-label="Descargar en Google Play">
+            <svg width="22" height="22" viewBox="0 0 48 48" fill="none">
+              <path fill="#4CAF50" d="M42.6 20.3c2.4 1.4 2.4 4.9 0 6.4L34.2 31.6l-9.2-7.6 9.2-7.6 8.4 3.9z"/>
+              <path fill="#F44336" d="M5.4 4.5C5 4.7 4.7 5.1 4.7 5.6v37c0 .5.3.9.7 1.1L24 24 5.4 4.5z"/>
+              <path fill="#2196F3" d="M34.2 15.4L5.4 4.5c-.3-.1-.7-.1-1 .1L24 24l10.2-8.6z"/>
+              <path fill="#FFC107" d="M5.4 43.7c.3.2.7.2 1 .1l28.8-10.9L24 24 5.4 43.7z"/>
+            </svg>
+            <div>
+              <span className="lp-download-sub">Disponible en</span>
+              <span className="lp-download-store">Google Play</span>
+            </div>
+          </a>
+        </div>
+
         <div className="lp-preview">
           <div className="lp-preview-frame">
             <div className="lp-preview-dots">

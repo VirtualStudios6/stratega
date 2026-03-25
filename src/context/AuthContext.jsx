@@ -49,9 +49,23 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  // Mientras onAuthStateChanged resuelve, mostramos un fondo con el color
+  // del tema activo (sin spinner llamativo) para evitar el flash blanco/negro
+  // que aparece cuando el splash se oculta antes de que React haya renderizado.
+  if (loading) {
+    return (
+      <div
+        style={{ minHeight: "100dvh", backgroundColor: "var(--bg-main)" }}
+        className="flex items-center justify-center"
+      >
+        <div className="w-7 h-7 rounded-full border-2 border-border border-t-primary animate-spin opacity-60" />
+      </div>
+    )
+  }
+
   return (
     <AuthContext.Provider value={{ user, loading, refreshUser }}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   )
 }
