@@ -1,6 +1,5 @@
 {
   "lang": "pt",
-
   "nav": {
     "features": "Funcionalidades",
     "ai": "IA",
@@ -9,7 +8,6 @@
     "start": "Começar grátis",
     "login": "Entrar"
   },
-
   "hero": {
     "badge": "7 dias grátis",
     "title1": "Bem-vindo ao modo Estrategista.",
@@ -20,14 +18,12 @@
     "cta_secondary": "Ver funcionalidades",
     "trust": "✓ 7 dias grátis · ✓ Cancele quando quiser"
   },
-
   "stats": {
     "modules": "Módulos integrados",
     "cloud": "Na nuvem",
     "ai": "Assistente integrado",
     "trial": "Dias grátis"
   },
-
   "features": {
     "tag": "Funcionalidades",
     "title": "Tudo o que você precisa em um só lugar",
@@ -45,7 +41,6 @@
     "reminders_title": "Lembretes Inteligentes",
     "reminders_desc": "Nunca perca uma entrega ou reunião. Receba notificações no navegador com prioridades personalizáveis."
   },
-
   "ai_section": {
     "tag": "Inteligência Artificial",
     "title": "Strat AI — Seu assistente de redes sociais",
@@ -58,7 +53,6 @@
     "chat_user1": "Quanto devo cobrar por um pacote de social media?",
     "chat_msg2": "Básico $300–500/mês (3 redes, 12 posts), Pro $600–900/mês (5 redes, 20 posts + stories) 💡"
   },
-
   "pricing": {
     "tag": "Preços",
     "title": "Planos para cada etapa",
@@ -95,7 +89,6 @@
     "feat_support": "Suporte prioritário",
     "feat_first": "Novas funcionalidades primeiro"
   },
-
   "testimonials": {
     "tag": "Depoimentos",
     "title": "O que dizem nossos usuários",
@@ -103,7 +96,6 @@
     "t2": "A função Strat AI é incrível. Sugere ideias de conteúdo e os orçamentos em PDF ficam muito profissionais.",
     "t3": "Finalmente consigo ver como meu feed vai ficar antes de publicar. O organizador drag & drop é exatamente o que eu precisava."
   },
-
   "faq": {
     "tag": "FAQ",
     "title": "Perguntas frequentes",
@@ -118,7 +110,6 @@
     "q5": "Posso mudar de plano depois?",
     "a5": "Sim, você pode fazer upgrade ou downgrade a qualquer momento. As mudanças se aplicam ao próximo ciclo de faturamento."
   },
-
   "cta_final": {
     "title1": "Comece a crescer hoje com",
     "title2": "Stratega Planner",
@@ -126,15 +117,14 @@
     "btn": "Começar teste grátis →",
     "note": "✓ 7 dias grátis · ✓ Cancele quando quiser"
   },
-
   "footer": {
     "terms": "Termos",
     "privacy": "Privacidade",
+    "refunds": "Reembolsos",
     "support": "Suporte",
     "contact": "Contato",
     "copy": "© 2025 Stratega Planner. Todos os direitos reservados."
   },
-
   "sidebar": {
     "dashboard": "Painel",
     "planner": "Calendário",
@@ -149,7 +139,6 @@
     "logout": "Sair",
     "support": "Suporte"
   },
-
   "progress": {
     "title": "Seu progresso",
     "subtitle": "Continue executando todos os dias",
@@ -163,7 +152,6 @@
     "motivation_tasks": "Você completou mais tarefas que 60% das pessoas do seu setor. 🚀",
     "motivation_default": "Cada dia que você executa, se aproxima mais das suas metas. Continue assim! ⚡"
   },
-
   "dashboard": {
     "welcome": "Bem-vindo",
     "overview": "Resumo da sua atividade",
@@ -212,7 +200,6 @@
     "no_credit_required": "Sem cartão necessário",
     "plan_content": "Planejar"
   },
-
   "planner": {
     "title": "Calendário",
     "new_event": "Novo evento",
@@ -271,7 +258,6 @@
     "list_entries": "entradas",
     "edit": "Editar entrada"
   },
-
   "feed": {
     "title": "Prévia do Feed",
     "posts": "publicações",
@@ -296,7 +282,6 @@
     "position": "Posição",
     "no_description": "Sem legenda"
   },
-
   "reminders": {
     "title": "Lembretes",
     "new": "Novo lembrete",
@@ -312,7 +297,6 @@
     "priority_medium": "Média",
     "priority_high": "Alta"
   },
-
   "folders": {
     "title": "Pastas",
     "new_folder": "Nova pasta",
@@ -325,7 +309,6 @@
     "delete": "Excluir",
     "rename": "Renomear"
   },
-
   "quotes": {
     "title": "Orçamentos",
     "new": "Novo orçamento",
@@ -338,7 +321,6 @@
     "cancel": "Cancelar",
     "delete": "Excluir"
   },
-
   "accounting": {
     "title": "Contabilidade",
     "income": "Receitas",
@@ -354,7 +336,6 @@
     "description": "Descrição",
     "date": "Data"
   },
-
   "team": {
     "title": "Equipe",
     "invite": "Convidar membro",
@@ -366,7 +347,6 @@
     "cancel": "Cancelar",
     "remove": "Remover"
   },
-
   "settings": {
     "title": "Configurações",
     "profile": "Perfil",
@@ -402,7 +382,6 @@
     "manage_plan": "Gerenciar plano",
     "free_access": "Acesso limitado às funcionalidades básicas"
   },
-
   "subscription": {
     "title": "Assinatura",
     "current_plan": "Plano atual",
@@ -411,7 +390,6 @@
     "annual": "Anual",
     "save_badge": "Economize 20%"
   },
-
   "common": {
     "save": "Salvar",
     "cancel": "Cancelar",
@@ -430,7 +408,6 @@
     "yes": "Sim",
     "no": "Não"
   },
-
   "auth": {
     "login": "Entrar",
     "register": "Criar conta",
@@ -471,14 +448,12 @@
     "error_no_account": "Não encontramos uma conta com esse e-mail.",
     "copyright": "© 2026 Stratega Planner. Todos os direitos reservados."
   },
-
   "notifications": {
     "week_missing_1": "Seu conteúdo de {{day}} ainda não está planejado 📅",
     "week_missing_2": "Seu conteúdo de {{day1}} e {{day2}} ainda não está planejado 📅",
     "week_missing_many": "Sua semana está incompleta… planeje agora 📅",
     "month_missing": "O mês de {{month}} ainda não tem conteúdo planejado 🗓️"
   },
-
   "ai": {
     "online": "Online",
     "greeting": "Olá! Sou o **Stratega Planner**, seu assistente de IA 🤖\n\nComo posso ajudá-lo hoje? Posso ajudar com estratégias de redes sociais, organização de conteúdo, orçamentos e muito mais.",
@@ -491,7 +466,6 @@
     "suggestion_prices": "💰 Sugerir preços",
     "suggestion_engagement": "📊 Melhorar engajamento"
   },
-
   "layout": {
     "collapse_menu": "Recolher menu"
   }

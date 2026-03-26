@@ -389,8 +389,9 @@ const Landing = () => {
         <ul className="lp-footer-links">
           <li><a href="/terms">{t("footer.terms")}</a></li>
           <li><a href="/privacy">{t("footer.privacy")}</a></li>
-          <li><a href="mailto:ceovirtualstudios@gmail.com">{t("footer.support")}</a></li>
-          <li><a href="mailto:ceovirtualstudios@gmail.com">{t("footer.contact")}</a></li>
+          <li><a href="/refunds">{t("footer.refunds") || "Reembolsos"}</a></li>
+          <li><a href="/support">{t("footer.support")}</a></li>
+          <li><a href="/contact">{t("footer.contact")}</a></li>
         </ul>
         <div className="lp-footer-copy">{t("footer.copy")}</div>
       </footer>
