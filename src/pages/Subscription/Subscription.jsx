@@ -8,22 +8,15 @@ import { db } from "../../firebase/config"
 import useSubscriptionGuard from "../../hooks/useSubscriptionGuard"
 import { usePaddle } from "../../hooks/usePaddle"
 
-// ---------------------------------------------------------------------------
-// ⚠️  PRICE IDs de Paddle
-//
-// Los IDs que comienzan con "pro_" son Product IDs de Paddle.
-// Para el checkout se necesitan Price IDs que empiezan con "pri_".
-// Ve a tu Paddle Dashboard → Catalog → Products → selecciona el producto
-// → copia el Price ID (pri_XXXX) de cada precio creado y reemplázalo aquí.
-// ---------------------------------------------------------------------------
+// Price IDs de Paddle (Billing v2)
 const PADDLE_PRICES = {
   basico: {
-    mensual: "pro_01kmna0prt796j1s3q1t82a7x6",   // ← reemplaza con pri_XXXX
-    anual:   "pro_01kmna059rp3z9k7k3cydv33nh",   // ← reemplaza con pri_XXXX
+    mensual: "pri_01kmna6c9abcr6n96f27ytey15",
+    anual:   "pri_01kmna88v8dqgb2vdqw323wp86",
   },
   pro: {
-    mensual: "pro_01kmna14was376tcgvc0w63b0s",   // ← reemplaza con pri_XXXX
-    anual:   "pro_01kmna1eeng80ybxpeyjfrdyw3",   // ← reemplaza con pri_XXXX
+    mensual: "pri_01kmnaam2a1t269x2dnnf63z78",
+    anual:   "pri_01kmnabym9jdxvq8my0yr5a6n3",
   },
 }
 
