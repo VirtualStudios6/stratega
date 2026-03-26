@@ -89,7 +89,7 @@ const PlanPaddleButton = ({ planId, planNombre, billing, uid, userEmail }) => {
             {
               plan:               planId,
               ciclo:              billing,
-              subscriptionID:     data?.subscription?.id     || data?.transaction?.id || null,
+              subscriptionID:     data?.subscription?.id || data?.transaction?.id || null,
               subscriptionStatus: "active",
               subscriptionDate:   new Date(),
               paymentProvider:    "paddle",
@@ -105,11 +105,15 @@ const PlanPaddleButton = ({ planId, planNombre, billing, uid, userEmail }) => {
           setLoading(false)
         }
       },
+      onError: (data) => {
+        console.error("[Paddle] Error en checkout:", data)
+        toast.error("Error al procesar el pago. Revisa la consola para más detalles.")
+        setLoading(false)
+      },
+      onClose: () => {
+        setLoading(false)
+      },
     })
-
-    // El loading se desactiva en el callback o si cierra el overlay
-    // Paddle no emite evento de cierre sin pago, así que lo reseteamos con un timeout
-    setTimeout(() => setLoading(false), 30_000)
   }
 
   return (
