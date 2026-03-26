@@ -6,6 +6,7 @@ import OnboardingWizard from "../shared/OnboardingWizard"
 import GlobalSearch from "../shared/GlobalSearch"
 import NotificationBell from "../shared/NotificationBell"
 import AppTour from "../shared/AppTour"
+import SubscriptionGuard from "../shared/SubscriptionGuard"
 import { useTranslation } from "react-i18next"
 import { Search, Menu } from "lucide-react"
 
@@ -183,7 +184,7 @@ const DashboardLayout = ({ children }) => {
 
         {/* ── Página ── */}
         <main className="flex-1 px-4 pt-4 pb-6 sm:px-5 sm:pt-5 lg:p-8 overflow-y-auto">
-          {children}
+          <SubscriptionGuard>{children}</SubscriptionGuard>
         </main>
 
       </div>

@@ -31,14 +31,10 @@ const Landing = () => {
     monthly: {
       basic: "$6.99", basicP: t("pricing.per_month"),
       pro: "$11.99", proP: t("pricing.per_month"),
-      basicUrl: "https://strategaplanner.lemonsqueezy.com/checkout/buy/1364736",
-      proUrl: "https://strategaplanner.lemonsqueezy.com/checkout/buy/1364765"
     },
     annual: {
       basic: "$67", basicP: t("pricing.per_year"),
       pro: "$115", proP: t("pricing.per_year"),
-      basicUrl: "https://strategaplanner.lemonsqueezy.com/checkout/buy/1364756",
-      proUrl: "https://strategaplanner.lemonsqueezy.com/checkout/buy/1364779"
     }
   }
 
@@ -302,7 +298,7 @@ const Landing = () => {
                 <li key={label} className={yes ? "yes" : ""}><span className="lp-feat-ico">{yes ? <Check size={13} color="#22c55e" strokeWidth={2.5} /> : <X size={13} color="#CBD5E1" strokeWidth={2} />}</span>{label}</li>
               ))}
             </ul>
-            <a href={p.basicUrl} target="_blank" rel="noreferrer" className="lp-plan-cta secondary">{t("pricing.start_free")}</a>
+            <button onClick={() => navigate("/subscription")} className="lp-plan-cta secondary">{t("pricing.start_free")}</button>
             <div className="lp-plan-trial">{t("pricing.trial_note")}</div>
           </div>
           <div className="lp-plan featured">
@@ -316,7 +312,7 @@ const Landing = () => {
                 <li key={label} className={yes ? "yes" : ""}><span className="lp-feat-ico">{yes ? <Check size={13} color="#22c55e" strokeWidth={2.5} /> : <X size={13} color="#CBD5E1" strokeWidth={2} />}</span>{label}</li>
               ))}
             </ul>
-            <a href={p.proUrl} target="_blank" rel="noreferrer" className="lp-plan-cta primary">{t("pricing.start_free_arrow")}</a>
+            <button onClick={() => navigate("/subscription")} className="lp-plan-cta primary">{t("pricing.start_free_arrow")}</button>
             <div className="lp-plan-trial">{t("pricing.trial_note")}</div>
           </div>
         </div>

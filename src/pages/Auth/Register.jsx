@@ -14,6 +14,12 @@ const Register = () => {
   const navigate = useNavigate()
   const { t } = useTranslation()
 
+  const buildTrialData = () => {
+    const trialStartDate = new Date()
+    const trialEndDate   = new Date(trialStartDate.getTime() + 7 * 24 * 60 * 60 * 1000)
+    return { trialStartDate, trialEndDate, subscriptionStatus: "trial", plan: "trial" }
+  }
+
   const handleRegister = async (e) => {
     e.preventDefault()
     setError("")
@@ -21,7 +27,7 @@ const Register = () => {
     try {
       const result = await registerWithEmail(email, password)
       await setDoc(doc(db, "users", result.user.uid), {
-        name, email, plan: "free", createdAt: new Date()
+        name, email, createdAt: new Date(), ...buildTrialData()
       })
       navigate("/dashboard")
     } catch (err) {
@@ -36,8 +42,8 @@ const Register = () => {
       await setDoc(doc(db, "users", result.user.uid), {
         name: result.user.displayName,
         email: result.user.email,
-        plan: "free",
-        createdAt: new Date()
+        createdAt: new Date(),
+        ...buildTrialData()
       }, { merge: true })
       navigate("/dashboard")
     } catch (err) {

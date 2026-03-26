@@ -6,6 +6,7 @@ import { useAuth } from "../../context/AuthContext"
 import { db } from "../../firebase/config"
 import { doc, getDoc } from "firebase/firestore"
 import LanguageSwitcher from "../shared/LanguageSwitcher"
+import useSubscriptionGuard from "../../hooks/useSubscriptionGuard"
 import {
   LayoutDashboard, CalendarDays, Image, Bell, FolderOpen,
   FileText, Wallet, Users, Settings, Crown, LogOut, Eye, EyeOff
@@ -63,6 +64,7 @@ const Sidebar = ({ open, onClose, collapsed = false, isMobile = false }) => {
   const navigate  = useNavigate()
   const { t }     = useTranslation()
   const { user }  = useAuth()
+  const { status, daysLeft } = useSubscriptionGuard()
 
   const [avatar,    setAvatar]    = useState(null)
   const [showEmail, setShowEmail] = useState(() =>
@@ -168,6 +170,22 @@ const Sidebar = ({ open, onClose, collapsed = false, isMobile = false }) => {
           ))}
         </div>
       </nav>
+
+      {/* ── Banner trial ── */}
+      {status === "trial" && showText && (
+        <button
+          onClick={() => { navigate("/subscription"); if (isMobile) onClose() }}
+          className="mx-3 mb-2 flex items-center gap-2 px-3 py-2 rounded-xl bg-yellow-500/10 border border-yellow-500/20 hover:bg-yellow-500/15 transition text-left w-[calc(100%-1.5rem)]"
+        >
+          <span className="text-base flex-shrink-0">⏳</span>
+          <div className="min-w-0">
+            <p className="text-yellow-400 text-xs font-semibold leading-tight truncate">
+              {daysLeft > 0 ? `${daysLeft} día${daysLeft !== 1 ? "s" : ""} de prueba restantes` : "Prueba expirada"}
+            </p>
+            <p className="text-yellow-400/60 text-[10px] leading-tight">Toca para ver planes</p>
+          </div>
+        </button>
+      )}
 
       {/* ── Sección inferior ── */}
       <div className={`${collapsed ? "px-2" : "px-3"} pb-3 border-t border-border pt-3 flex-shrink-0 space-y-0.5`}>

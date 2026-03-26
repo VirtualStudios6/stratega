@@ -4,6 +4,8 @@ import { useAuth } from "./context/AuthContext"
 import Landing from "./pages/Landing/Landing"
 import Terms from "./pages/Legal/Terms"
 import Privacy from "./pages/Legal/Privacy"
+import Support from "./pages/Legal/Support"
+import Contact from "./pages/Legal/Contact"
 import Login from "./pages/Auth/Login"
 import Register from "./pages/Auth/Register"
 import ForgotPassword from "./pages/Auth/ForgotPassword"
@@ -51,6 +53,8 @@ function App() {
       <Route path="/" element={<RootRedirect />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="/privacy" element={<Privacy />} />
+      <Route path="/support" element={<Support />} />
+      <Route path="/contact" element={<Contact />} />
       <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
       <Route path="/register" element={<GuestRoute><Register /></GuestRoute>} />
       <Route path="/forgot-password" element={<GuestRoute><ForgotPassword /></GuestRoute>} />
