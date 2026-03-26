@@ -9,10 +9,13 @@ import LanguageSwitcher from "../shared/LanguageSwitcher"
 import useSubscriptionGuard from "../../hooks/useSubscriptionGuard"
 import {
   LayoutDashboard, CalendarDays, Image, Bell, FolderOpen,
-  FileText, Wallet, Users, Settings, Crown, LogOut, Eye, EyeOff
+  FileText, Wallet, Users, Settings, Crown, LogOut, Eye, EyeOff, Lock
 } from "lucide-react"
 
-const NavLink = ({ item, isActive, onClick, collapsed }) => (
+// Rutas libres en plan trial — el resto requiere suscripción
+const FREE_ROUTES = ["/dashboard", "/planner", "/settings", "/subscription"]
+
+const NavLink = ({ item, isActive, onClick, collapsed, locked }) => (
   <Link
     to={item.path}
     onClick={onClick}
@@ -21,14 +24,16 @@ const NavLink = ({ item, isActive, onClick, collapsed }) => (
       relative flex items-center w-full rounded-xl text-sm font-medium
       transition-all duration-200 group
       ${collapsed ? "justify-center px-0 py-3" : "gap-3 px-3 py-2.5"}
-      ${isActive
-        ? "bg-primary/15 text-primary-light"
-        : "text-text-muted hover:bg-bg-hover hover:text-text-main"
+      ${locked
+        ? "opacity-40 cursor-pointer"
+        : isActive
+          ? "bg-primary/15 text-primary-light"
+          : "text-text-muted hover:bg-bg-hover hover:text-text-main"
       }
     `}
   >
     {/* Active indicator */}
-    {isActive && (
+    {isActive && !locked && (
       <span className={`
         absolute left-0 top-1/2 -translate-y-1/2 bg-primary rounded-r-full
         ${collapsed ? "w-1 h-6" : "w-0.5 h-5"}
@@ -42,7 +47,17 @@ const NavLink = ({ item, isActive, onClick, collapsed }) => (
 
     {/* Label */}
     {!collapsed && (
-      <span className="truncate leading-none">{item.label}</span>
+      <span className="truncate leading-none flex-1">{item.label}</span>
+    )}
+
+    {/* Candado para items bloqueados */}
+    {locked && !collapsed && (
+      <Lock size={11} className="flex-shrink-0 opacity-60" />
+    )}
+    {locked && collapsed && (
+      <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-bg-card border border-border rounded-full flex items-center justify-center">
+        <Lock size={8} />
+      </span>
     )}
 
     {/* Tooltip cuando está colapsado */}
@@ -53,7 +68,7 @@ const NavLink = ({ item, isActive, onClick, collapsed }) => (
         opacity-0 group-hover:opacity-100 pointer-events-none
         transition-opacity duration-150 shadow-lg z-50
       ">
-        {item.label}
+        {item.label}{locked ? " 🔒" : ""}
       </div>
     )}
   </Link>
@@ -166,6 +181,7 @@ const Sidebar = ({ open, onClose, collapsed = false, isMobile = false }) => {
               isActive={location.pathname === item.path}
               onClick={isMobile ? onClose : undefined}
               collapsed={!showText}
+              locked={status === "trial" && !FREE_ROUTES.includes(item.path)}
             />
           ))}
         </div>
