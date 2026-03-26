@@ -225,6 +225,7 @@ const Support = () => {
         <div className="border-t border-border pt-8 mt-8 flex flex-wrap gap-4 text-xs text-text-muted">
           <Link to="/terms" className="hover:text-primary-light transition">Términos de Servicio</Link>
           <Link to="/privacy" className="hover:text-primary-light transition">Política de Privacidad</Link>
+          <Link to="/refunds" className="hover:text-primary-light transition">Política de Reembolsos</Link>
           <Link to="/contact" className="hover:text-primary-light transition">Contacto</Link>
         </div>
       </div>

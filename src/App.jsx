@@ -6,6 +6,7 @@ import Terms from "./pages/Legal/Terms"
 import Privacy from "./pages/Legal/Privacy"
 import Support from "./pages/Legal/Support"
 import Contact from "./pages/Legal/Contact"
+import Refunds from "./pages/Legal/Refunds"
 import Login from "./pages/Auth/Login"
 import Register from "./pages/Auth/Register"
 import ForgotPassword from "./pages/Auth/ForgotPassword"
@@ -55,6 +56,7 @@ function App() {
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/support" element={<Support />} />
       <Route path="/contact" element={<Contact />} />
+      <Route path="/refunds" element={<Refunds />} />
       <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
       <Route path="/register" element={<GuestRoute><Register /></GuestRoute>} />
       <Route path="/forgot-password" element={<GuestRoute><ForgotPassword /></GuestRoute>} />

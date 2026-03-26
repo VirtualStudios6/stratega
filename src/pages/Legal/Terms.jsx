@@ -143,6 +143,7 @@ const Terms = () => {
         {/* Footer nav */}
         <div className="border-t border-border pt-8 mt-4 flex flex-wrap gap-4 text-xs text-text-muted">
           <Link to="/privacy" className="hover:text-primary-light transition">Política de Privacidad</Link>
+          <Link to="/refunds" className="hover:text-primary-light transition">Política de Reembolsos</Link>
           <Link to="/support" className="hover:text-primary-light transition">Centro de Ayuda</Link>
           <Link to="/contact" className="hover:text-primary-light transition">Contacto</Link>
         </div>
