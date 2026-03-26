@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import toast from "react-hot-toast"
 import { doc, setDoc, getDoc } from "firebase/firestore"
+import { getFunctions, httpsCallable } from "firebase/functions"
 import DashboardLayout from "../../components/layout/DashboardLayout"
 import { useAuth } from "../../context/AuthContext"
 import { db } from "../../firebase/config"
@@ -143,32 +144,44 @@ const PlanPaddleButton = ({ planId, planNombre, billing, uid, userEmail }) => {
 // ---------------------------------------------------------------------------
 // Sección de suscripción activa
 // ---------------------------------------------------------------------------
-const ActiveSubscription = ({ subData }) => {
-  const planLabel  = subData.plan  === "pro"    ? "Pro"    : "Básico"
-  const cicloLabel = subData.ciclo === "anual"  ? "Anual"  : "Mensual"
+const ActiveSubscription = ({ subData, uid, onCancel }) => {
+  const [cancelling, setCancelling] = useState(false)
+  const planLabel  = subData.plan  === "pro"   ? "Pro"    : "Básico"
+  const cicloLabel = subData.ciclo === "anual" ? "Anual"  : "Mensual"
+
+  const handleCancel = async () => {
+    if (!window.confirm("¿Seguro que quieres cancelar tu suscripción? Seguirás teniendo acceso hasta el final del período pagado.")) return
+    setCancelling(true)
+    try {
+      const cancelFn = httpsCallable(getFunctions(), "cancelPaddleSubscription")
+      await cancelFn({ subscriptionID: subData.subscriptionID })
+      toast.success("Suscripción cancelada. Acceso activo hasta fin del período.")
+      onCancel()
+    } catch (err) {
+      console.error(err)
+      toast.error(err?.message || "No se pudo cancelar. Inténtalo más tarde.")
+    } finally {
+      setCancelling(false)
+    }
+  }
 
   return (
     <div className="max-w-md mx-auto bg-bg-card border-2 border-primary/40 rounded-2xl p-6 text-center space-y-4">
       <span className="text-4xl">🎉</span>
       <h2 className="text-text-main font-bold text-xl">Plan {planLabel} activo</h2>
       <p className="text-text-muted text-sm">
-        Ciclo:{" "}
-        <span className="text-primary-light font-medium">{cicloLabel}</span>
+        Ciclo: <span className="text-primary-light font-medium">{cicloLabel}</span>
       </p>
       {subData.subscriptionID && (
-        <p className="text-text-muted/60 text-xs break-all">
-          ID: {subData.subscriptionID}
-        </p>
+        <p className="text-text-muted/60 text-xs break-all">ID: {subData.subscriptionID}</p>
       )}
-      <p className="text-text-muted text-xs leading-relaxed">
-        Para cancelar o modificar tu suscripción, contacta a{" "}
-        <a
-          href="mailto:soporte@strategaplanner.com"
-          className="text-primary-light underline"
-        >
-          soporte@strategaplanner.com
-        </a>
-      </p>
+      <button
+        onClick={handleCancel}
+        disabled={cancelling}
+        className="mt-2 px-5 py-2.5 rounded-xl text-sm font-medium border border-red-500/40 text-red-400 bg-red-500/10 hover:bg-red-500/20 transition disabled:opacity-50"
+      >
+        {cancelling ? "Cancelando…" : "Cancelar suscripción"}
+      </button>
     </div>
   )
 }
@@ -235,7 +248,7 @@ const Subscription = () => {
         </div>
       ) : subData ? (
         /* Usuario ya suscrito */
-        <ActiveSubscription subData={subData} />
+        <ActiveSubscription subData={subData} uid={user?.uid} onCancel={() => setSubData(null)} />
       ) : (
         <>
           {/* Toggle mensual / anual */}
