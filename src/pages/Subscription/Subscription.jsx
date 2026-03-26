@@ -1,31 +1,35 @@
 import { useState, useEffect } from "react"
-import { PayPalScriptProvider, PayPalButtons, usePayPalScriptReducer } from "@paypal/react-paypal-js"
 import { useNavigate } from "react-router-dom"
 import toast from "react-hot-toast"
 import { doc, setDoc, getDoc } from "firebase/firestore"
-import { getFunctions, httpsCallable } from "firebase/functions"
 import DashboardLayout from "../../components/layout/DashboardLayout"
 import { useAuth } from "../../context/AuthContext"
 import { db } from "../../firebase/config"
 import useSubscriptionGuard from "../../hooks/useSubscriptionGuard"
+import { usePaddle } from "../../hooks/usePaddle"
 
 // ---------------------------------------------------------------------------
-// Constantes
+// ⚠️  PRICE IDs de Paddle
+//
+// Los IDs que comienzan con "pro_" son Product IDs de Paddle.
+// Para el checkout se necesitan Price IDs que empiezan con "pri_".
+// Ve a tu Paddle Dashboard → Catalog → Products → selecciona el producto
+// → copia el Price ID (pri_XXXX) de cada precio creado y reemplázalo aquí.
 // ---------------------------------------------------------------------------
-
-const PAYPAL_CLIENT_ID = "AeMXGk_hL3Gq0QybWBkuLw9FiG3qh7DlZJ4ZQjslEE0eJBg2GrPYDaw3fLAR27OSNZmjfTGqgAPGkjq6"
-
-const PLAN_IDS = {
+const PADDLE_PRICES = {
   basico: {
-    mensual: "P-8AR894218N2186151NHCHUFA",
-    anual:   "P-1DJ39963215725647NHCHXVY",
+    mensual: "pro_01kmna0prt796j1s3q1t82a7x6",   // ← reemplaza con pri_XXXX
+    anual:   "pro_01kmna059rp3z9k7k3cydv33nh",   // ← reemplaza con pri_XXXX
   },
   pro: {
-    mensual: "P-47D92578BA068992ANHCHY4A",
-    anual:   "P-1NX44736KK721733LNHCH4GA",
+    mensual: "pro_01kmna14was376tcgvc0w63b0s",   // ← reemplaza con pri_XXXX
+    anual:   "pro_01kmna1eeng80ybxpeyjfrdyw3",   // ← reemplaza con pri_XXXX
   },
 }
 
+// ---------------------------------------------------------------------------
+// Planes UI
+// ---------------------------------------------------------------------------
 const PLANES = [
   {
     id: "basico",
@@ -68,103 +72,106 @@ const PLANES = [
 ]
 
 // ---------------------------------------------------------------------------
-// Skeleton que se muestra mientras PayPal carga
+// Botón de suscripción Paddle por plan
 // ---------------------------------------------------------------------------
-
-const PayPalSkeleton = () => (
-  <div className="w-full h-12 rounded-full bg-border/40 animate-pulse mt-1" />
-)
-
-// ---------------------------------------------------------------------------
-// Botones PayPal por plan (necesita estar dentro del provider)
-// ---------------------------------------------------------------------------
-
-const PlanPayPalButtons = ({ planId, planNombre, billing, uid }) => {
-  const [{ isPending }] = usePayPalScriptReducer()
+const PlanPaddleButton = ({ planId, planNombre, billing, uid, userEmail }) => {
   const navigate = useNavigate()
+  const { ready, openCheckout } = usePaddle()
+  const [loading, setLoading] = useState(false)
 
-  const handleApprove = async (data) => {
-    try {
-      await setDoc(
-        doc(db, "users", uid),
-        {
-          plan: planId,
-          ciclo: billing,
-          subscriptionID: data.subscriptionID,
-          subscriptionStatus: "active",
-          subscriptionDate: new Date(),
-        },
-        { merge: true }
-      )
-      toast.success(`¡Suscripción activada! Bienvenido al plan ${planNombre}`)
-      setTimeout(() => navigate("/dashboard"), 2000)
-    } catch (err) {
-      console.error(err)
-      toast.error("No se pudo guardar la suscripción. Contacta soporte.")
-    }
+  const handleCheckout = () => {
+    if (!ready) return
+    setLoading(true)
+
+    const priceId = PADDLE_PRICES[planId][billing]
+
+    openCheckout({
+      priceId,
+      email:  userEmail,
+      userId: uid,
+      onSuccess: async (data) => {
+        try {
+          await setDoc(
+            doc(db, "users", uid),
+            {
+              plan:               planId,
+              ciclo:              billing,
+              subscriptionID:     data?.subscription?.id     || data?.transaction?.id || null,
+              subscriptionStatus: "active",
+              subscriptionDate:   new Date(),
+              paymentProvider:    "paddle",
+            },
+            { merge: true }
+          )
+          toast.success(`¡Suscripción activada! Bienvenido al plan ${planNombre} 🎉`)
+          setTimeout(() => navigate("/dashboard"), 2000)
+        } catch (err) {
+          console.error("[Paddle] Error guardando suscripción:", err)
+          toast.error("Pago procesado. Contacta soporte si no se activa tu cuenta.")
+        } finally {
+          setLoading(false)
+        }
+      },
+    })
+
+    // El loading se desactiva en el callback o si cierra el overlay
+    // Paddle no emite evento de cierre sin pago, así que lo reseteamos con un timeout
+    setTimeout(() => setLoading(false), 30_000)
   }
 
   return (
-    <div className="mt-1">
-      {isPending && <PayPalSkeleton />}
-      <PayPalButtons
-        style={{ shape: "pill", color: "black", layout: "vertical", label: "subscribe" }}
-        createSubscription={(_data, actions) =>
-          actions.subscription.create({ plan_id: PLAN_IDS[planId][billing] })
-        }
-        onApprove={handleApprove}
-        onError={() => toast.error("Error al procesar el pago. Inténtalo de nuevo.")}
-      />
-    </div>
+    <button
+      onClick={handleCheckout}
+      disabled={!ready || loading}
+      className={`mt-4 w-full py-3 rounded-full text-sm font-semibold transition-all flex items-center justify-center gap-2 ${
+        ready && !loading
+          ? "bg-primary text-white hover:bg-primary/90 active:scale-[0.98] shadow-md shadow-primary/30"
+          : "bg-border/40 text-text-muted cursor-not-allowed"
+      }`}
+    >
+      {loading ? (
+        <>
+          <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+          Abriendo checkout…
+        </>
+      ) : !ready ? (
+        "Cargando…"
+      ) : (
+        `Suscribirse — ${billing === "mensual" ? "mensual" : "anual"}`
+      )}
+    </button>
   )
 }
 
 // ---------------------------------------------------------------------------
 // Sección de suscripción activa
 // ---------------------------------------------------------------------------
-
-const ActiveSubscription = ({ subData, uid, onCancel }) => {
-  const [cancelling, setCancelling] = useState(false)
-
-  const handleCancel = async () => {
-    if (!window.confirm("¿Seguro que quieres cancelar tu suscripción?")) return
-    setCancelling(true)
-    try {
-      // Cancela en PayPal y actualiza Firestore desde el servidor
-      const cancelFn = httpsCallable(getFunctions(), "cancelPaypalSubscription")
-      await cancelFn({ subscriptionID: subData.subscriptionID })
-      toast.success("Suscripción cancelada.")
-      onCancel()
-    } catch (err) {
-      console.error(err)
-      toast.error(err?.message || "No se pudo cancelar. Inténtalo más tarde.")
-    } finally {
-      setCancelling(false)
-    }
-  }
-
-  const planLabel = subData.plan === "pro" ? "Pro" : "Básico"
-  const cicloLabel = subData.ciclo === "anual" ? "Anual" : "Mensual"
+const ActiveSubscription = ({ subData }) => {
+  const planLabel  = subData.plan  === "pro"    ? "Pro"    : "Básico"
+  const cicloLabel = subData.ciclo === "anual"  ? "Anual"  : "Mensual"
 
   return (
     <div className="max-w-md mx-auto bg-bg-card border-2 border-primary/40 rounded-2xl p-6 text-center space-y-4">
       <span className="text-4xl">🎉</span>
       <h2 className="text-text-main font-bold text-xl">Plan {planLabel} activo</h2>
       <p className="text-text-muted text-sm">
-        Ciclo: <span className="text-primary-light font-medium">{cicloLabel}</span>
+        Ciclo:{" "}
+        <span className="text-primary-light font-medium">{cicloLabel}</span>
       </p>
       {subData.subscriptionID && (
         <p className="text-text-muted/60 text-xs break-all">
           ID: {subData.subscriptionID}
         </p>
       )}
-      <button
-        onClick={handleCancel}
-        disabled={cancelling}
-        className="mt-2 px-5 py-2.5 rounded-xl text-sm font-medium border border-red-500/40 text-red-400 bg-red-500/10 hover:bg-red-500/20 transition disabled:opacity-50"
-      >
-        {cancelling ? "Cancelando…" : "Cancelar suscripción"}
-      </button>
+      <p className="text-text-muted text-xs leading-relaxed">
+        Para cancelar o modificar tu suscripción, contacta a{" "}
+        <a
+          href="mailto:soporte@strategaplanner.com"
+          className="text-primary-light underline"
+        >
+          soporte@strategaplanner.com
+        </a>
+      </p>
     </div>
   )
 }
@@ -172,15 +179,16 @@ const ActiveSubscription = ({ subData, uid, onCancel }) => {
 // ---------------------------------------------------------------------------
 // Componente principal
 // ---------------------------------------------------------------------------
-
 const Subscription = () => {
-  const { user } = useAuth()
-  const { status, daysLeft } = useSubscriptionGuard()
-  const [billing, setBilling] = useState("mensual")
-  const [subData, setSubData] = useState(null)
-  const [loadingSub, setLoadingSub] = useState(true)
+  const { user }                          = useAuth()
+  const { status, daysLeft }              = useSubscriptionGuard()
+  const [billing, setBilling]             = useState("mensual")
+  const [subData, setSubData]             = useState(null)
+  const [loadingSub, setLoadingSub]       = useState(true)
 
-  // Cargar estado de suscripción desde Firestore
+  // Precarga Paddle en cuanto se monta la página (no bloquea la UI)
+  usePaddle()
+
   useEffect(() => {
     if (!user?.uid) {
       setLoadingSub(false)
@@ -199,51 +207,41 @@ const Subscription = () => {
 
   return (
     <DashboardLayout>
+      {/* Encabezado */}
       <div className="mb-6 text-center px-2">
         <h1 className="text-xl sm:text-2xl font-bold text-text-main">Planes y Precios 💳</h1>
         <p className="text-text-muted text-sm mt-2">Empieza gratis 7 días. Cancela cuando quieras.</p>
       </div>
 
-      {/* Banner motivacional de trial */}
+      {/* Banner de trial */}
       {status === "trial" && (
-        <div className={`max-w-3xl mx-auto mb-6 px-4 py-3 rounded-xl border flex items-center gap-3 ${
-          daysLeft <= 2
-            ? "bg-red-500/10 border-red-500/20 text-red-400"
-            : "bg-yellow-500/10 border-yellow-500/20 text-yellow-400"
-        }`}>
+        <div
+          className={`max-w-3xl mx-auto mb-6 px-4 py-3 rounded-xl border flex items-center gap-3 ${
+            daysLeft <= 2
+              ? "bg-red-500/10 border-red-500/20 text-red-400"
+              : "bg-yellow-500/10 border-yellow-500/20 text-yellow-400"
+          }`}
+        >
           <span className="text-xl flex-shrink-0">{daysLeft <= 2 ? "🚨" : "⏳"}</span>
           <p className="text-sm font-medium">
             {daysLeft > 0
               ? `Te quedan ${daysLeft} día${daysLeft !== 1 ? "s" : ""} de prueba gratis. Suscríbete ahora para no perder el acceso.`
-              : "Tu período de prueba ha terminado. Elige un plan para continuar."
-            }
+              : "Tu período de prueba ha terminado. Elige un plan para continuar."}
           </p>
         </div>
       )}
 
-      {/* Estado de carga del Firestore check */}
+      {/* Estado de carga */}
       {loadingSub ? (
         <div className="flex justify-center py-12">
           <div className="w-7 h-7 rounded-full border-2 border-border border-t-primary animate-spin opacity-60" />
         </div>
       ) : subData ? (
         /* Usuario ya suscrito */
-        <ActiveSubscription
-          subData={subData}
-          uid={user.uid}
-          onCancel={() => setSubData(null)}
-        />
+        <ActiveSubscription subData={subData} />
       ) : (
-        /* Planes de pago */
-        <PayPalScriptProvider
-          options={{
-            "client-id": PAYPAL_CLIENT_ID,
-            vault: true,
-            intent: "subscription",
-            currency: "USD",
-          }}
-        >
-          {/* Toggle mensual/anual */}
+        <>
+          {/* Toggle mensual / anual */}
           <div className="flex items-center justify-center gap-3 mb-8">
             <button
               onClick={() => setBilling("mensual")}
@@ -304,27 +302,31 @@ const Subscription = () => {
                         Ahorra {plan.anual.ahorro} vs mensual
                       </p>
                     )}
-                    <p className="text-text-muted/60 text-xs mt-1">7 días gratis, sin tarjeta requerida</p>
+                    <p className="text-text-muted/60 text-xs mt-1">
+                      7 días gratis, sin tarjeta requerida
+                    </p>
                   </div>
 
                   <ul className="space-y-2 flex-1 mb-5">
                     {plan.features.map((f, i) => (
-                      <li key={i} className="text-sm text-text-muted">{f}</li>
+                      <li key={i} className="text-sm text-text-muted">
+                        {f}
+                      </li>
                     ))}
                   </ul>
 
-                  {/* Botón PayPal */}
-                  <PlanPayPalButtons
+                  <PlanPaddleButton
                     planId={plan.id}
                     planNombre={plan.nombre}
                     billing={billing}
                     uid={user?.uid}
+                    userEmail={user?.email}
                   />
                 </div>
               )
             })}
           </div>
-        </PayPalScriptProvider>
+        </>
       )}
 
       {/* Garantía y trust badges */}
@@ -343,7 +345,10 @@ const Subscription = () => {
             { icon: "❌", text: "Cancela cuando quieras" },
             { icon: "🌍", text: "Tarjetas internacionales" },
           ].map((item, i) => (
-            <div key={i} className="bg-bg-card border border-border rounded-xl p-3 sm:p-4 text-center">
+            <div
+              key={i}
+              className="bg-bg-card border border-border rounded-xl p-3 sm:p-4 text-center"
+            >
               <span className="text-lg sm:text-xl block mb-1">{item.icon}</span>
               <p className="text-text-muted text-[10px] sm:text-xs">{item.text}</p>
             </div>
