@@ -1,20 +1,25 @@
 /**
  * usePaddle — carga Paddle.js una sola vez y expone openCheckout()
  * Singleton a nivel de módulo: seguro ante múltiples renders y StrictMode.
+ *
+ * En plataformas nativas (Android / iOS con Capacitor) el checkout se abre
+ * en el navegador externo del dispositivo para evitar restricciones del
+ * WebView con 3D Secure y popups de autenticación bancaria.
  */
 import { useState, useEffect } from "react"
+import { Capacitor } from "@capacitor/core"
 
-const PADDLE_TOKEN = "live_fba5dd15829a77f957863e3d469"
+const PADDLE_TOKEN   = "live_fba5dd15829a77f957863e3d469"
+const CHECKOUT_URL   = "https://stratega-git-main-virtualstudios-projects.vercel.app/subscription"
 
 let _scriptInjected  = false
 let _paddleReady     = false
-let _pendingReady    = []   // callbacks de instancias esperando que Paddle cargue
+let _pendingReady    = []
 let _successCb       = null
 let _errorCb         = null
 let _closeCb         = null
 
 function _handleEvent(event) {
-  // Log completo de TODOS los eventos para facilitar debugging en DevTools
   console.log(`[Paddle] event → ${event.name}`, event)
 
   switch (event.name) {
@@ -37,7 +42,7 @@ function _handleEvent(event) {
       break
 
     case "checkout.warning":
-      console.warn("[Paddle] ⚠️ Advertencia en checkout:", event.data)
+      console.warn("[Paddle] ⚠️ Advertencia:", event.data)
       break
 
     case "checkout.closed":
@@ -53,18 +58,12 @@ function _handleEvent(event) {
 }
 
 function _initPaddle(onReady) {
-  // En Paddle Billing v2 "production" es el entorno por defecto.
-  // NO llamar Environment.set() en producción evita conflictos.
-  // Solo se llama para sandbox: Paddle.Environment.set("sandbox")
-
   window.Paddle.Initialize({
     token: PADDLE_TOKEN,
     eventCallback: _handleEvent,
   })
-
   _paddleReady = true
   onReady()
-  // Notificar a todas las instancias que estaban esperando
   _pendingReady.forEach(cb => cb())
   _pendingReady = []
   console.info("[Paddle] ✅ Inicializado correctamente (production)")
@@ -72,11 +71,14 @@ function _initPaddle(onReady) {
 
 export function usePaddle() {
   const [ready, setReady] = useState(_paddleReady)
+  const isNative = Capacitor.isNativePlatform()
 
   useEffect(() => {
+    // En nativo no cargamos Paddle.js — el pago se hace en navegador externo
+    if (isNative) { setReady(true); return }
+
     if (_paddleReady) { setReady(true); return }
 
-    // Script inyectado pero aún cargando — registrar callback para cuando esté listo
     if (_scriptInjected) {
       _pendingReady.push(() => setReady(true))
       return
@@ -100,22 +102,51 @@ export function usePaddle() {
   /**
    * Abre el checkout de Paddle.
    *
+   * Web     → overlay de Paddle.js dentro de la app
+   * Nativo  → navegador externo del dispositivo (Safari / Chrome)
+   *           evita restricciones de WebView con 3DS y popups bancarios
+   *
    * @param {object}   options
    * @param {string}   options.priceId     — Price ID (pri_XXXX)
-   * @param {string}   [options.email]     — Email del usuario (pre-rellena el campo)
+   * @param {string}   [options.email]     — Email del usuario
    * @param {string}   [options.userId]    — UID de Firebase (para webhooks)
-   * @param {function} [options.onSuccess] — Se llama con event.data al completar el pago
-   * @param {function} [options.onError]   — Se llama con event.data si hay error
-   * @param {function} [options.onClose]   — Se llama si el usuario cierra sin pagar
+   * @param {function} [options.onSuccess] — Callback al completar el pago (solo web)
+   * @param {function} [options.onError]   — Callback en error (solo web)
+   * @param {function} [options.onClose]   — Callback al cerrar sin pagar (solo web)
    */
-  const openCheckout = ({ priceId, email, userId, onSuccess, onError, onClose } = {}) => {
-    if (!window.Paddle || !_paddleReady) {
-      console.warn("[Paddle] openCheckout() llamado antes de que Paddle esté listo")
+  const openCheckout = async ({ priceId, email, userId, onSuccess, onError, onClose } = {}) => {
+    if (!priceId) {
+      console.error("[Paddle] Se requiere priceId")
       return
     }
 
-    if (!priceId) {
-      console.error("[Paddle] Se requiere priceId para abrir el checkout")
+    // ── NATIVO: abrir en navegador externo ─────────────────────────────────────
+    if (isNative) {
+      console.info("[Paddle] Modo nativo → abriendo en navegador externo")
+      try {
+        const params = new URLSearchParams({
+          priceId,
+          ...(email  && { email }),
+          ...(userId && { uid: userId }),
+        })
+        const { Browser } = await import("@capacitor/browser")
+        await Browser.open({
+          url:            `${CHECKOUT_URL}?${params.toString()}`,
+          presentationStyle: "popover",
+        })
+        // En nativo no hay callback de pago inmediato.
+        // La suscripción se activa vía webhook de Paddle → Firestore.
+        // El usuario verá su plan actualizado al volver a la app.
+      } catch (err) {
+        console.error("[Paddle] Error abriendo navegador externo:", err)
+        if (onError) onError(err)
+      }
+      return
+    }
+
+    // ── WEB: overlay de Paddle.js ──────────────────────────────────────────────
+    if (!window.Paddle || !_paddleReady) {
+      console.warn("[Paddle] openCheckout() llamado antes de que Paddle esté listo")
       return
     }
 
@@ -132,8 +163,6 @@ export function usePaddle() {
       settings: {
         displayMode: "overlay",
         theme:       "dark",
-        // successUrl y locale eliminados: pueden causar "Something went wrong"
-        // en ciertos setups de Paddle. Se maneja con eventCallback en su lugar.
       },
     })
   }
