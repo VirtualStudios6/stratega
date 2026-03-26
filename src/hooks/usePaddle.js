@@ -6,11 +6,12 @@ import { useState, useEffect } from "react"
 
 const PADDLE_TOKEN = "live_fba5dd15829a77f957863e3d469"
 
-let _scriptInjected = false
-let _paddleReady    = false
-let _successCb      = null
-let _errorCb        = null
-let _closeCb        = null
+let _scriptInjected  = false
+let _paddleReady     = false
+let _pendingReady    = []   // callbacks de instancias esperando que Paddle cargue
+let _successCb       = null
+let _errorCb         = null
+let _closeCb         = null
 
 function _handleEvent(event) {
   // Log completo de TODOS los eventos para facilitar debugging en DevTools
@@ -63,6 +64,9 @@ function _initPaddle(onReady) {
 
   _paddleReady = true
   onReady()
+  // Notificar a todas las instancias que estaban esperando
+  _pendingReady.forEach(cb => cb())
+  _pendingReady = []
   console.info("[Paddle] ✅ Inicializado correctamente (production)")
 }
 
@@ -71,7 +75,12 @@ export function usePaddle() {
 
   useEffect(() => {
     if (_paddleReady) { setReady(true); return }
-    if (_scriptInjected) return
+
+    // Script inyectado pero aún cargando — registrar callback para cuando esté listo
+    if (_scriptInjected) {
+      _pendingReady.push(() => setReady(true))
+      return
+    }
 
     if (window.Paddle) {
       _scriptInjected = true
