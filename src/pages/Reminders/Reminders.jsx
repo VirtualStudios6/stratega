@@ -102,6 +102,7 @@ const Reminders = () => {
       }
       resetModal()
       fetchTasks()
+      window.dispatchEvent(new Event("reminder-saved"))
     } catch (err) {
       console.error(err)
       toast.error("Error al guardar el recordatorio.")

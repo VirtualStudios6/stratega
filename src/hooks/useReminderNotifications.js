@@ -2,27 +2,70 @@ import { useEffect, useRef } from "react"
 import { useAuth } from "../context/AuthContext"
 import { db } from "../firebase/config"
 import { collection, query, where, getDocs } from "firebase/firestore"
+import toast from "react-hot-toast"
 
 // Module-level dedup — survives re-renders
 const notified = new Set()
 
+// ── AudioContext singleton — unlocked on first user gesture ───────────────
+let _audioCtx = null
+
+const getAudioCtx = () => {
+  if (!_audioCtx && (window.AudioContext || window.webkitAudioContext)) {
+    _audioCtx = new (window.AudioContext || window.webkitAudioContext)()
+  }
+  return _audioCtx
+}
+
+// Pre-unlock AudioContext on first interaction so it's ready when reminder fires
+if (typeof window !== "undefined") {
+  const unlock = () => {
+    getAudioCtx()?.resume().catch(() => {})
+    window.removeEventListener("click",      unlock)
+    window.removeEventListener("keydown",    unlock)
+    window.removeEventListener("touchstart", unlock)
+  }
+  window.addEventListener("click",      unlock, { once: true })
+  window.addEventListener("keydown",    unlock, { once: true })
+  window.addEventListener("touchstart", unlock, { once: true })
+}
+
 const playBeep = () => {
   try {
-    const ctx  = new (window.AudioContext || window.webkitAudioContext)()
-    const osc  = ctx.createOscillator()
-    const gain = ctx.createGain()
-    osc.connect(gain)
-    gain.connect(ctx.destination)
-    osc.type = "sine"
-    osc.frequency.value = 880
-    gain.gain.setValueAtTime(0.35, ctx.currentTime)
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6)
-    osc.start(ctx.currentTime)
-    osc.stop(ctx.currentTime + 0.6)
+    const ctx = getAudioCtx()
+    if (!ctx) return
+    const play = () => {
+      const osc  = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.type = "sine"
+      osc.frequency.value = 880
+      gain.gain.setValueAtTime(0.35, ctx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6)
+      osc.start(ctx.currentTime)
+      osc.stop(ctx.currentTime + 0.6)
+    }
+    if (ctx.state === "suspended") {
+      ctx.resume().then(play).catch(() => {})
+    } else {
+      play()
+    }
   } catch {}
 }
 
 const fireNotification = (task, label) => {
+  playBeep()
+
+  // In-app toast — always shown regardless of OS notification permission
+  toast(`⏰ ${task.titulo} — ${label}`, {
+    duration: 8000,
+    style: { background: "var(--bg-card)", color: "var(--text-main)", border: "1px solid var(--border)" },
+  })
+
+  window.dispatchEvent(new CustomEvent("reminder-fired", { detail: task }))
+
+  // OS notification — only if permission granted
   if (Notification.permission !== "granted") return
 
   const title = `⏰ ${task.titulo}`
@@ -36,17 +79,12 @@ const fireNotification = (task, label) => {
     requireInteraction: true,
   }
 
-  playBeep()
-
-  const emit = () => window.dispatchEvent(new CustomEvent("reminder-fired", { detail: task }))
-
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.ready
-      .then(reg => { reg.showNotification(title, opts); emit() })
-      .catch(() => { new Notification(title, opts); emit() })
+      .then(reg => reg.showNotification(title, opts))
+      .catch(() => new Notification(title, opts))
   } else {
     new Notification(title, opts)
-    emit()
   }
 }
 
@@ -71,7 +109,14 @@ export const useReminderNotifications = () => {
 
     load()
     const id = setInterval(load, 5 * 60 * 1000)
-    return () => clearInterval(id)
+
+    // Re-fetch immediately when a reminder is created/edited
+    window.addEventListener("reminder-saved", load)
+
+    return () => {
+      clearInterval(id)
+      window.removeEventListener("reminder-saved", load)
+    }
   }, [user?.uid])
 
   // Check every 30 seconds — starts after 5s to let fetch complete
