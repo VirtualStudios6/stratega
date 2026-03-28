@@ -52,10 +52,13 @@ const useSubscriptionGuard = () => {
           let daysLeft = 7
           let expired  = false
 
-          if (data.trialEndDate) {
-            const trialEnd = data.trialEndDate?.toDate
-              ? data.trialEndDate.toDate()
-              : new Date(data.trialEndDate)
+          // Use trialEndDate if available, otherwise fall back to createdAt + 7 days
+          const endSource = data.trialEndDate || data.createdAt
+          if (endSource) {
+            const baseDate = endSource?.toDate ? endSource.toDate() : new Date(endSource)
+            const trialEnd = data.trialEndDate
+              ? baseDate
+              : new Date(baseDate.getTime() + 7 * 24 * 60 * 60 * 1000)
             const msLeft = trialEnd.getTime() - Date.now()
             daysLeft     = Math.max(0, Math.ceil(msLeft / 86_400_000))
             expired      = msLeft <= 0
