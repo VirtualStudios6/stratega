@@ -6,6 +6,9 @@ import { useAuth } from "../context/AuthContext"
 /**
  * Reads the user's subscription/trial state from Firestore.
  *
+ * Module-level cache avoids re-fetching on every page navigation,
+ * eliminating the "locked" flash when switching sections.
+ *
  * Returns:
  *   status   — "trial" | "active" | "expired" | "cancelled" | "suspended" | "payment_failed"
  *   plan     — "trial" | "basico" | "pro"
@@ -13,14 +16,20 @@ import { useAuth } from "../context/AuthContext"
  *   daysLeft — days remaining in trial (0 when not in trial)
  *   loading  — true while fetching
  */
+
+// Module-level cache — persists across component mount/unmount (navigation)
+let _cachedState = null
+let _cachedUid   = null
+
+const INITIAL_STATE = { status: "trial", plan: "trial", isActive: true, daysLeft: 7, loading: true }
+
 const useSubscriptionGuard = () => {
   const { user } = useAuth()
-  const [state, setState] = useState({
-    status:   "trial",
-    plan:     "trial",
-    isActive: true,
-    daysLeft: 7,
-    loading:  true,
+
+  // If we already have a cached result for this user, start with it (no flash)
+  const [state, setState] = useState(() => {
+    if (_cachedState && _cachedUid === user?.uid) return _cachedState
+    return INITIAL_STATE
   })
 
   useEffect(() => {
@@ -29,11 +38,20 @@ const useSubscriptionGuard = () => {
       return
     }
 
+    // Already have a valid cache for this user — no need to re-fetch
+    if (_cachedState && _cachedUid === user.uid) return
+
+    const save = (newState) => {
+      _cachedState = newState
+      _cachedUid   = user.uid
+      setState(newState)
+    }
+
     getDoc(doc(db, "users", user.uid))
       .then(snap => {
         if (!snap.exists()) {
           // New user without doc yet — treat as fresh trial
-          setState({ status: "trial", plan: "trial", isActive: true, daysLeft: 7, loading: false })
+          save({ status: "trial", plan: "trial", isActive: true, daysLeft: 7, loading: false })
           return
         }
 
@@ -43,13 +61,13 @@ const useSubscriptionGuard = () => {
 
         // Admin — full pro access, no restrictions
         if (data.isAdmin === true) {
-          setState({ status: "active", plan: "pro", isActive: true, daysLeft: 0, loading: false })
+          save({ status: "active", plan: "pro", isActive: true, daysLeft: 0, loading: false })
           return
         }
 
         // Paid subscription — always active
         if (rawStatus === "active") {
-          setState({ status: "active", plan, isActive: true, daysLeft: 0, loading: false })
+          save({ status: "active", plan, isActive: true, daysLeft: 0, loading: false })
           return
         }
 
@@ -70,7 +88,7 @@ const useSubscriptionGuard = () => {
             expired      = msLeft <= 0
           }
 
-          setState({
+          save({
             status:   expired ? "expired" : "trial",
             plan:     "trial",
             isActive: !expired,
@@ -81,11 +99,11 @@ const useSubscriptionGuard = () => {
         }
 
         // Cancelled / suspended / expired / payment_failed → blocked
-        setState({ status: rawStatus, plan, isActive: false, daysLeft: 0, loading: false })
+        save({ status: rawStatus, plan, isActive: false, daysLeft: 0, loading: false })
       })
       .catch(() => {
         // On error, give benefit of the doubt
-        setState({ status: "trial", plan: "trial", isActive: true, daysLeft: 7, loading: false })
+        save({ status: "trial", plan: "trial", isActive: true, daysLeft: 7, loading: false })
       })
   }, [user])
 
