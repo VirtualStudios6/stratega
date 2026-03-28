@@ -7,6 +7,7 @@ import DashboardLayout from "../../components/layout/DashboardLayout"
 import { useAuth } from "../../context/AuthContext"
 import { db } from "../../firebase/config"
 import useSubscriptionGuard from "../../hooks/useSubscriptionGuard"
+import { invalidateSubscriptionCache } from "../../hooks/useSubscriptionGuard"
 import { usePaddle } from "../../hooks/usePaddle"
 import { CheckCircle2, XCircle, ShieldCheck, Globe, X } from "lucide-react"
 
@@ -99,6 +100,7 @@ const PlanPaddleButton = ({ planId, planNombre, billing, uid, userEmail }) => {
             },
             { merge: true }
           )
+          invalidateSubscriptionCache()
           toast.success(`¡Suscripción activada! Bienvenido al plan ${planNombre} 🎉`)
           setTimeout(() => navigate("/dashboard"), 2000)
         } catch (err) {

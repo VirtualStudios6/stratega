@@ -67,8 +67,8 @@ const SubscriptionGuard = ({ children }) => {
           Esta función requiere un plan
         </h2>
         <p className="text-text-muted text-sm max-w-sm mb-1">
-          Durante el período de prueba solo tienes acceso al <strong className="text-text-main">Planner y Calendario</strong>.
-          Suscríbete a cualquier plan para desbloquear todo.
+          Durante el período de prueba tienes acceso al <strong className="text-text-main">Dashboard y Planner</strong>.
+          Suscríbete a cualquier plan para desbloquear el resto de funciones.
         </p>
 
         {daysLeft > 0 && (

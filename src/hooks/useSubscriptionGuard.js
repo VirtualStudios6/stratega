@@ -92,11 +92,13 @@ const useSubscriptionGuard = () => {
         const rawStatus = data.subscriptionStatus || "trial"
         const plan      = data.plan || "trial"
 
-        // Admin — always has access (isActive: true) but uses the actual plan
-        // stored in Firestore so dev tools work correctly for testing.
+        // Admin — uses the actual plan/status from Firestore so dev tools work.
+        // isActive mirrors real logic so expired/cancelled simulations show the
+        // paywall (admin can always escape via Settings in the sidebar).
         if (data.isAdmin === true) {
-          const adminPlan   = data.plan || "pro"
+          const adminPlan   = data.plan   || "pro"
           const adminStatus = data.subscriptionStatus || "active"
+          const adminActive = adminStatus === "active" || adminStatus === "trial"
           let daysLeft = 0
           if (adminStatus === "trial") {
             const endSource = data.trialEndDate || data.createdAt
@@ -108,7 +110,7 @@ const useSubscriptionGuard = () => {
               daysLeft = 7
             }
           }
-          save({ status: adminStatus, plan: adminPlan, isActive: true, daysLeft, loading: false })
+          save({ status: adminStatus, plan: adminPlan, isActive: adminActive, daysLeft, loading: false })
           return
         }
 

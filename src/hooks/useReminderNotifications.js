@@ -118,7 +118,9 @@ export const useReminderNotifications = () => {
         const snap = await getDocs(q)
         reminders.current = snap.docs.map(d => ({ id: d.id, ...d.data() }))
         fetched.current   = true
-      } catch {}
+      } catch (err) {
+        console.error("[ReminderNotifications] Error cargando recordatorios:", err)
+      }
     }
 
     load()
