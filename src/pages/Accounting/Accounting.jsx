@@ -12,6 +12,7 @@ import {
   PieChart, Pie, Cell
 } from "recharts"
 import { Wallet, ArrowUp, ArrowDown, Pencil, Trash2, X, FileBarChart2 } from "lucide-react"
+import toast from "react-hot-toast"
 
 const CATEGORIAS_SUGERIDAS = [
   "Servicio", "Cotización", "Consultoría", "Producto",
@@ -59,11 +60,16 @@ const Accounting = () => {
 
   const fetchTransacciones = async () => {
     if (!user) return
-    const q    = query(collection(db, "accounting"), where("uid", "==", user.uid))
-    const snap = await getDocs(q)
-    const data = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-      .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
-    setTransacciones(data)
+    try {
+      const q    = query(collection(db, "accounting"), where("uid", "==", user.uid))
+      const snap = await getDocs(q)
+      const data = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
+      setTransacciones(data)
+    } catch (err) {
+      console.error(err)
+      toast.error("Error al cargar la contabilidad.")
+    }
   }
 
   useEffect(() => { fetchTransacciones() }, [user])

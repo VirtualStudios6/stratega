@@ -15,9 +15,9 @@ const CHECKOUT_URL   = "https://stratega-git-main-virtualstudios-projects.vercel
 let _scriptInjected  = false
 let _paddleReady     = false
 let _pendingReady    = []
-let _successCb       = null
-let _errorCb         = null
-let _closeCb         = null
+let _cbs             = null  // { onSuccess, onError, onClose } — single object avoids partial overwrite
+
+function _clearCbs() { _cbs = null }
 
 function _handleEvent(event) {
   console.log(`[Paddle] event → ${event.name}`, event)
@@ -29,16 +29,14 @@ function _handleEvent(event) {
 
     case "checkout.completed":
       console.info("[Paddle] ✅ Pago completado:", event.data)
-      if (_successCb) { _successCb(event.data); _successCb = null }
-      _errorCb = null
-      _closeCb = null
+      if (_cbs?.onSuccess) _cbs.onSuccess(event.data)
+      _clearCbs()
       break
 
     case "checkout.error":
       console.error("[Paddle] ❌ Error en checkout:", event.data)
-      if (_errorCb) { _errorCb(event.data); _errorCb = null }
-      _successCb = null
-      _closeCb   = null
+      if (_cbs?.onError) _cbs.onError(event.data)
+      _clearCbs()
       break
 
     case "checkout.warning":
@@ -47,9 +45,8 @@ function _handleEvent(event) {
 
     case "checkout.closed":
       console.info("[Paddle] Checkout cerrado por el usuario")
-      if (_closeCb) { _closeCb(); _closeCb = null }
-      _successCb = null
-      _errorCb   = null
+      if (_cbs?.onClose) _cbs.onClose()
+      _clearCbs()
       break
 
     default:
@@ -152,9 +149,7 @@ export function usePaddle() {
 
     console.info(`[Paddle] Abriendo checkout para priceId: ${priceId}`)
 
-    _successCb = onSuccess || null
-    _errorCb   = onError   || null
-    _closeCb   = onClose   || null
+    _cbs = { onSuccess: onSuccess || null, onError: onError || null, onClose: onClose || null }
 
     window.Paddle.Checkout.open({
       items: [{ priceId, quantity: 1 }],

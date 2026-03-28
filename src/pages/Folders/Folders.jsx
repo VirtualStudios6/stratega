@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import toast from "react-hot-toast"
 import { FolderOpen, Folder, X, Download, FileText, Film, File, Eye, Play, Pencil, Trash2, ArrowLeft, User, CalendarDays, Bell } from "lucide-react"
 import DashboardLayout from "../../components/layout/DashboardLayout"
 import { db, storage } from "../../firebase/config"
@@ -142,6 +143,7 @@ const Folders = () => {
       fetchFiles(selectedFolder.id)
     } catch (err) {
       console.error(err)
+      toast.error("Error al subir el archivo. Inténtalo de nuevo.")
     }
     setUploading(false)
   }
@@ -151,7 +153,7 @@ const Folders = () => {
     if (file.storagePath) {
       await deleteObject(ref(storage, file.storagePath))
     }
-    fetchFiles(selectedFolder.id)
+    if (selectedFolder?.id) fetchFiles(selectedFolder.id)
   }
 
   const isImage = (tipo) => tipo?.startsWith("image/")

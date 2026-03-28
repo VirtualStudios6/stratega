@@ -104,7 +104,13 @@ const Settings = () => {
       await updatePassword(auth.currentUser, seguridad.passwordNuevo)
       setSeguridad({ passwordActual: "", passwordNuevo: "", passwordConfirm: "" })
       showSuccess(t("settings.saved"))
-    } catch { showError("Contraseña actual incorrecta") }
+    } catch (err) {
+      if (err.code === "auth/wrong-password" || err.code === "auth/invalid-credential") {
+        showError("Contraseña actual incorrecta")
+      } else {
+        showError("Error al cambiar la contraseña. Inténtalo de nuevo.")
+      }
+    }
     setLoading(false)
   }
 
@@ -122,7 +128,12 @@ const Settings = () => {
     setLoading(true)
     const uid = auth.currentUser?.uid
     const doDelete = async () => {
-      await deleteUserData(uid)
+      try {
+        await deleteUserData(uid)
+      } catch (err) {
+        console.error("[Settings] deleteUserData failed:", err)
+        // Continue with account deletion even if some data cleanup failed
+      }
       await deleteUser(auth.currentUser)
       navigate("/login")
     }

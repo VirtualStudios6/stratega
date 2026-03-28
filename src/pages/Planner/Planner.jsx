@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { CalendarDays, Clock, Pencil } from "lucide-react"
+import toast from "react-hot-toast"
 import FullCalendar from "@fullcalendar/react"
 import dayGridPlugin from "@fullcalendar/daygrid"
 import timeGridPlugin from "@fullcalendar/timegrid"
@@ -93,25 +94,34 @@ const Planner = () => {
 
   const fetchEventos = async () => {
     if (!user) return
-    const q = query(collection(db, "planners"), where("uid", "==", user.uid))
-    const snap = await getDocs(q)
-    const data = snap.docs.map(document => {
-      const d = document.data()
-      return {
-        id: document.id,
-        title: d.titulo,
-        date: d.fecha,
-        extendedProps: { ...d, esFechaClave: false },
-      }
-    })
-    setEventos(data)
+    try {
+      const q = query(collection(db, "planners"), where("uid", "==", user.uid))
+      const snap = await getDocs(q)
+      const data = snap.docs.map(document => {
+        const d = document.data()
+        return {
+          id: document.id,
+          title: d.titulo,
+          date: d.fecha,
+          extendedProps: { ...d, esFechaClave: false },
+        }
+      })
+      setEventos(data)
+    } catch (err) {
+      console.error(err)
+      toast.error("Error al cargar el calendario.")
+    }
   }
 
   const fetchFolders = async () => {
     if (!user) return
-    const q = query(collection(db, "folders"), where("uid", "==", user.uid))
-    const snap = await getDocs(q)
-    setFolders(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+    try {
+      const q = query(collection(db, "folders"), where("uid", "==", user.uid))
+      const snap = await getDocs(q)
+      setFolders(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   useEffect(() => { fetchEventos(); fetchFolders() }, [user])

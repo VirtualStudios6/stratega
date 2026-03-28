@@ -11,6 +11,7 @@ import {
 import { useAuth } from "../../context/AuthContext"
 import { useTranslation } from "react-i18next"
 import { Bell, CalendarDays, Clock, Pencil, Trash2, AlertTriangle } from "lucide-react"
+import toast from "react-hot-toast"
 
 const PRIORIDADES_VALUES = ["Urgente", "Importante", "Normal"]
 const CATEGORIAS = ["General", "Publicación", "Reunión", "Contenido", "Cliente", "Personal", "Empresa", "Marketing", "Negocios", "Ideas", "Pendiente"]
@@ -41,18 +42,27 @@ const Reminders = () => {
 
   const fetchTasks = async () => {
     if (!user) return
-    const q = query(collection(db, "reminders"), where("uid", "==", user.uid))
-    const snap = await getDocs(q)
-    const data = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-      .sort((a, b) => new Date(a.fecha) - new Date(b.fecha))
-    setTasks(data)
+    try {
+      const q = query(collection(db, "reminders"), where("uid", "==", user.uid))
+      const snap = await getDocs(q)
+      const data = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => new Date(a.fecha) - new Date(b.fecha))
+      setTasks(data)
+    } catch (err) {
+      console.error(err)
+      toast.error("Error al cargar los recordatorios.")
+    }
   }
 
   const fetchFolders = async () => {
     if (!user) return
-    const q = query(collection(db, "folders"), where("uid", "==", user.uid))
-    const snap = await getDocs(q)
-    setFolders(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+    try {
+      const q = query(collection(db, "folders"), where("uid", "==", user.uid))
+      const snap = await getDocs(q)
+      setFolders(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   useEffect(() => { fetchTasks(); fetchFolders() }, [user])

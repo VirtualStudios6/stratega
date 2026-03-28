@@ -222,7 +222,7 @@ const generateMinimalPDF = (quote, company) => {
   autoTable(pdf, {
     startY: 110,
     head: [["Descripción", "Cant.", "Precio unit.", "Total"]],
-    body: quote.servicios.map(s => [
+    body: (quote.servicios || []).map(s => [
       s.descripcion, String(s.cantidad),
       `${quote.moneda} ${parseFloat(s.precio).toFixed(2)}`,
       `${quote.moneda} ${(parseFloat(s.precio) * parseInt(s.cantidad)).toFixed(2)}`
@@ -317,7 +317,7 @@ const generateDarkPDF = (quote, company) => {
   autoTable(pdf, {
     startY: 128,
     head: [["Descripción", "Cant.", "Precio", "Total"]],
-    body: quote.servicios.map(s => [
+    body: (quote.servicios || []).map(s => [
       s.descripcion, String(s.cantidad),
       `${quote.moneda} ${parseFloat(s.precio).toFixed(2)}`,
       `${quote.moneda} ${(parseFloat(s.precio) * parseInt(s.cantidad)).toFixed(2)}`
@@ -414,7 +414,7 @@ const generateClassicPDF = (quote, company) => {
   autoTable(pdf, {
     startY: 118,
     head: [["#", "Descripción", "Cant.", "Precio unit.", "Total"]],
-    body: quote.servicios.map((s, i) => [
+    body: (quote.servicios || []).map((s, i) => [
       String(i + 1), s.descripcion, String(s.cantidad),
       `${quote.moneda} ${parseFloat(s.precio).toFixed(2)}`,
       `${quote.moneda} ${(parseFloat(s.precio) * parseInt(s.cantidad)).toFixed(2)}`
