@@ -9,6 +9,7 @@ import {
   doc, getDoc, setDoc, updateDoc,
 } from "firebase/firestore"
 import SmartNotifications from "../../components/shared/SmartNotifications"
+import useSubscriptionGuard from "../../hooks/useSubscriptionGuard"
 import {
   Bell, Wallet, CalendarDays, XCircle,
   CheckCircle2, FileText, Crown,
@@ -121,6 +122,7 @@ const Dashboard = () => {
   const { user } = useAuth()
   const navigate = useNavigate()
   const { i18n } = useTranslation()
+  const { plan: currentPlan, status: currentStatus } = useSubscriptionGuard()
 
   const firstName = useMemo(() =>
     user?.displayName?.split(" ")[0] || user?.email?.split("@")[0] || "Usuario",
@@ -314,14 +316,24 @@ const Dashboard = () => {
               <h1 className="text-xl sm:text-2xl font-bold text-text-main">
                 {greeting}, {firstName}
               </h1>
-              {isAdmin && (
-                <span className="inline-flex items-center gap-1 bg-blue-500/15 border border-blue-500/30 text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                  <ShieldCheck size={10} /> Admin
+              {currentPlan === "trial" && (
+                <span className="inline-flex items-center gap-1 bg-yellow-500/15 border border-yellow-500/30 text-yellow-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                  Trial
                 </span>
               )}
-              {!isAdmin && userPlan !== "free" && userPlan !== "trial" && (
+              {currentPlan === "basico" && (
+                <span className="inline-flex items-center gap-1 bg-blue-500/15 border border-blue-500/30 text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                  Básico
+                </span>
+              )}
+              {currentPlan === "pro" && (
                 <span className="inline-flex items-center gap-1 bg-amber-500/15 border border-amber-500/30 text-amber-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
                   <Crown size={10} /> Pro
+                </span>
+              )}
+              {isAdmin && (
+                <span className="inline-flex items-center gap-1 bg-bg-hover border border-border text-text-muted/50 text-[9px] font-medium px-1.5 py-0.5 rounded-full">
+                  <ShieldCheck size={8} /> admin
                 </span>
               )}
             </div>

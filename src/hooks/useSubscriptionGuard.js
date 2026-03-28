@@ -92,9 +92,23 @@ const useSubscriptionGuard = () => {
         const rawStatus = data.subscriptionStatus || "trial"
         const plan      = data.plan || "trial"
 
-        // Admin — full pro access, no restrictions
+        // Admin — always has access (isActive: true) but uses the actual plan
+        // stored in Firestore so dev tools work correctly for testing.
         if (data.isAdmin === true) {
-          save({ status: "active", plan: "pro", isActive: true, daysLeft: 0, loading: false })
+          const adminPlan   = data.plan || "pro"
+          const adminStatus = data.subscriptionStatus || "active"
+          let daysLeft = 0
+          if (adminStatus === "trial") {
+            const endSource = data.trialEndDate || data.createdAt
+            if (endSource) {
+              const baseDate = endSource?.toDate ? endSource.toDate() : new Date(endSource)
+              const trialEnd = data.trialEndDate ? baseDate : new Date(baseDate.getTime() + 7 * 24 * 60 * 60 * 1000)
+              daysLeft = Math.max(0, Math.ceil((trialEnd.getTime() - Date.now()) / 86_400_000))
+            } else {
+              daysLeft = 7
+            }
+          }
+          save({ status: adminStatus, plan: adminPlan, isActive: true, daysLeft, loading: false })
           return
         }
 
