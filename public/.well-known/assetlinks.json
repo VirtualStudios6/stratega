@@ -1,0 +1,15 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.stratega.planner",
+      "sha256_cert_fingerprints": [
+        "20:0E:2B:F7:19:38:2A:50:E7:E9:38:E4:B9:69:0C:43:63:E1:2C:27:20:48:13:0D:6E:71:1E:67:02:1A:2E:54"
+      ]
+    }
+  }
+]
