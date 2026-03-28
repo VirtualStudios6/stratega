@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { CalendarDays, Clock, Pencil } from "lucide-react"
 import FullCalendar from "@fullcalendar/react"
 import dayGridPlugin from "@fullcalendar/daygrid"
 import timeGridPlugin from "@fullcalendar/timegrid"
@@ -428,7 +429,7 @@ const Planner = () => {
       {/* Header */}
       <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-text-main">Calendario 📅</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-text-main flex items-center gap-2"><CalendarDays size={22} className="text-text-muted" /> Calendario</h1>
           <p className="text-text-muted text-xs sm:text-sm mt-0.5">{t("planner.subtitle")}</p>
         </div>
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
@@ -1009,7 +1010,7 @@ const Planner = () => {
                 </span>
                 {previewEvent.hora && (
                   <span className="px-2.5 py-1 rounded-lg bg-bg-hover border border-border text-xs text-text-muted">
-                    🕐 {previewEvent.hora}
+                    <Clock size={12} className="inline mr-1" />{previewEvent.hora}
                   </span>
                 )}
               </div>
@@ -1058,7 +1059,7 @@ const Planner = () => {
                   onClick={openEditFromPreview}
                   className="flex-1 bg-primary text-white font-medium py-2.5 rounded-xl hover:bg-primary-light transition text-sm shadow-lg shadow-primary/30"
                 >
-                  ✏️ {t("planner.edit")}
+                  <Pencil size={14} className="inline mr-1" />{t("planner.edit")}
                 </button>
               </div>
             </div>

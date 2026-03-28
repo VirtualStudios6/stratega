@@ -10,6 +10,7 @@ import {
 } from "firebase/firestore"
 import { useAuth } from "../../context/AuthContext"
 import { useTranslation } from "react-i18next"
+import { Bell, CalendarDays, Clock, Pencil, Trash2, AlertTriangle } from "lucide-react"
 
 const PRIORIDADES_VALUES = ["Urgente", "Importante", "Normal"]
 const CATEGORIAS = ["General", "Publicación", "Reunión", "Contenido", "Cliente", "Personal", "Empresa", "Marketing", "Negocios", "Ideas", "Pendiente"]
@@ -165,7 +166,7 @@ const Reminders = () => {
 
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-text-main">{t("reminders.title")} 🔔</h1>
+          <h1 className="text-2xl font-bold text-text-main flex items-center gap-2"><Bell size={22} className="text-text-muted" /> {t("reminders.title")}</h1>
           <p className="text-text-muted text-sm mt-1">
             {pendientes} {filterLabels["Pendientes"].toLowerCase()} · {completadas} {filterLabels["Completadas"].toLowerCase()}
           </p>
@@ -194,8 +195,9 @@ const Reminders = () => {
 
       {/* Permiso notificaciones */}
       {"Notification" in window && Notification.permission === "denied" && (
-        <div className="bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-sm px-4 py-3 rounded-xl mb-6">
-          ⚠️ {i18n.language === "es"
+        <div className="bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-sm px-4 py-3 rounded-xl mb-6 flex items-center gap-2">
+          <AlertTriangle size={16} className="flex-shrink-0" />
+          {i18n.language === "es"
             ? "Las notificaciones están bloqueadas. Actívalas en la configuración del navegador para recibir alertas."
             : "Notifications are blocked. Enable them in your browser settings to receive alerts."}
         </div>
@@ -236,7 +238,7 @@ const Reminders = () => {
       <div className="space-y-3">
         {filtradas.length === 0 ? (
           <div className="bg-bg-card border border-border rounded-2xl p-16 text-center">
-            <span className="text-5xl mb-4 block">🔔</span>
+            <Bell size={48} className="text-text-muted/25 mb-4 mx-auto" />
             <p className="text-text-muted">{t("reminders.no_reminders")}</p>
             <p className="text-text-muted/50 text-sm mt-1">{t("reminders.add_first")}</p>
           </div>
@@ -274,26 +276,26 @@ const Reminders = () => {
                   )}
                   {task.fecha && (
                     <p className="text-text-muted/60 text-xs mt-1">
-                      📅 {new Date(task.fecha).toLocaleDateString(i18n.language === "es" ? "es-ES" : "en-US", {
+                      <span className="inline-flex items-center gap-1"><CalendarDays size={11} />{new Date(task.fecha).toLocaleDateString(i18n.language === "es" ? "es-ES" : "en-US", {
                         weekday: "short", day: "numeric", month: "short", year: "numeric"
-                      })} · 🕐 {new Date(task.fecha).toLocaleTimeString(i18n.language === "es" ? "es-ES" : "en-US", {
+                      })}</span> · <span className="inline-flex items-center gap-1"><Clock size={11} />{new Date(task.fecha).toLocaleTimeString(i18n.language === "es" ? "es-ES" : "en-US", {
                         hour: "2-digit", minute: "2-digit"
-                      })}
+                      })}</span>
                     </p>
                   )}
                 </div>
 
                 <button
                   onClick={() => handleEdit(task)}
-                  className="text-text-muted hover:text-primary-light transition text-sm flex-shrink-0 mr-1"
+                  className="text-text-muted hover:text-primary-light transition flex-shrink-0 mr-1 p-0.5"
                 >
-                  ✏️
+                  <Pencil size={14} />
                 </button>
                 <button
                   onClick={() => handleDelete(task.id)}
-                  className="text-text-muted hover:text-red-400 transition text-lg flex-shrink-0"
+                  className="text-text-muted hover:text-red-400 transition flex-shrink-0 p-0.5"
                 >
-                  🗑️
+                  <Trash2 size={16} />
                 </button>
               </div>
             )

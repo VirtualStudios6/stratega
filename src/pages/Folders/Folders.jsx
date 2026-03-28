@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { FolderOpen, Folder, X, Download, FileText, Film, File, Eye, Play } from "lucide-react"
+import { FolderOpen, Folder, X, Download, FileText, Film, File, Eye, Play, Pencil, Trash2, ArrowLeft, User, CalendarDays, Bell } from "lucide-react"
 import DashboardLayout from "../../components/layout/DashboardLayout"
 import { db, storage } from "../../firebase/config"
 import {
@@ -162,7 +162,7 @@ const Folders = () => {
     <DashboardLayout>
       <div className="mb-5 flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-text-main">Carpetas 📁</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-text-main flex items-center gap-2"><Folder size={20} className="text-text-muted" /> Carpetas</h1>
           <p className="text-text-muted text-xs sm:text-sm mt-0.5">{folders.length} carpetas creadas</p>
         </div>
         <button
@@ -177,7 +177,7 @@ const Folders = () => {
       <div className="md:hidden mb-4">
         {folders.length === 0 ? (
           <div className="bg-bg-card border border-border rounded-2xl p-6 text-center">
-            <span className="text-3xl mb-2 block">📁</span>
+            <Folder size={32} className="text-text-muted/40 mb-2 mx-auto" />
             <p className="text-text-muted text-xs mb-3">Sin carpetas</p>
             <button onClick={() => setModalFolder(true)} className="text-xs bg-primary/10 border border-primary/20 text-primary-light px-3 py-1.5 rounded-lg hover:bg-primary/20 transition">+ Nueva carpeta</button>
           </div>
@@ -218,7 +218,7 @@ const Folders = () => {
           <p className="text-xs text-text-muted uppercase tracking-wider mb-3">Mis carpetas</p>
           {folders.length === 0 ? (
             <div className="bg-bg-card border border-border rounded-2xl p-6 text-center">
-              <span className="text-3xl mb-2 block">📁</span>
+              <Folder size={32} className="text-text-muted/40 mb-2 mx-auto" />
               <p className="text-text-muted text-xs">Sin carpetas</p>
             </div>
           ) : (
@@ -241,15 +241,15 @@ const Folders = () => {
                     setFolderForm({ nombre: folder.nombre, color: folder.color })
                     setModalFolder(true)
                   }}
-                  className="opacity-0 group-hover:opacity-100 text-text-muted hover:text-primary-light transition text-sm mr-1"
+                  className="opacity-0 group-hover:opacity-100 text-text-muted hover:text-primary-light transition p-0.5"
                 >
-                  ✏️
+                  <Pencil size={13} />
                 </button>
                 <button
                   onClick={e => { e.stopPropagation(); handleDeleteFolder(folder) }}
-                  className="opacity-0 group-hover:opacity-100 text-text-muted hover:text-red-400 transition text-sm"
+                  className="opacity-0 group-hover:opacity-100 text-text-muted hover:text-red-400 transition p-0.5"
                 >
-                  🗑️
+                  <Trash2 size={13} />
                 </button>
               </div>
             ))
@@ -259,7 +259,7 @@ const Folders = () => {
         <div className="col-span-1 md:col-span-3">
           {!selectedFolder ? (
             <div className="hidden md:flex bg-bg-card border border-border rounded-2xl p-16 text-center flex-col items-center justify-center">
-              <span className="text-5xl mb-4 block">👈</span>
+              <ArrowLeft size={40} className="text-text-muted/25 mb-4" />
               <p className="text-text-muted">Selecciona una carpeta para ver su contenido</p>
             </div>
           ) : (
@@ -300,7 +300,7 @@ const Folders = () => {
                         >
                           {feed.photoURL
                             ? <img src={feed.photoURL} alt={feed.username} className="w-full h-full object-cover" />
-                            : <div className="w-full h-full bg-bg-hover flex items-center justify-center text-sm">👤</div>
+                            : <div className="w-full h-full bg-bg-hover flex items-center justify-center"><User size={14} className="text-text-muted" /></div>
                           }
                         </div>
                         <div className="min-w-0">
@@ -322,7 +322,7 @@ const Folders = () => {
               {linkedPlanners.length > 0 && (
                 <div className="mb-6 pb-6 border-b border-border">
                   <p className="text-xs text-text-muted uppercase tracking-wider font-semibold mb-3 flex items-center gap-2">
-                    📅 Eventos del Planner ({linkedPlanners.length})
+                    <CalendarDays size={12} /> Eventos del Planner ({linkedPlanners.length})
                   </p>
                   <div className="space-y-2">
                     {linkedPlanners.slice(0, 5).map(ev => {
@@ -350,8 +350,8 @@ const Folders = () => {
               {/* Recordatorios */}
               {linkedReminders.length > 0 && (
                 <div className="mb-6 pb-6 border-b border-border">
-                  <p className="text-xs text-text-muted uppercase tracking-wider font-semibold mb-3">
-                    🔔 Recordatorios ({linkedReminders.length})
+                  <p className="text-xs text-text-muted uppercase tracking-wider font-semibold mb-3 flex items-center gap-2">
+                    <Bell size={12} /> Recordatorios ({linkedReminders.length})
                   </p>
                   <div className="space-y-2">
                     {linkedReminders.slice(0, 5).map(rem => (
@@ -372,7 +372,7 @@ const Folders = () => {
 
               {files.length === 0 ? (
                 <div className="text-center py-12">
-                  <span className="text-4xl mb-3 block">📄</span>
+                  <FileText size={40} className="text-text-muted/25 mb-3 mx-auto" />
                   <p className="text-text-muted text-sm">Esta carpeta está vacía</p>
                   <p className="text-text-muted/50 text-xs mt-1">Sube archivos, imágenes, videos o PDFs</p>
                 </div>

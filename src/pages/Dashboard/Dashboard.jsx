@@ -12,7 +12,7 @@ import SmartNotifications from "../../components/shared/SmartNotifications"
 import {
   Bell, Wallet, CalendarDays, XCircle,
   CheckCircle2, FileText, Crown,
-  RefreshCw, Folder, Building2
+  RefreshCw, Folder, Building2, Clock, ShieldCheck
 } from "lucide-react"
 
 const fmt = (n, decimals = 2) =>
@@ -141,6 +141,7 @@ const Dashboard = () => {
   const [loading,       setLoading]       = useState(true)
   const [loadError,     setLoadError]     = useState(false)
   const [userPlan,      setUserPlan]      = useState("free")
+  const [isAdmin,       setIsAdmin]       = useState(false)
 
   // Data
   const [stats,         setStats]         = useState({ recordatorios: 0, quotes: 0, folders: 0 })
@@ -238,8 +239,12 @@ const Dashboard = () => {
       })
       setSparklineData(spark)
 
-      // User plan
-      if (userSnap.exists()) setUserPlan(userSnap.data().plan || "free")
+      // User plan + admin
+      if (userSnap.exists()) {
+        const userData = userSnap.data()
+        setUserPlan(userData.plan || "free")
+        setIsAdmin(userData.isAdmin === true)
+      }
 
       // Stats
       const pendingQuotes = quotSnap.docs.filter(d => {
@@ -282,9 +287,14 @@ const Dashboard = () => {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-xl sm:text-2xl font-bold text-text-main">
-                {greeting}, {firstName} 👋
+                {greeting}, {firstName}
               </h1>
-              {userPlan !== "free" && (
+              {isAdmin && (
+                <span className="inline-flex items-center gap-1 bg-blue-500/15 border border-blue-500/30 text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                  <ShieldCheck size={10} /> Admin
+                </span>
+              )}
+              {!isAdmin && userPlan !== "free" && userPlan !== "trial" && (
                 <span className="inline-flex items-center gap-1 bg-amber-500/15 border border-amber-500/30 text-amber-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
                   <Crown size={10} /> Pro
                 </span>
@@ -362,7 +372,7 @@ const Dashboard = () => {
           <div className="lg:col-span-2 bg-bg-card border border-border rounded-2xl p-5">
             <SectionHeader
               title="Próximos eventos"
-              icon="📅"
+              icon={<CalendarDays size={14} className="text-text-muted" />}
               onViewAll={() => navigate("/planner")}
               viewAllLabel="Ver planner"
             />
@@ -440,12 +450,12 @@ const Dashboard = () => {
                           </span>
                         )}
                         {ev.hora && (
-                          <span className="text-[10px] text-text-muted whitespace-nowrap">🕐 {ev.hora}</span>
+                          <span className="text-[10px] text-text-muted whitespace-nowrap flex items-center gap-1"><Clock size={10} />{ev.hora}</span>
                         )}
                       </div>
                       {/* Mobile: solo hora */}
                       {ev.hora && (
-                        <span className="sm:hidden text-[10px] text-text-muted whitespace-nowrap flex-shrink-0">🕐 {ev.hora}</span>
+                        <span className="sm:hidden text-[10px] text-text-muted whitespace-nowrap flex-shrink-0 flex items-center gap-1"><Clock size={10} />{ev.hora}</span>
                       )}
                     </div>
                   )
@@ -464,7 +474,7 @@ const Dashboard = () => {
           <div className="bg-bg-card border border-border rounded-2xl p-5">
             <SectionHeader
               title="Empresas"
-              icon="🏢"
+              icon={<Building2 size={14} className="text-text-muted" />}
               onViewAll={() => navigate("/folders")}
               viewAllLabel="Ver todo"
             />
@@ -516,7 +526,7 @@ const Dashboard = () => {
           <div className="lg:col-span-2 bg-bg-card border border-border rounded-2xl p-5">
             <SectionHeader
               title="Recordatorios pendientes"
-              icon="🔔"
+              icon={<Bell size={14} className="text-text-muted" />}
               onViewAll={() => navigate("/reminders")}
               viewAllLabel="Ver todos"
             />
@@ -569,7 +579,7 @@ const Dashboard = () => {
           <div className="bg-bg-card border border-border rounded-2xl p-5">
             <SectionHeader
               title="Documentos recientes"
-              icon="📄"
+              icon={<FileText size={14} className="text-text-muted" />}
               onViewAll={() => navigate("/quotes")}
               viewAllLabel="Ver todo"
             />
@@ -626,7 +636,7 @@ const Dashboard = () => {
         </div>
 
 {/* ── Plan upgrade ──────────────────────────────────────────── */}
-        {userPlan === "free" && (
+        {!isAdmin && (userPlan === "free" || userPlan === "trial") && (
           <div className="relative bg-bg-card border border-primary/20 rounded-2xl p-5 overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-primary/8 via-transparent to-transparent pointer-events-none rounded-2xl" />
             <div className="absolute top-0 right-0 w-40 h-40 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
@@ -636,15 +646,17 @@ const Dashboard = () => {
                   <Crown size={18} className="text-primary-light" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-text-main font-bold text-sm mb-0.5">Plan gratuito activo</h3>
-                  <p className="text-text-muted text-xs">Desbloquea equipos, IA ilimitada, reportes avanzados y más con el plan Pro.</p>
+                  <h3 className="text-text-main font-bold text-sm mb-0.5">
+                    {userPlan === "trial" ? "Período de prueba activo" : "Plan gratuito activo"}
+                  </h3>
+                  <p className="text-text-muted text-xs">Desbloquea cotizaciones, contabilidad, Strat AI y más con los planes de pago.</p>
                 </div>
               </div>
               <button
                 onClick={() => navigate("/subscription")}
                 className="w-full sm:w-auto flex-shrink-0 bg-primary text-white px-5 py-2.5 rounded-xl hover:bg-primary-light transition font-semibold text-sm shadow-lg shadow-primary/25"
               >
-                Ver planes →
+                Ver planes
               </button>
             </div>
           </div>

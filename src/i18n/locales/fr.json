@@ -147,10 +147,10 @@
     "campaigns": "Campagnes",
     "content": "Contenu",
     "tasks": "Tâches effectuées",
-    "motivation_streak": "Vous exécutez depuis {{days}} jours sans interruption. 🔥",
-    "motivation_posts": "Vous avez plus de contenu que 80% des marketers cette semaine. 💪",
-    "motivation_tasks": "Vous avez accompli plus de tâches que 60% des personnes dans votre secteur. 🚀",
-    "motivation_default": "Chaque jour que vous exécutez, vous vous rapprochez de vos objectifs. Continuez! ⚡"
+    "motivation_streak": "Vous exécutez depuis {{days}} jours sans interruption.",
+    "motivation_posts": "Vous avez plus de contenu que 80% des marketers cette semaine.",
+    "motivation_tasks": "Vous avez accompli plus de tâches que 60% des personnes dans votre secteur.",
+    "motivation_default": "Chaque jour que vous exécutez, vous vous rapprochez de vos objectifs. Continuez!"
   },
   "dashboard": {
     "welcome": "Bienvenue",
@@ -239,7 +239,7 @@
     "goal_placeholder": "Ex: Générer des réservations",
     "desc_placeholder": "Ex: Expliquer le processus de préparation, ouvrir le produit au ralenti et montrer l'intérieur.",
     "priority_indicator": "Priorité: {{value}}",
-    "content_ideas": "💡 Idées de contenu",
+    "content_ideas": "Idées de contenu",
     "create_event": "+ Créer un événement",
     "priority_urgent": "Urgent",
     "priority_important": "Important",
@@ -276,7 +276,7 @@
     "no_posts": "Aucune publication",
     "grid": "GRILLE",
     "list": "LISTE",
-    "tip": "💡 Glissez les images dans la grille pour réorganiser votre feed",
+    "tip": "Glissez les images dans la grille pour réorganiser votre feed",
     "add": "Ajouter",
     "first_image": "Téléchargez votre première image",
     "position": "Position",
@@ -449,10 +449,10 @@
     "copyright": "© 2026 Stratega Planner. Tous droits réservés."
   },
   "notifications": {
-    "week_missing_1": "Votre contenu du {{day}} n'est pas encore planifié 📅",
-    "week_missing_2": "Votre contenu du {{day1}} et {{day2}} n'est pas encore planifié 📅",
-    "week_missing_many": "Votre semaine est incomplète… planifiez maintenant 📅",
-    "month_missing": "Le mois de {{month}} n'a pas encore de contenu planifié 🗓️"
+    "week_missing_1": "Votre contenu du {{day}} n'est pas encore planifié",
+    "week_missing_2": "Votre contenu du {{day1}} et {{day2}} n'est pas encore planifié",
+    "week_missing_many": "Votre semaine est incomplète… planifiez maintenant",
+    "month_missing": "Le mois de {{month}} n'a pas encore de contenu planifié "
   },
   "ai": {
     "online": "En ligne",
@@ -461,9 +461,9 @@
     "placeholder": "Écrivez votre question...",
     "enter_hint": "Entrée pour envoyer · Maj+Entrée pour nouvelle ligne",
     "error_connect": "❌ Une erreur s'est produite lors de la connexion à l'IA. Réessayez plus tard.",
-    "suggestion_ideas": "💡 Idées de posts",
-    "suggestion_plan": "📅 Planifier du contenu",
-    "suggestion_prices": "💰 Suggérer des tarifs",
+    "suggestion_ideas": "Idées de posts",
+    "suggestion_plan": "Planifier du contenu",
+    "suggestion_prices": "Suggérer des tarifs",
     "suggestion_engagement": "📊 Améliorer l'engagement"
   },
   "layout": {

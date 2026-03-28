@@ -41,6 +41,12 @@ const useSubscriptionGuard = () => {
         const rawStatus = data.subscriptionStatus || "trial"
         const plan      = data.plan || "trial"
 
+        // Admin — full pro access, no restrictions
+        if (data.isAdmin === true) {
+          setState({ status: "active", plan: "pro", isActive: true, daysLeft: 0, loading: false })
+          return
+        }
+
         // Paid subscription — always active
         if (rawStatus === "active") {
           setState({ status: "active", plan, isActive: true, daysLeft: 0, loading: false })

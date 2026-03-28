@@ -10,6 +10,7 @@ import { updatePassword, reauthenticateWithCredential, reauthenticateWithPopup, 
 import { useNavigate } from "react-router-dom"
 import LanguageSwitcher from "../../components/shared/LanguageSwitcher"
 import { deleteUserData } from "../../firebase/deleteUserData"
+import { User, Palette, Globe, Bell, Lock, Settings2, CheckCircle2, XCircle, Pencil } from "lucide-react"
 
 const Settings = () => {
   const { user, refreshUser } = useAuth()
@@ -157,12 +158,12 @@ const Settings = () => {
     perfil.nombre?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "??"
 
   const TABS = [
-    { id: "perfil",         label: t("settings.profile"),       icon: "👤" },
-    { id: "apariencia",     label: t("settings.appearance"),    icon: "🎨" },
-    { id: "idioma",         label: t("settings.language"),      icon: "🌍" },
-    { id: "notificaciones", label: t("settings.notifications"), icon: "🔔" },
-    { id: "seguridad",      label: t("settings.security"),      icon: "🔐" },
-    { id: "cuenta",         label: t("settings.current_plan"),  icon: "⚙️" },
+    { id: "perfil",         label: t("settings.profile"),       icon: <User size={14} /> },
+    { id: "apariencia",     label: t("settings.appearance"),    icon: <Palette size={14} /> },
+    { id: "idioma",         label: t("settings.language"),      icon: <Globe size={14} /> },
+    { id: "notificaciones", label: t("settings.notifications"), icon: <Bell size={14} /> },
+    { id: "seguridad",      label: t("settings.security"),      icon: <Lock size={14} /> },
+    { id: "cuenta",         label: t("settings.current_plan"),  icon: <Settings2 size={14} /> },
   ]
 
   const inputClass = "w-full bg-bg-input border border-border text-text-main rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-text-muted/40"
@@ -176,10 +177,10 @@ const Settings = () => {
       </div>
 
       {success && (
-        <div className="bg-green-500/10 border border-green-500/20 text-green-400 text-sm px-4 py-3 rounded-xl mb-4">✅ {success}</div>
+        <div className="bg-green-500/10 border border-green-500/20 text-green-400 text-sm px-4 py-3 rounded-xl mb-4 flex items-center gap-2"><CheckCircle2 size={16} />{success}</div>
       )}
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl mb-4">❌ {error}</div>
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl mb-4 flex items-center gap-2"><XCircle size={16} />{error}</div>
       )}
 
       {/* ── Tabs: scroll horizontal en mobile, sidebar vertical en desktop ── */}
@@ -240,7 +241,7 @@ const Settings = () => {
                     </div>
                   )}
                   <label className="absolute -bottom-2 -right-2 w-7 h-7 bg-primary rounded-full flex items-center justify-center cursor-pointer hover:bg-primary-light transition shadow-lg">
-                    <span className="text-white text-xs">✏️</span>
+                    <Pencil size={12} className="text-white" />
                     <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
                   </label>
                 </div>

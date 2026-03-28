@@ -3,11 +3,12 @@ import { useTranslation } from "react-i18next"
 import { useAuth } from "../../context/AuthContext"
 import { db } from "../../firebase/config"
 import { collection, getDocs, query, where, doc, getDoc } from "firebase/firestore"
+import { Flame, CalendarDays, Image, CheckCircle2, Zap } from "lucide-react"
 
 const MetricCard = ({ icon, label, value, color, unit }) => (
   <div className={`bg-bg-main border border-border rounded-2xl p-4 flex flex-col gap-1`}>
     <div className={`inline-flex items-center justify-center w-9 h-9 rounded-xl mb-1 ${color}`}>
-      <span className="text-lg">{icon}</span>
+      {icon}
     </div>
     <p className="text-text-muted text-xs uppercase tracking-wider leading-tight">{label}</p>
     <div className="flex items-end gap-1">
@@ -63,10 +64,10 @@ const ProgressStats = () => {
   }
 
   const metrics = [
-    { icon: "🔥", label: t("progress.streak"),    value: data.streakDays,        unit: t("progress.streak_unit"), color: "bg-orange-500/20" },
-    { icon: "📅", label: t("progress.campaigns"),  value: data.campanias,         unit: null,                      color: "bg-primary/20"    },
-    { icon: "🖼️", label: t("progress.content"),    value: data.posts,             unit: null,                      color: "bg-blue-500/20"   },
-    { icon: "✅", label: t("progress.tasks"),       value: data.tareasCompletadas, unit: null,                      color: "bg-green-500/20"  },
+    { icon: <Flame size={18} className="text-orange-400" />, label: t("progress.streak"),    value: data.streakDays,        unit: t("progress.streak_unit"), color: "bg-orange-500/20" },
+    { icon: <CalendarDays size={18} className="text-primary-light" />, label: t("progress.campaigns"),  value: data.campanias,         unit: null,                      color: "bg-primary/20"    },
+    { icon: <Image size={18} className="text-blue-400" />, label: t("progress.content"),    value: data.posts,             unit: null,                      color: "bg-blue-500/20"   },
+    { icon: <CheckCircle2 size={18} className="text-green-400" />, label: t("progress.tasks"),       value: data.tareasCompletadas, unit: null,                      color: "bg-green-500/20"  },
   ]
 
   return (
@@ -76,8 +77,9 @@ const ProgressStats = () => {
           <h2 className="text-text-main font-semibold text-sm">{t("progress.title")}</h2>
           <p className="text-text-muted text-xs">{t("progress.subtitle")}</p>
         </div>
-        <span className="text-xs bg-primary/10 border border-primary/20 text-primary-light px-3 py-1 rounded-full">
-          {data.streakDays} {t("progress.streak_unit")} 🔥
+        <span className="text-xs bg-primary/10 border border-primary/20 text-primary-light px-3 py-1 rounded-full flex items-center gap-1.5">
+          <Flame size={12} className="text-orange-400" />
+          {data.streakDays} {t("progress.streak_unit")}
         </span>
       </div>
 
@@ -88,7 +90,7 @@ const ProgressStats = () => {
       </div>
 
       <div className="bg-primary/10 border border-primary/20 rounded-xl px-4 py-3 flex items-center gap-3">
-        <span className="text-xl flex-shrink-0">⚡</span>
+        <Zap size={18} className="text-primary-light flex-shrink-0" />
         <p className="text-text-main text-sm">{getMotivation()}</p>
       </div>
     </div>

@@ -1,11 +1,11 @@
 import DashboardLayout from "../../components/layout/DashboardLayout"
-import { Wrench, Clock } from "lucide-react"
+import { Wrench, Clock, Users } from "lucide-react"
 
 const Team = () => {
   return (
     <DashboardLayout>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-text-main">Equipo 👥</h1>
+        <h1 className="text-2xl font-bold text-text-main flex items-center gap-2"><Users size={22} className="text-text-muted" /> Equipo</h1>
         <p className="text-text-muted text-sm mt-1">Gestión de miembros del equipo</p>
       </div>
 

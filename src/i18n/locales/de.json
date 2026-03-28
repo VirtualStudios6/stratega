@@ -147,10 +147,10 @@
     "campaigns": "Kampagnen",
     "content": "Inhalt",
     "tasks": "Erledigte Aufgaben",
-    "motivation_streak": "Du führst seit {{days}} Tagen ohne Unterbrechung aus. 🔥",
-    "motivation_posts": "Du hast mehr Inhalt als 80% der Marketer diese Woche. 💪",
-    "motivation_tasks": "Du hast mehr Aufgaben als 60% der Menschen in deiner Branche erledigt. 🚀",
-    "motivation_default": "Jeden Tag, den du ausführst, kommst du deinen Zielen näher. Weiter so! ⚡"
+    "motivation_streak": "Du führst seit {{days}} Tagen ohne Unterbrechung aus.",
+    "motivation_posts": "Du hast mehr Inhalt als 80% der Marketer diese Woche.",
+    "motivation_tasks": "Du hast mehr Aufgaben als 60% der Menschen in deiner Branche erledigt.",
+    "motivation_default": "Jeden Tag, den du ausführst, kommst du deinen Zielen näher. Weiter so!"
   },
   "dashboard": {
     "welcome": "Willkommen",
@@ -239,7 +239,7 @@
     "goal_placeholder": "z.B.: Buchungen generieren",
     "desc_placeholder": "z.B.: Den Zubereitungsprozess erklären, das Produkt in Zeitlupe öffnen und das Innere zeigen.",
     "priority_indicator": "Priorität: {{value}}",
-    "content_ideas": "💡 Inhaltsideen",
+    "content_ideas": "Inhaltsideen",
     "create_event": "+ Ereignis erstellen",
     "priority_urgent": "Dringend",
     "priority_important": "Wichtig",
@@ -276,7 +276,7 @@
     "no_posts": "Noch keine Beiträge",
     "grid": "GITTER",
     "list": "LISTE",
-    "tip": "💡 Ziehe Bilder im Gitter, um deinen Feed neu anzuordnen",
+    "tip": "Ziehe Bilder im Gitter, um deinen Feed neu anzuordnen",
     "add": "Hinzufügen",
     "first_image": "Lade dein erstes Bild hoch",
     "position": "Position",
@@ -449,10 +449,10 @@
     "copyright": "© 2026 Stratega Planner. Alle Rechte vorbehalten."
   },
   "notifications": {
-    "week_missing_1": "Dein Inhalt für {{day}} ist noch nicht geplant 📅",
-    "week_missing_2": "Dein Inhalt für {{day1}} und {{day2}} ist noch nicht geplant 📅",
-    "week_missing_many": "Deine Woche ist unvollständig… plane jetzt 📅",
-    "month_missing": "Der Monat {{month}} hat noch keinen geplanten Inhalt 🗓️"
+    "week_missing_1": "Dein Inhalt für {{day}} ist noch nicht geplant",
+    "week_missing_2": "Dein Inhalt für {{day1}} und {{day2}} ist noch nicht geplant",
+    "week_missing_many": "Deine Woche ist unvollständig… plane jetzt",
+    "month_missing": "Der Monat {{month}} hat noch keinen geplanten Inhalt "
   },
   "ai": {
     "online": "Online",
@@ -461,9 +461,9 @@
     "placeholder": "Schreibe deine Frage...",
     "enter_hint": "Enter zum Senden · Umschalt+Enter für neue Zeile",
     "error_connect": "❌ Fehler beim Verbinden mit der KI. Versuche es später erneut.",
-    "suggestion_ideas": "💡 Beitragsideen",
-    "suggestion_plan": "📅 Inhalt planen",
-    "suggestion_prices": "💰 Preise vorschlagen",
+    "suggestion_ideas": "Beitragsideen",
+    "suggestion_plan": "Inhalt planen",
+    "suggestion_prices": "Preise vorschlagen",
     "suggestion_engagement": "📊 Engagement verbessern"
   },
   "layout": {

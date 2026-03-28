@@ -147,10 +147,10 @@
     "campaigns": "Campaigns",
     "content": "Content",
     "tasks": "Tasks done",
-    "motivation_streak": "You've been executing for {{days}} days straight. 🔥",
-    "motivation_posts": "You have more content than 80% of marketers this week. 💪",
-    "motivation_tasks": "You've completed more tasks than 60% of people in your industry. 🚀",
-    "motivation_default": "Every day you execute, you get closer to your goals. Keep it up! ⚡"
+    "motivation_streak": "You've been executing for {{days}} days straight.",
+    "motivation_posts": "You have more content than 80% of marketers this week.",
+    "motivation_tasks": "You've completed more tasks than 60% of people in your industry.",
+    "motivation_default": "Every day you execute, you get closer to your goals. Keep it up!"
   },
   "dashboard": {
     "welcome": "Welcome",
@@ -239,7 +239,7 @@
     "goal_placeholder": "E.g.: Generate bookings",
     "desc_placeholder": "E.g.: Explain the preparation process, open the product in slow motion and show the inside.",
     "priority_indicator": "Priority: {{value}}",
-    "content_ideas": "💡 Content ideas",
+    "content_ideas": "Content ideas",
     "create_event": "+ Create event",
     "priority_urgent": "Urgent",
     "priority_important": "Important",
@@ -276,7 +276,7 @@
     "no_posts": "No posts yet",
     "grid": "GRID",
     "list": "LIST",
-    "tip": "💡 Drag images in the grid to reorder your feed",
+    "tip": "Drag images in the grid to reorder your feed",
     "add": "Add",
     "first_image": "Upload your first image",
     "position": "Position",
@@ -449,10 +449,10 @@
     "copyright": "© 2026 Stratega Planner. All rights reserved."
   },
   "notifications": {
-    "week_missing_1": "Your {{day}} content is not planned yet 📅",
-    "week_missing_2": "Your content for {{day1}} and {{day2}} is not planned yet 📅",
-    "week_missing_many": "Your week is incomplete… plan it now 📅",
-    "month_missing": "{{month}} has no planned content yet 🗓️"
+    "week_missing_1": "Your {{day}} content is not planned yet",
+    "week_missing_2": "Your content for {{day1}} and {{day2}} is not planned yet",
+    "week_missing_many": "Your week is incomplete… plan it now",
+    "month_missing": "{{month}} has no planned content yet "
   },
   "ai": {
     "online": "Online",
@@ -461,9 +461,9 @@
     "placeholder": "Write your question...",
     "enter_hint": "Enter to send · Shift+Enter for new line",
     "error_connect": "❌ There was an error connecting to AI. Try again later.",
-    "suggestion_ideas": "💡 Post ideas",
-    "suggestion_plan": "📅 Plan content",
-    "suggestion_prices": "💰 Suggest prices",
+    "suggestion_ideas": "Post ideas",
+    "suggestion_plan": "Plan content",
+    "suggestion_prices": "Suggest prices",
     "suggestion_engagement": "📊 Improve engagement"
   },
   "layout": {

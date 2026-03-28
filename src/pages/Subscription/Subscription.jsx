@@ -8,6 +8,7 @@ import { useAuth } from "../../context/AuthContext"
 import { db } from "../../firebase/config"
 import useSubscriptionGuard from "../../hooks/useSubscriptionGuard"
 import { usePaddle } from "../../hooks/usePaddle"
+import { CheckCircle2, XCircle, ShieldCheck, Globe, X } from "lucide-react"
 
 // Price IDs de Paddle (Billing v2)
 const PADDLE_PRICES = {
@@ -34,14 +35,14 @@ const PLANES = [
     color: "border-border",
     badge: null,
     features: [
-      "✅ Planner y Calendario",
-      "✅ Organizador de Feed",
-      "✅ Recordatorios",
-      "✅ Carpetas (5GB)",
-      "✅ Hasta 3 miembros de equipo",
-      "❌ Cotizaciones",
-      "❌ Contabilidad",
-      "❌ Strat AI",
+      { included: true,  text: "Planner y Calendario" },
+      { included: true,  text: "Organizador de Feed" },
+      { included: true,  text: "Recordatorios" },
+      { included: true,  text: "Carpetas (5GB)" },
+      { included: true,  text: "Hasta 3 miembros de equipo" },
+      { included: false, text: "Cotizaciones" },
+      { included: false, text: "Contabilidad" },
+      { included: false, text: "Strat AI" },
     ],
   },
   {
@@ -53,14 +54,14 @@ const PLANES = [
     color: "border-primary/50",
     badge: "Más popular",
     features: [
-      "✅ Todo lo del plan Básico",
-      "✅ Cotizaciones ilimitadas + PDF",
-      "✅ Contabilidad completa",
-      "✅ Strat AI integrada",
-      "✅ Miembros ilimitados",
-      "✅ 20GB de almacenamiento",
-      "✅ Soporte prioritario",
-      "✅ Nuevas funciones primero",
+      { included: true, text: "Todo lo del plan Básico" },
+      { included: true, text: "Cotizaciones ilimitadas + PDF" },
+      { included: true, text: "Contabilidad completa" },
+      { included: true, text: "Strat AI integrada" },
+      { included: true, text: "Miembros ilimitados" },
+      { included: true, text: "20GB de almacenamiento" },
+      { included: true, text: "Soporte prioritario" },
+      { included: true, text: "Nuevas funciones primero" },
     ],
   },
 ]
@@ -319,8 +320,12 @@ const Subscription = () => {
 
                   <ul className="space-y-2 flex-1 mb-5">
                     {plan.features.map((f, i) => (
-                      <li key={i} className="text-sm text-text-muted">
-                        {f}
+                      <li key={i} className={`text-sm flex items-center gap-2 ${f.included ? "text-text-muted" : "text-text-muted/40"}`}>
+                        {f.included
+                          ? <CheckCircle2 size={14} className="text-green-400 flex-shrink-0" />
+                          : <XCircle size={14} className="text-text-muted/30 flex-shrink-0" />
+                        }
+                        {f.text}
                       </li>
                     ))}
                   </ul>
@@ -351,15 +356,15 @@ const Subscription = () => {
 
         <div className="grid grid-cols-3 gap-3 mt-4">
           {[
-            { icon: "🔒", text: "Pago seguro con SSL" },
-            { icon: "❌", text: "Cancela cuando quieras" },
-            { icon: "🌍", text: "Tarjetas internacionales" },
+            { icon: <ShieldCheck size={20} className="text-green-400" />, text: "Pago seguro con SSL" },
+            { icon: <X size={20} className="text-primary-light" />,       text: "Cancela cuando quieras" },
+            { icon: <Globe size={20} className="text-blue-400" />,        text: "Tarjetas internacionales" },
           ].map((item, i) => (
             <div
               key={i}
               className="bg-bg-card border border-border rounded-xl p-3 sm:p-4 text-center"
             >
-              <span className="text-lg sm:text-xl block mb-1">{item.icon}</span>
+              <span className="flex justify-center mb-1">{item.icon}</span>
               <p className="text-text-muted text-[10px] sm:text-xs">{item.text}</p>
             </div>
           ))}
