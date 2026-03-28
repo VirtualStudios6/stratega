@@ -153,7 +153,7 @@ const Sidebar = ({ open, onClose, collapsed = false, isMobile = false }) => {
   return (
     <aside className={`
       ${isMobile
-        ? `fixed left-0 top-0 h-screen w-64 bg-bg-card border-r border-border
+        ? `fixed left-0 top-0 h-screen w-64 max-w-[85vw] bg-bg-card border-r border-border
            flex flex-col z-50 transition-transform duration-300 ease-in-out
            ${open ? "translate-x-0" : "-translate-x-full"} lg:hidden`
         : "h-full w-full bg-bg-card flex flex-col overflow-hidden"

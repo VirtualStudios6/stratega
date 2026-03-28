@@ -240,9 +240,9 @@ const Reminders = () => {
           { label: statsLabels.Pendientes, value: pendientes, color: "bg-yellow-500/20 border-yellow-500/30" },
           { label: statsLabels.Completadas, value: completadas, color: "bg-green-500/20 border-green-500/30" },
         ].map((s, i) => (
-          <div key={s.label} style={{ animationDelay: `${i * 80}ms` }} className={`${s.color} border rounded-2xl p-4 text-center animate-slide-up`}>
-            <p className="text-2xl font-bold text-text-main">{s.value}</p>
-            <p className="text-text-muted text-xs mt-1">{s.label}</p>
+          <div key={s.label} style={{ animationDelay: `${i * 80}ms` }} className={`${s.color} border rounded-2xl p-3 sm:p-4 text-center animate-slide-up`}>
+            <p className="text-xl sm:text-2xl font-bold text-text-main">{s.value}</p>
+            <p className="text-text-muted text-[10px] sm:text-xs mt-1 truncate">{s.label}</p>
           </div>
         ))}
       </div>

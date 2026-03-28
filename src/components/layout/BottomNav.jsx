@@ -176,7 +176,7 @@ const BottomNav = () => {
             <div className="h-px bg-border mx-5 mb-4" />
 
             {/* Grid de secciones */}
-            <div className="grid grid-cols-3 gap-3 px-5 mb-4">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 px-4 sm:px-5 mb-4">
               {moreItems.map(({ icon: Icon, label, path, iconColor, bg }) => {
                 const active = location.pathname === path
                 return (
@@ -184,17 +184,17 @@ const BottomNav = () => {
                     key={path}
                     to={path}
                     className={`
-                      flex flex-col items-center gap-2 py-4 rounded-2xl border transition-all active:scale-95
+                      flex flex-col items-center gap-1.5 py-3 sm:py-4 rounded-2xl border transition-all active:scale-95
                       ${active
                         ? "bg-primary/10 border-primary/35 shadow-sm"
                         : "bg-bg-input border-border active:bg-bg-hover"
                       }
                     `}
                   >
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${active ? "bg-primary/15" : bg}`}>
-                      <Icon size={20} className={active ? "text-primary" : iconColor} strokeWidth={1.8} />
+                    <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center ${active ? "bg-primary/15" : bg}`}>
+                      <Icon size={18} className={active ? "text-primary" : iconColor} strokeWidth={1.8} />
                     </div>
-                    <span className={`text-[11px] font-semibold text-center leading-tight px-1 ${active ? "text-primary" : "text-text-muted"}`}>
+                    <span className={`text-[10px] sm:text-[11px] font-semibold text-center leading-tight px-1 line-clamp-2 ${active ? "text-primary" : "text-text-muted"}`}>
                       {label}
                     </span>
                   </Link>

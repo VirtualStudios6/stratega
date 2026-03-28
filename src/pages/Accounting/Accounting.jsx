@@ -406,21 +406,21 @@ const Accounting = () => {
             <div className="p-6 space-y-6">
 
               {/* Stats */}
-              <div className="grid grid-cols-3 gap-3">
-                <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-4 text-center">
-                  <p className="text-green-400 text-[10px] uppercase tracking-wider mb-1">Ingresos</p>
-                  <p className="text-xl font-bold text-green-400">+${fmt(rIngresos)}</p>
-                  <p className="text-text-muted text-[10px] mt-1">{reporteFiltradas.filter(t => t.tipo === "ingreso").length} movimientos</p>
+              <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-2 sm:p-4 text-center">
+                  <p className="text-green-400 text-[9px] sm:text-[10px] uppercase tracking-wider mb-1">Ingresos</p>
+                  <p className="text-sm sm:text-xl font-bold text-green-400 truncate">+${fmt(rIngresos)}</p>
+                  <p className="text-text-muted text-[9px] sm:text-[10px] mt-1">{reporteFiltradas.filter(t => t.tipo === "ingreso").length} mov.</p>
                 </div>
-                <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-center">
-                  <p className="text-red-400 text-[10px] uppercase tracking-wider mb-1">Gastos</p>
-                  <p className="text-xl font-bold text-red-400">-${fmt(rGastos)}</p>
-                  <p className="text-text-muted text-[10px] mt-1">{reporteFiltradas.filter(t => t.tipo === "gasto").length} movimientos</p>
+                <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-2 sm:p-4 text-center">
+                  <p className="text-red-400 text-[9px] sm:text-[10px] uppercase tracking-wider mb-1">Gastos</p>
+                  <p className="text-sm sm:text-xl font-bold text-red-400 truncate">-${fmt(rGastos)}</p>
+                  <p className="text-text-muted text-[9px] sm:text-[10px] mt-1">{reporteFiltradas.filter(t => t.tipo === "gasto").length} mov.</p>
                 </div>
-                <div className={`${rBalance >= 0 ? "bg-primary/10 border-primary/20" : "bg-red-500/10 border-red-500/20"} border rounded-xl p-4 text-center`}>
-                  <p className="text-text-muted text-[10px] uppercase tracking-wider mb-1">Balance</p>
-                  <p className={`text-xl font-bold ${rBalance >= 0 ? "text-primary-light" : "text-red-400"}`}>${fmt(rBalance)}</p>
-                  <p className="text-text-muted text-[10px] mt-1">{reporteFiltradas.length} total</p>
+                <div className={`${rBalance >= 0 ? "bg-primary/10 border-primary/20" : "bg-red-500/10 border-red-500/20"} border rounded-xl p-2 sm:p-4 text-center`}>
+                  <p className="text-text-muted text-[9px] sm:text-[10px] uppercase tracking-wider mb-1">Balance</p>
+                  <p className={`text-sm sm:text-xl font-bold truncate ${rBalance >= 0 ? "text-primary-light" : "text-red-400"}`}>${fmt(rBalance)}</p>
+                  <p className="text-text-muted text-[9px] sm:text-[10px] mt-1">{reporteFiltradas.length} total</p>
                 </div>
               </div>
 
