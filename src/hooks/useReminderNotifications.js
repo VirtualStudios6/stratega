@@ -7,6 +7,16 @@ import toast from "react-hot-toast"
 // Module-level dedup — survives re-renders
 const notified = new Set()
 
+// ── Badge counter ─────────────────────────────────────────────────────────
+let _badgeCount = 0
+
+export const getReminderBadgeCount = () => _badgeCount
+
+export const clearReminderBadge = () => {
+  _badgeCount = 0
+  window.dispatchEvent(new CustomEvent("reminder-badge", { detail: 0 }))
+}
+
 // ── AudioContext singleton — unlocked on first user gesture ───────────────
 let _audioCtx = null
 
@@ -56,6 +66,10 @@ const playBeep = () => {
 
 const fireNotification = (task, label) => {
   playBeep()
+
+  // Increment badge and notify UI
+  _badgeCount++
+  window.dispatchEvent(new CustomEvent("reminder-badge", { detail: _badgeCount }))
 
   // In-app toast — always shown regardless of OS notification permission
   toast(`⏰ ${task.titulo} — ${label}`, {

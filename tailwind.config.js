@@ -34,6 +34,18 @@ export default {
         200: "200ms",
         300: "300ms",
       },
+      keyframes: {
+        wiggle: {
+          "0%,100%": { transform: "rotate(0deg)" },
+          "20%":     { transform: "rotate(-20deg)" },
+          "40%":     { transform: "rotate(20deg)" },
+          "60%":     { transform: "rotate(-12deg)" },
+          "80%":     { transform: "rotate(12deg)" },
+        },
+      },
+      animation: {
+        wiggle: "wiggle 0.5s ease-in-out",
+      },
     },
   },
   plugins: [],

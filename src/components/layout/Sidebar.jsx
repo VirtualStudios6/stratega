@@ -7,6 +7,7 @@ import { db } from "../../firebase/config"
 import { doc, getDoc } from "firebase/firestore"
 import LanguageSwitcher from "../shared/LanguageSwitcher"
 import useSubscriptionGuard from "../../hooks/useSubscriptionGuard"
+import { clearReminderBadge, getReminderBadgeCount } from "../../hooks/useReminderNotifications"
 import {
   LayoutDashboard, CalendarDays, Image, Bell, FolderOpen,
   FileText, Wallet, Users, Settings, Crown, LogOut, Eye, EyeOff, Lock
@@ -15,7 +16,7 @@ import {
 // Rutas libres en plan trial — el resto requiere suscripción
 const FREE_ROUTES = ["/dashboard", "/planner", "/settings", "/subscription"]
 
-const NavLink = ({ item, isActive, onClick, collapsed, locked }) => (
+const NavLink = ({ item, isActive, onClick, collapsed, locked, badge = 0 }) => (
   <Link
     to={item.path}
     onClick={onClick}
@@ -40,9 +41,16 @@ const NavLink = ({ item, isActive, onClick, collapsed, locked }) => (
       `} />
     )}
 
-    {/* Icon */}
-    <span className="w-5 flex-shrink-0 flex items-center justify-center">
-      {item.icon}
+    {/* Icon with optional badge */}
+    <span className="relative w-5 flex-shrink-0 flex items-center justify-center">
+      <span className={badge > 0 ? "animate-[wiggle_0.4s_ease-in-out]" : ""}>
+        {item.icon}
+      </span>
+      {badge > 0 && (
+        <span className="absolute -top-2 -right-2 min-w-[16px] h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5 shadow-sm">
+          {badge > 9 ? "9+" : badge}
+        </span>
+      )}
     </span>
 
     {/* Label */}
@@ -81,10 +89,25 @@ const Sidebar = ({ open, onClose, collapsed = false, isMobile = false }) => {
   const { user }  = useAuth()
   const { status, daysLeft } = useSubscriptionGuard()
 
-  const [avatar,    setAvatar]    = useState(null)
-  const [showEmail, setShowEmail] = useState(() =>
+  const [avatar,        setAvatar]        = useState(null)
+  const [reminderBadge, setReminderBadge] = useState(() => getReminderBadgeCount())
+  const [showEmail,     setShowEmail]     = useState(() =>
     localStorage.getItem("sidebar_show_email") !== "false"
   )
+
+  // Listen for new reminder notifications
+  useEffect(() => {
+    const handler = (e) => setReminderBadge(e.detail)
+    window.addEventListener("reminder-badge", handler)
+    return () => window.removeEventListener("reminder-badge", handler)
+  }, [])
+
+  // Clear badge when visiting /reminders
+  useEffect(() => {
+    if (location.pathname === "/reminders" && reminderBadge > 0) {
+      clearReminderBadge()
+    }
+  }, [location.pathname, reminderBadge])
 
   useEffect(() => {
     if (!user) return
@@ -182,6 +205,7 @@ const Sidebar = ({ open, onClose, collapsed = false, isMobile = false }) => {
               onClick={isMobile ? onClose : undefined}
               collapsed={!showText}
               locked={status === "trial" && !FREE_ROUTES.includes(item.path)}
+              badge={item.path === "/reminders" ? reminderBadge : 0}
             />
           ))}
         </div>

@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useAuth } from "../../context/AuthContext"
 import { db } from "../../firebase/config"
@@ -7,6 +7,7 @@ import { doc, getDoc } from "firebase/firestore"
 import { logout } from "../../firebase/auth"
 import LanguageSwitcher from "../shared/LanguageSwitcher"
 import NotificationBell from "../shared/NotificationBell"
+import { clearReminderBadge, getReminderBadgeCount } from "../../hooks/useReminderNotifications"
 import {
   LayoutDashboard, CalendarDays, Image, Bell,
   MoreHorizontal, FolderOpen, FileText, Wallet,
@@ -18,8 +19,21 @@ const BottomNav = () => {
   const navigate  = useNavigate()
   const { t }     = useTranslation()
   const { user }  = useAuth()
-  const [moreOpen, setMoreOpen] = useState(false)
-  const [avatar,   setAvatar]   = useState(null)
+  const [moreOpen,      setMoreOpen]      = useState(false)
+  const [avatar,        setAvatar]        = useState(null)
+  const [reminderBadge, setReminderBadge] = useState(() => getReminderBadgeCount())
+
+  useEffect(() => {
+    const handler = (e) => setReminderBadge(e.detail)
+    window.addEventListener("reminder-badge", handler)
+    return () => window.removeEventListener("reminder-badge", handler)
+  }, [])
+
+  useEffect(() => {
+    if (location.pathname === "/reminders" && reminderBadge > 0) {
+      clearReminderBadge()
+    }
+  }, [location.pathname, reminderBadge])
 
   useEffect(() => {
     if (!user) return
@@ -76,6 +90,7 @@ const BottomNav = () => {
 
           {tabs.map(({ icon: Icon, label, path }) => {
             const active = location.pathname === path
+            const badge  = path === "/reminders" ? reminderBadge : 0
             return (
               <Link
                 key={path}
@@ -83,10 +98,15 @@ const BottomNav = () => {
                 className="flex-1 flex flex-col items-center justify-center gap-[3px] active:opacity-60 transition-opacity duration-100 select-none"
               >
                 <div className={`
-                  flex items-center justify-center w-11 h-7 rounded-2xl transition-all duration-200
+                  relative flex items-center justify-center w-11 h-7 rounded-2xl transition-all duration-200
                   ${active ? "bg-primary/15" : ""}
                 `}>
                   <Icon size={21} className={`transition-colors duration-200 ${active ? "text-primary" : "text-text-muted"}`} strokeWidth={active ? 2.2 : 1.8} />
+                  {badge > 0 && (
+                    <span className="absolute -top-1.5 -right-0.5 min-w-[16px] h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5 shadow-sm">
+                      {badge > 9 ? "9+" : badge}
+                    </span>
+                  )}
                 </div>
                 <span className={`text-[10px] font-semibold leading-none transition-colors duration-200 ${active ? "text-primary" : "text-text-muted"}`}>
                   {label}
