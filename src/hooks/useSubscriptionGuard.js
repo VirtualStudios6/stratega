@@ -21,14 +21,38 @@ import { useAuth } from "../context/AuthContext"
 let _cachedState = null
 let _cachedUid   = null
 
+const SESSION_KEY = "stratega_sub_state"
+
 const INITIAL_STATE = { status: "trial", plan: "trial", isActive: true, daysLeft: 7, loading: true }
+
+// Read persisted state from sessionStorage (survives page refresh within same tab)
+const readSession = (uid) => {
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEY)
+    if (!raw) return null
+    const { uid: storedUid, state } = JSON.parse(raw)
+    return storedUid === uid ? state : null
+  } catch { return null }
+}
+
+const writeSession = (uid, state) => {
+  try {
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify({ uid, state }))
+  } catch {}
+}
 
 const useSubscriptionGuard = () => {
   const { user } = useAuth()
 
-  // If we already have a cached result for this user, start with it (no flash)
+  // Priority: 1) module cache (navigation), 2) sessionStorage (refresh), 3) loading state
   const [state, setState] = useState(() => {
     if (_cachedState && _cachedUid === user?.uid) return _cachedState
+    const persisted = user?.uid ? readSession(user.uid) : null
+    if (persisted) {
+      _cachedState = persisted
+      _cachedUid   = user?.uid
+      return persisted
+    }
     return INITIAL_STATE
   })
 
@@ -44,6 +68,7 @@ const useSubscriptionGuard = () => {
     const save = (newState) => {
       _cachedState = newState
       _cachedUid   = user.uid
+      writeSession(user.uid, newState)
       setState(newState)
     }
 
