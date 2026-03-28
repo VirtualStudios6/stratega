@@ -47,7 +47,7 @@ const NavLink = ({ item, isActive, onClick, collapsed, locked, badge = 0 }) => (
         {item.icon}
       </span>
       {badge > 0 && (
-        <span className="absolute -top-2 -right-2 min-w-[16px] h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5 shadow-sm">
+        <span className="absolute -top-2 -right-2 min-w-[16px] h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5 shadow-sm animate-badge-pop">
           {badge > 9 ? "9+" : badge}
         </span>
       )}

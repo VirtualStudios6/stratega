@@ -46,11 +46,13 @@ const SparkLine = ({ data, positive }) => {
 }
 
 /* ─── Stat Card ─────────────────────────────────────────────────────────── */
-const StatCard = ({ icon, label, value, sub, gradient, onClick, loading, sparkline, sparkPositive }) => (
+const StatCard = ({ icon, label, value, sub, gradient, onClick, loading, sparkline, sparkPositive, index = 0 }) => (
   <div
     onClick={onClick}
-    className={`relative bg-bg-card border border-border rounded-2xl p-4 sm:p-5 overflow-hidden transition
-      ${onClick ? "cursor-pointer hover:border-primary/30 hover:bg-bg-hover active:bg-bg-hover" : ""}`}
+    style={{ animationDelay: `${index * 80}ms` }}
+    className={`relative bg-bg-card border border-border rounded-2xl p-4 sm:p-5 overflow-hidden
+      animate-slide-up transition-all duration-200
+      ${onClick ? "cursor-pointer hover:border-primary/30 hover:bg-bg-hover hover:-translate-y-1 active:translate-y-0 active:bg-bg-hover" : ""}`}
   >
     <div className="flex items-start justify-between mb-2 sm:mb-3">
       <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${gradient}`}>
@@ -349,6 +351,7 @@ const Dashboard = () => {
         {/* ── Stat cards ────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
+            index={0}
             icon={<Bell size={18} className="text-amber-400" />}
             label="Recordatorios"
             value={stats.recordatorios}
@@ -358,6 +361,7 @@ const Dashboard = () => {
             loading={loading}
           />
           <StatCard
+            index={1}
             icon={<Building2 size={18} className="text-blue-400" />}
             label="Empresas"
             value={stats.folders}
@@ -367,6 +371,7 @@ const Dashboard = () => {
             loading={loading}
           />
           <StatCard
+            index={2}
             icon={<FileText size={18} className="text-indigo-400" />}
             label="Docs activos"
             value={stats.quotes}
@@ -376,6 +381,7 @@ const Dashboard = () => {
             loading={loading}
           />
           <StatCard
+            index={3}
             icon={<Wallet size={18} className={balanceTotal >= 0 ? "text-green-400" : "text-red-400"} />}
             label="Balance del mes"
             value={`$${fmt(balanceTotal, 0)}`}
@@ -423,7 +429,7 @@ const Dashboard = () => {
               </div>
             ) : (
               <div className="space-y-2">
-                {plannerEvents.map(ev => {
+                {plannerEvents.map((ev, idx) => {
                   const pr = PRIORIDAD_COLORS[ev.prioridad] || PRIORIDAD_COLORS.Normal
                   const platColor = PLAT_COLORS[ev.plataforma] || null
                   const isToday = ev.fecha === new Date().toISOString().split("T")[0]
@@ -435,7 +441,8 @@ const Dashboard = () => {
                     <div
                       key={ev.id}
                       onClick={() => navigate("/planner")}
-                      className="flex items-center gap-3 bg-bg-input border border-border rounded-xl px-4 py-3 hover:border-primary/20 transition cursor-pointer"
+                      style={{ animationDelay: `${idx * 60}ms` }}
+                      className="flex items-center gap-3 bg-bg-input border border-border rounded-xl px-4 py-3 hover:border-primary/20 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer animate-slide-up"
                     >
                       {/* Priority dot */}
                       <div className={`w-2 h-2 rounded-full flex-shrink-0 ${pr.dot}`} />
@@ -523,11 +530,12 @@ const Dashboard = () => {
               </div>
             ) : (
               <div className="space-y-2">
-                {folders.slice(0, 6).map(f => (
+                {folders.slice(0, 6).map((f, idx) => (
                   <div
                     key={f.id}
                     onClick={() => navigate("/folders")}
-                    className="flex items-center gap-3 px-3 py-2.5 bg-bg-input border border-border rounded-xl hover:border-primary/20 transition cursor-pointer"
+                    style={{ animationDelay: `${idx * 55}ms` }}
+                    className="flex items-center gap-3 px-3 py-2.5 bg-bg-input border border-border rounded-xl hover:border-primary/20 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer animate-slide-up"
                   >
                     <div
                       className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-xs font-bold text-white"
@@ -571,12 +579,13 @@ const Dashboard = () => {
               </div>
             ) : (
               <div className="space-y-2">
-                {reminders.map(r => {
+                {reminders.map((r, idx) => {
                   const pr = PRIORIDAD_COLORS[r.prioridad] || PRIORIDAD_COLORS.Normal
                   return (
                     <div
                       key={r.id}
-                      className="flex items-center gap-3 bg-bg-input border border-border rounded-xl px-4 py-3 hover:border-primary/20 transition"
+                      style={{ animationDelay: `${idx * 60}ms` }}
+                      className="flex items-center gap-3 bg-bg-input border border-border rounded-xl px-4 py-3 hover:border-primary/20 hover:-translate-y-0.5 transition-all duration-200 animate-slide-up"
                     >
                       <div className={`w-2 h-2 rounded-full flex-shrink-0 ${pr.dot}`} />
                       <div className="flex-1 min-w-0">
@@ -627,11 +636,12 @@ const Dashboard = () => {
               </div>
             ) : (
               <div className="space-y-2">
-                {quotes.map(q => (
+                {quotes.map((q, idx) => (
                   <div
                     key={q.id}
                     onClick={() => navigate("/quotes")}
-                    className="bg-bg-input border border-border rounded-xl px-4 py-3 hover:border-primary/20 transition cursor-pointer"
+                    style={{ animationDelay: `${idx * 60}ms` }}
+                    className="bg-bg-input border border-border rounded-xl px-4 py-3 hover:border-primary/20 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer animate-slide-up"
                   >
                     <div className="flex items-center gap-2 mb-1">
                       <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold uppercase tracking-wide ${

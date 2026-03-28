@@ -439,11 +439,11 @@ const Folders = () => {
       {/* ── Modal de previsualización ── */}
       {previewFile && (
         <div
-          className="fixed inset-0 bg-black/85 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/85 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in"
           onClick={() => setPreviewFile(null)}
         >
           <div
-            className="relative bg-bg-card border border-border rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden"
+            className="relative bg-bg-card border border-border rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden animate-scale-in"
             onClick={e => e.stopPropagation()}
           >
             {/* Header */}
@@ -525,8 +525,8 @@ const Folders = () => {
       )}
 
       {modalFolder && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4">
-          <div className="bg-bg-card border border-border rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4 animate-fade-in">
+          <div className="bg-bg-card border border-border rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-scale-in">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-text-main font-semibold">{editingFolder ? "Editar carpeta" : "Nueva carpeta"}</h2>
               <button onClick={() => { setModalFolder(false); setEditingFolder(null); setFolderForm({ nombre: "", color: "#6022EC" }) }} className="text-text-muted hover:text-text-main text-xl">✕</button>

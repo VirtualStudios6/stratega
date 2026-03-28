@@ -19,7 +19,10 @@
       "Bash(find . -name \".DS_Store\" ! -path \"./.git/*\" ! -path \"./node_modules/*\" -delete)",
       "Bash(find c:/Users/VirtualStudios/Desktop/Stratega-Planner/src -name *.ts -o -name *.tsx)",
       "Bash(find c:/Users/VirtualStudios/Desktop/Stratega-Planner/android -name *.png)",
-      "Bash(find c:UsersVirtualStudiosDesktopStratega-Plannersrc -type f \\\\\\(-name *.jsx -o -name *.js \\\\\\))"
+      "Bash(find c:UsersVirtualStudiosDesktopStratega-Plannersrc -type f \\\\\\(-name *.jsx -o -name *.js \\\\\\))",
+      "Bash(cmd /c \"dir /a /b \"\"c:\\\\Users\\\\VirtualStudios\\\\Desktop\\\\Stratega-Planner\"\"\")",
+      "Bash(cmd /c \"dir /a:h /b \"\"c:\\\\Users\\\\VirtualStudios\\\\Desktop\\\\Stratega-Planner\"\"\")",
+      "Bash(powershell -Command \"Get-ChildItem -Path ''C:\\\\Users\\\\VirtualStudios\\\\Desktop\\\\Stratega-Planner'' -Force -File | Where-Object { $_Name -like ''*.env*'' -or $_Name -like ''.env*'' } | Select-Object Name, Length\")"
     ]
   }
 }

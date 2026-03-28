@@ -295,8 +295,8 @@ const Accounting = () => {
 
       {/* ── Modal registrar / editar ──────────────────────────────────────── */}
       {modalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4">
-          <div className="bg-bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4 animate-fade-in">
+          <div className="bg-bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl animate-scale-in">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-text-main font-semibold">{editingTrans ? "Editar movimiento" : "Registrar movimiento"}</h2>
               <button onClick={() => { setModalOpen(false); setEditingTrans(null) }} className="text-text-muted hover:text-text-main"><X size={18} /></button>
@@ -365,8 +365,8 @@ const Accounting = () => {
 
       {/* ── Modal reporte mensual ─────────────────────────────────────────── */}
       {reporteOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4 py-6 overflow-y-auto">
-          <div className="bg-bg-card border border-border rounded-2xl w-full max-w-2xl shadow-2xl my-auto">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4 py-6 overflow-y-auto animate-fade-in">
+          <div className="bg-bg-card border border-border rounded-2xl w-full max-w-2xl shadow-2xl my-auto animate-scale-in">
 
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-5 border-b border-border">

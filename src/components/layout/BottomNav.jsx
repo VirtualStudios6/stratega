@@ -103,7 +103,7 @@ const BottomNav = () => {
                 `}>
                   <Icon size={21} className={`transition-colors duration-200 ${active ? "text-primary" : "text-text-muted"}`} strokeWidth={active ? 2.2 : 1.8} />
                   {badge > 0 && (
-                    <span className="absolute -top-1.5 -right-0.5 min-w-[16px] h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5 shadow-sm">
+                    <span className="absolute -top-1.5 -right-0.5 min-w-[16px] h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5 shadow-sm animate-badge-pop">
                       {badge > 9 ? "9+" : badge}
                     </span>
                   )}

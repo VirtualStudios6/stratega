@@ -183,7 +183,7 @@ const DashboardLayout = ({ children }) => {
         </header>
 
         {/* ── Página ── */}
-        <main className="flex-1 px-4 pt-4 pb-6 sm:px-5 sm:pt-5 lg:p-8 overflow-y-auto">
+        <main key={location.pathname} className="flex-1 px-4 pt-4 pb-6 sm:px-5 sm:pt-5 lg:p-8 overflow-y-auto animate-fade-in">
           <SubscriptionGuard>{children}</SubscriptionGuard>
         </main>
 

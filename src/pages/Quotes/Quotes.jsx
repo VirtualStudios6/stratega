@@ -821,8 +821,8 @@ const Quotes = () => {
 
       {/* ── MODAL PERFIL EMPRESA ── */}
       {profileOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4 py-8 overflow-y-auto">
-          <div className="bg-bg-card border border-border rounded-2xl p-6 w-full max-w-lg shadow-2xl my-auto">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4 py-8 overflow-y-auto animate-fade-in">
+          <div className="bg-bg-card border border-border rounded-2xl p-6 w-full max-w-lg shadow-2xl my-auto animate-scale-in">
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-text-main font-semibold">Perfil de empresa</h2>
@@ -985,8 +985,8 @@ const Quotes = () => {
 
       {/* ── MODAL NUEVA COTIZACIÓN ── */}
       {modalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4 py-8 overflow-y-auto">
-          <div className="bg-bg-card border border-border rounded-2xl p-6 w-full max-w-2xl shadow-2xl my-auto">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4 py-8 overflow-y-auto animate-fade-in">
+          <div className="bg-bg-card border border-border rounded-2xl p-6 w-full max-w-2xl shadow-2xl my-auto animate-scale-in">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-text-main font-semibold">{editingQuote ? "Editar cotización" : "Nueva cotización"}</h2>
               <button onClick={() => { setModalOpen(false); setEditingQuote(null); resetForm() }} className="text-text-muted hover:text-text-main focus:outline-none"><X size={18} /></button>

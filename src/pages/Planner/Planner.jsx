@@ -733,8 +733,8 @@ const Planner = () => {
 
       {/* Modal nueva entrada */}
       {modalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4">
-          <div className="bg-bg-card border border-border rounded-2xl w-full max-w-md shadow-2xl flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4 animate-fade-in">
+          <div className="bg-bg-card border border-border rounded-2xl w-full max-w-md shadow-2xl flex flex-col max-h-[90vh] animate-scale-in">
 
             {/* Header fijo */}
             <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border flex-shrink-0">
@@ -984,8 +984,8 @@ const Planner = () => {
             )
           : ""
         return (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4">
-            <div className="bg-bg-card border border-border rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4 animate-fade-in">
+            <div className="bg-bg-card border border-border rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-scale-in">
 
               {/* Banda de prioridad */}
               <div className="h-1 w-full" style={{ backgroundColor: prioridad.color }} />
@@ -1079,8 +1079,8 @@ const Planner = () => {
 
       {/* Modal fecha clave */}
       {fechaClaveModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4">
-          <div className="bg-bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4 animate-fade-in">
+          <div className="bg-bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl animate-scale-in">
 
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">

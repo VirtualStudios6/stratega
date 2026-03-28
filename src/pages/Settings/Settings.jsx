@@ -467,8 +467,8 @@ const Settings = () => {
       </div>
       {/* ── Delete Account Confirmation Modal ──────────────────────── */}
       {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-bg-card border border-red-500/30 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-bg-card border border-red-500/30 rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-scale-in">
             <div className="w-12 h-12 rounded-full bg-red-500/15 flex items-center justify-center mx-auto mb-4">
               <span className="text-2xl">⚠️</span>
             </div>

@@ -673,8 +673,8 @@ const Feed = () => {
 
       {/* ── Feed create/edit modal ── */}
       {feedModalOpen && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 px-4">
-          <div className="bg-bg-card border border-border rounded-2xl w-full max-w-sm shadow-2xl flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 px-4 animate-fade-in">
+          <div className="bg-bg-card border border-border rounded-2xl w-full max-w-sm shadow-2xl flex flex-col max-h-[90vh] animate-scale-in">
             <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border flex-shrink-0">
               <h2 className="text-text-main font-semibold">{editingFeed ? "Editar feed" : "Nuevo feed"}</h2>
               <button onClick={() => { setFeedModalOpen(false); setEditingFeed(null); resetFeedForm() }}
@@ -822,8 +822,8 @@ const Feed = () => {
 
       {/* ── Post upload modal ── */}
       {postModalOpen && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 px-4">
-          <div className="bg-bg-card border border-border rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 px-4 animate-fade-in">
+          <div className="bg-bg-card border border-border rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden animate-scale-in">
             <div className="flex items-center justify-between px-5 py-4 border-b border-border">
               <h2 className="text-text-main font-semibold text-sm">
                 {mediaType === "video" ? "Nuevo reel" : "Nueva publicación"}
@@ -868,9 +868,9 @@ const Feed = () => {
 
       {/* ── Post preview modal ── */}
       {previewItem && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 px-4"
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 px-4 animate-fade-in"
           onClick={() => { setPreviewItem(null); setCopiedCaption(false) }}>
-          <div className="bg-bg-card border border-border rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden"
+          <div className="bg-bg-card border border-border rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden animate-scale-in"
             onClick={e => e.stopPropagation()}>
             {/* Header */}
             <div className="flex items-center gap-3 px-4 py-3 border-b border-border">

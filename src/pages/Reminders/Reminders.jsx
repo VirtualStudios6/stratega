@@ -239,8 +239,8 @@ const Reminders = () => {
           { label: statsLabels.Total, value: tasks.length, color: "bg-primary/20 border-primary/30" },
           { label: statsLabels.Pendientes, value: pendientes, color: "bg-yellow-500/20 border-yellow-500/30" },
           { label: statsLabels.Completadas, value: completadas, color: "bg-green-500/20 border-green-500/30" },
-        ].map(s => (
-          <div key={s.label} className={`${s.color} border rounded-2xl p-4 text-center`}>
+        ].map((s, i) => (
+          <div key={s.label} style={{ animationDelay: `${i * 80}ms` }} className={`${s.color} border rounded-2xl p-4 text-center animate-slide-up`}>
             <p className="text-2xl font-bold text-text-main">{s.value}</p>
             <p className="text-text-muted text-xs mt-1">{s.label}</p>
           </div>
@@ -273,13 +273,14 @@ const Reminders = () => {
             <p className="text-text-muted/50 text-sm mt-1">{t("reminders.add_first")}</p>
           </div>
         ) : (
-          filtradas.map(task => {
+          filtradas.map((task, idx) => {
             const prioridadColor = PRIORIDAD_COLORS[task.prioridad] || PRIORIDAD_COLORS.Normal
             return (
               <div
                 key={task.id}
-                className={`bg-bg-card border border-border rounded-2xl p-4 flex items-center gap-4 transition
-                  ${task.completado ? "opacity-50" : ""}`}
+                style={{ animationDelay: `${idx * 50}ms` }}
+                className={`bg-bg-card border border-border rounded-2xl p-4 flex items-center gap-4 transition-all duration-200 animate-slide-up
+                  ${task.completado ? "opacity-50" : "hover:-translate-y-0.5"}`}
               >
                 <button
                   onClick={() => handleToggle(task)}
@@ -335,8 +336,8 @@ const Reminders = () => {
 
       {/* Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4">
-          <div className="bg-bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4 animate-fade-in">
+          <div className="bg-bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl animate-scale-in">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-text-main font-semibold">{editingTask ? (i18n.language === "es" ? "Editar recordatorio" : "Edit reminder") : t("reminders.new")}</h2>
               <button onClick={resetModal} className="text-text-muted hover:text-text-main text-xl">✕</button>
