@@ -143,21 +143,74 @@ const Dashboard = () => {
   }, [i18n.language])
 
   const MOTIVATIONAL_PHRASES = [
+    // Consistencia y disciplina
     "Cada post que publicas es un paso hacia tus metas.",
     "La consistencia es la clave del éxito en redes sociales.",
+    "El trabajo constante supera al talento sin disciplina.",
+    "Pequeñas acciones diarias construyen grandes resultados.",
+    "La disciplina de hoy es la libertad de mañana.",
+    "Un día sin publicar no te define. Volver sí.",
+    "Los grandes creadores no esperan inspiración — la crean.",
+    "Haz hoy lo que otros no quieren, logra mañana lo que otros no pueden.",
+    "El éxito no llega de golpe. Llega post a post.",
+
+    // Creatividad y contenido
     "Hoy es un buen día para crear contenido increíble.",
     "Tu creatividad es tu mayor activo.",
-    "El mejor momento para planificar es ahora.",
-    "Pequeñas acciones diarias construyen grandes resultados.",
-    "Organiza hoy, cosecha mañana.",
-    "Tu presencia digital importa. Hazla brillar.",
-    "Un plan sólido es la base de todo buen contenido.",
-    "Cada cliente satisfecho es una historia de éxito.",
-    "El trabajo constante supera al talento sin disciplina.",
-    "Planifica con intención, publica con propósito.",
-    "Tu estrategia de hoy es el crecimiento de mañana.",
     "Haz que cada contenido cuente.",
+    "El mejor contenido viene de quien realmente conoce a su audiencia.",
+    "Crea con propósito, no solo con frecuencia.",
+    "Tu historia vale la pena ser contada.",
+    "La autenticidad conecta más que la perfección.",
+    "No copies tendencias, inicia las tuyas.",
+    "El contenido que ayuda, siempre encuentra su audiencia.",
+    "Una buena idea publicada vale más que una idea perfecta guardada.",
+
+    // Planificación y organización
+    "El mejor momento para planificar es ahora.",
+    "Organiza hoy, cosecha mañana.",
+    "Un plan sólido es la base de todo buen contenido.",
+    "Planifica con intención, publica con propósito.",
     "Los grandes resultados empiezan con una buena planificación.",
+    "Sin estrategia, las redes sociales son solo ruido.",
+    "Quien planifica, controla. Quien controla, crece.",
+    "Un calendario de contenido vacío es una oportunidad perdida.",
+    "La improvisación tiene límites. La estrategia, no.",
+
+    // Crecimiento y éxito
+    "Tu presencia digital importa. Hazla brillar.",
+    "Cada cliente satisfecho es una historia de éxito.",
+    "Tu estrategia de hoy es el crecimiento de mañana.",
+    "El crecimiento incomoda. El estancamiento destruye. Elige crecer.",
+    "Los seguidores de hoy son los clientes de mañana.",
+    "Tu marca personal es tu activo más valioso. Cuídala.",
+    "Cada métrica es una lección. Aprende rápido.",
+    "El algoritmo cambia. Tu valor, no.",
+    "El éxito en social media no es suerte. Es sistema.",
+    "Construye audiencia como si construyeras una comunidad.",
+
+    // Mentalidad y motivación
+    "Los que dicen que es imposible no deberían interrumpir a quienes lo están haciendo.",
+    "No compitas con otros. Compite con quien eras ayer.",
+    "El miedo a publicar es normal. Publicar de todas formas es profesional.",
+    "Fallar en público es aprender en público.",
+    "No necesitas más tiempo. Necesitas más claridad.",
+    "El progreso lento sigue siendo progreso.",
+    "Empieza con lo que tienes. Mejora con lo que aprendes.",
+    "La comparación es el ladrón de la creatividad.",
+    "Hoy puede ser el día que cambie todo.",
+    "Tu esfuerzo de hoy es invisible. Tu resultado de mañana, no.",
+
+    // Community managers / freelancers
+    "Ser community manager es construir comunidades, no solo publicar.",
+    "Tu trabajo conecta marcas con personas reales. Eso tiene valor.",
+    "Gestionar redes es un arte. Tú eres el artista.",
+    "Cada cliente confía en ti para hacer crecer su marca. Hazlo con orgullo.",
+    "El community manager que planifica, factura más.",
+    "Tus resultados hablan más fuerte que cualquier propuesta.",
+    "Valora tu trabajo. Tu tiempo y creatividad tienen precio.",
+    "Un buen reporte puede conseguirte el siguiente cliente.",
+    "La mejor publicidad es un cliente que recomienda tu trabajo.",
   ]
 
   const motivationalPhrase = useMemo(() => {
