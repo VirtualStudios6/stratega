@@ -11,8 +11,9 @@ import {
   Tooltip, ResponsiveContainer, Legend,
   PieChart, Pie, Cell
 } from "recharts"
-import { Wallet, ArrowUp, ArrowDown, Pencil, Trash2, X, FileBarChart2 } from "lucide-react"
+import { Wallet, ArrowUp, ArrowDown, Pencil, Trash2, X, FileBarChart2, Lock } from "lucide-react"
 import toast from "react-hot-toast"
+import useSubscriptionGuard from "../../hooks/useSubscriptionGuard"
 
 const CATEGORIAS_SUGERIDAS = [
   "Servicio", "Cotización", "Consultoría", "Producto",
@@ -40,7 +41,9 @@ const buildCatData = (items) => {
 }
 
 const Accounting = () => {
-  const { user } = useAuth()
+  const { user }  = useAuth()
+  const { plan }  = useSubscriptionGuard()
+  const isPro     = plan === "pro"
   const [transacciones, setTransacciones]   = useState([])
   const [modalOpen, setModalOpen]           = useState(false)
   const [reporteOpen, setReporteOpen]       = useState(false)
@@ -148,12 +151,22 @@ const Accounting = () => {
           <p className="text-text-muted text-xs sm:text-sm mt-0.5">Control de ingresos y gastos</p>
         </div>
         <div className="flex gap-2 flex-shrink-0">
-          <button
-            onClick={() => { setReporteMes(filtroMes); setReporteAnio(filtroAnio); setReporteOpen(true) }}
-            className="flex items-center gap-1.5 bg-bg-card border border-border text-text-muted hover:text-text-main hover:border-primary/30 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl transition text-xs sm:text-sm"
-          >
-            <FileBarChart2 size={14} /><span className="hidden sm:inline">Reporte mensual</span><span className="sm:hidden">Reporte</span>
-          </button>
+          {isPro ? (
+            <button
+              onClick={() => { setReporteMes(filtroMes); setReporteAnio(filtroAnio); setReporteOpen(true) }}
+              className="flex items-center gap-1.5 bg-bg-card border border-border text-text-muted hover:text-text-main hover:border-primary/30 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl transition text-xs sm:text-sm"
+            >
+              <FileBarChart2 size={14} /><span className="hidden sm:inline">Reporte mensual</span><span className="sm:hidden">Reporte</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => {}}
+              title="Disponible en plan Pro"
+              className="flex items-center gap-1.5 bg-bg-card border border-border text-text-muted/40 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm cursor-default"
+            >
+              <Lock size={14} /><span className="hidden sm:inline">Reporte mensual</span><span className="sm:hidden">Reporte</span>
+            </button>
+          )}
           <button
             onClick={() => { setEditingTrans(null); setModalOpen(true) }}
             className="bg-primary text-white font-semibold px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl hover:bg-primary-light transition shadow-lg shadow-primary/30 text-xs sm:text-sm"

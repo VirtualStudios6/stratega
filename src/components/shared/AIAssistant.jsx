@@ -3,9 +3,11 @@ import { askGroq } from "../../services/groq"
 import { useAuth } from "../../context/AuthContext"
 import { useTranslation } from "react-i18next"
 import { X, RotateCcw, Send, Sparkles } from "lucide-react"
+import useSubscriptionGuard from "../../hooks/useSubscriptionGuard"
 
 const AIAssistant = () => {
   const { user } = useAuth()
+  const { plan, isActive } = useSubscriptionGuard()
   const { t, i18n } = useTranslation()
   const [open, setOpen]       = useState(false)
   const [input, setInput]     = useState("")
@@ -67,6 +69,9 @@ If asked something outside your area, redirect politely to marketing and social 
       .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
       .replace(/\*(.*?)\*/g, "<em>$1</em>")
       .replace(/\n/g, "<br/>")
+
+  // Only available on Pro plan (admins already get plan "pro")
+  if (!isActive || plan !== "pro") return null
 
   const firstName     = user?.displayName?.split(" ")[0] || user?.email?.split("@")[0] || "U"
   const quickSuggestions = [

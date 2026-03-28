@@ -23,6 +23,14 @@ let _cachedUid   = null
 
 const SESSION_KEY = "stratega_sub_state"
 
+// Call this after manually updating Firestore (e.g. admin plan switcher)
+// so the next render re-fetches fresh data.
+export const invalidateSubscriptionCache = () => {
+  _cachedState = null
+  _cachedUid   = null
+  try { sessionStorage.removeItem(SESSION_KEY) } catch {}
+}
+
 const INITIAL_STATE = { status: "trial", plan: "trial", isActive: true, daysLeft: 7, loading: true }
 
 // Read persisted state from sessionStorage (survives page refresh within same tab)

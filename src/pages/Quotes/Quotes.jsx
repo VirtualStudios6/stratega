@@ -8,9 +8,10 @@ import {
 } from "firebase/firestore"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { useAuth } from "../../context/AuthContext"
+import useSubscriptionGuard from "../../hooks/useSubscriptionGuard"
 import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
-import { FileText, Building2, Pencil, Receipt, Monitor, Download, Trash2, X, ImagePlus, Palette, Pipette } from "lucide-react"
+import { FileText, Building2, Pencil, Receipt, Monitor, Download, Trash2, X, ImagePlus, Palette, Pipette, Lock } from "lucide-react"
 
 const MONEDAS = [
   // Más usadas
@@ -476,6 +477,8 @@ const fmt = (n, decimals = 2) =>
 const Quotes = () => {
   const { user }   = useAuth()
   const navigate   = useNavigate()
+  const { plan }   = useSubscriptionGuard()
+  const isPro      = plan === "pro"
 
   const [quotes,        setQuotes]        = useState([])
   const [selectedQuote, setSelectedQuote] = useState(null)
@@ -766,9 +769,15 @@ const Quotes = () => {
                     <button onClick={() => navigate(`/quotes/ver/${selectedQuote.id}`)} className="flex items-center gap-1.5 bg-primary/20 border border-primary/30 text-primary-light text-sm px-3 py-2 rounded-xl hover:bg-primary/30 transition focus:outline-none">
                       <Monitor size={13} />Presentar
                     </button>
-                    <button onClick={() => handleDownloadPDF(selectedQuote)} className="flex items-center gap-1.5 bg-bg-input border border-border text-text-muted text-sm px-3 py-2 rounded-xl hover:border-primary/40 hover:text-primary-light transition focus:outline-none">
-                      <Download size={13} />PDF
-                    </button>
+                    {isPro ? (
+                      <button onClick={() => handleDownloadPDF(selectedQuote)} className="flex items-center gap-1.5 bg-bg-input border border-border text-text-muted text-sm px-3 py-2 rounded-xl hover:border-primary/40 hover:text-primary-light transition focus:outline-none">
+                        <Download size={13} />PDF
+                      </button>
+                    ) : (
+                      <button onClick={() => navigate("/subscription")} title="Disponible en plan Pro" className="flex items-center gap-1.5 bg-bg-input border border-border text-text-muted/40 text-sm px-3 py-2 rounded-xl cursor-pointer hover:border-amber-500/40 hover:text-amber-400 transition focus:outline-none">
+                        <Lock size={13} />PDF
+                      </button>
+                    )}
                     <button onClick={() => handleDelete(selectedQuote.id)} className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm px-3 py-2 rounded-xl hover:bg-red-500/20 transition focus:outline-none">
                       <Trash2 size={14} />
                     </button>

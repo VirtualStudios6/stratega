@@ -38,10 +38,11 @@ const PLANES = [
       { included: true,  text: "Planner y Calendario" },
       { included: true,  text: "Organizador de Feed" },
       { included: true,  text: "Recordatorios" },
-      { included: true,  text: "Carpetas (5GB)" },
+      { included: true,  text: "Carpetas (5 GB)" },
       { included: true,  text: "Hasta 3 miembros de equipo" },
-      { included: false, text: "Cotizaciones" },
-      { included: false, text: "Contabilidad" },
+      { included: true,  text: "Cotizaciones" },
+      { included: true,  text: "Contabilidad" },
+      { included: false, text: "Descarga de PDF" },
       { included: false, text: "Strat AI" },
     ],
   },
@@ -56,10 +57,10 @@ const PLANES = [
     features: [
       { included: true, text: "Todo lo del plan Básico" },
       { included: true, text: "Cotizaciones ilimitadas + PDF" },
-      { included: true, text: "Contabilidad completa" },
+      { included: true, text: "Contabilidad completa + reportes" },
       { included: true, text: "Strat AI integrada" },
       { included: true, text: "Miembros ilimitados" },
-      { included: true, text: "20GB de almacenamiento" },
+      { included: true, text: "20 GB de almacenamiento" },
       { included: true, text: "Soporte prioritario" },
       { included: true, text: "Nuevas funciones primero" },
     ],
@@ -314,7 +315,7 @@ const Subscription = () => {
                       </p>
                     )}
                     <p className="text-text-muted/60 text-xs mt-1">
-                      7 días gratis, sin tarjeta requerida
+                      7 días gratis · {plan.id === "basico" ? "5 GB" : "20 GB"} almacenamiento
                     </p>
                   </div>
 

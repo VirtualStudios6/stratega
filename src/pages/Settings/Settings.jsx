@@ -10,7 +10,9 @@ import { updatePassword, reauthenticateWithCredential, reauthenticateWithPopup, 
 import { useNavigate } from "react-router-dom"
 import LanguageSwitcher from "../../components/shared/LanguageSwitcher"
 import { deleteUserData } from "../../firebase/deleteUserData"
-import { User, Palette, Globe, Bell, Lock, Settings2, CheckCircle2, XCircle, Pencil } from "lucide-react"
+import { invalidateSubscriptionCache } from "../../hooks/useSubscriptionGuard"
+import { User, Palette, Globe, Bell, Lock, Settings2, CheckCircle2, XCircle, Pencil, FlaskConical } from "lucide-react"
+import toast from "react-hot-toast"
 
 const Settings = () => {
   const { user, refreshUser } = useAuth()
@@ -23,6 +25,8 @@ const Settings = () => {
   const [error, setError] = useState("")
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [avatarPreview, setAvatarPreview] = useState(null)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [devPlanLoading, setDevPlanLoading] = useState(false)
 
   const [perfil, setPerfil] = useState({
     nombre: "", cargo: "", empresa: "", telefono: "", bio: "", website: "",
@@ -51,6 +55,7 @@ const Settings = () => {
       })
       if (data.avatar) setAvatarPreview(data.avatar)
       if (data.notificaciones) setNotificaciones(data.notificaciones)
+      if (data.isAdmin === true) setIsAdmin(true)
     }
   }
 
@@ -58,6 +63,28 @@ const Settings = () => {
 
   const showSuccess = (msg) => { setSuccess(msg); setError(""); setTimeout(() => setSuccess(""), 3000) }
   const showError = (msg) => { setError(msg); setSuccess(""); setTimeout(() => setError(""), 4000) }
+
+  // Admin-only: switch plan for testing purposes
+  const DEV_PLANS = [
+    { label: "Trial (prueba gratuita)", plan: "trial", status: "trial" },
+    { label: "Básico — activo",         plan: "basico", status: "active" },
+    { label: "Pro — activo",            plan: "pro",    status: "active" },
+    { label: "Expirado",                plan: "trial",  status: "expired" },
+  ]
+  const handleDevSwitchPlan = async ({ plan, status }) => {
+    setDevPlanLoading(true)
+    try {
+      await setDoc(doc(db, "users", user.uid), { plan, subscriptionStatus: status }, { merge: true })
+      invalidateSubscriptionCache()
+      toast.success(`Plan cambiado a "${plan}" (${status}). Recargando…`)
+      setTimeout(() => window.location.reload(), 1000)
+    } catch (err) {
+      console.error(err)
+      toast.error("Error cambiando el plan")
+    } finally {
+      setDevPlanLoading(false)
+    }
+  }
 
   const handleAvatarChange = async (e) => {
     const file = e.target.files[0]
@@ -464,6 +491,36 @@ const Settings = () => {
           )}
 
         </div>
+
+        {/* ── Admin dev panel ─────────────────────────────────────────── */}
+        {isAdmin && (
+          <div className="mt-6 bg-bg-card border border-amber-500/30 rounded-2xl p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <FlaskConical size={15} className="text-amber-400" />
+              <h2 className="text-amber-400 font-semibold text-sm">Dev Tools — Simulador de planes</h2>
+              <span className="text-[10px] bg-amber-500/15 border border-amber-500/25 text-amber-400 px-2 py-0.5 rounded-full font-medium">SOLO ADMIN</span>
+            </div>
+            <p className="text-text-muted text-xs mb-4">
+              Cambia tu plan en Firestore para probar el comportamiento de cada nivel. La página se recarga automáticamente.
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {DEV_PLANS.map(({ label, plan, status }) => (
+                <button
+                  key={label}
+                  onClick={() => handleDevSwitchPlan({ plan, status })}
+                  disabled={devPlanLoading}
+                  className="flex flex-col items-center gap-1.5 px-3 py-3 bg-bg-input border border-border rounded-xl hover:border-amber-500/40 hover:bg-amber-500/5 transition text-xs text-text-muted hover:text-amber-400 disabled:opacity-50 text-center"
+                >
+                  <span className="text-lg">
+                    {status === "trial" && plan === "trial" ? "🧪" : plan === "basico" ? "🥉" : plan === "pro" ? "🥇" : "🔒"}
+                  </span>
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
       </div>
       {/* ── Delete Account Confirmation Modal ──────────────────────── */}
       {showDeleteModal && (
