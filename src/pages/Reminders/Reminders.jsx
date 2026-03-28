@@ -74,29 +74,38 @@ const Reminders = () => {
     }
   }, [])
 
-  const handleSave = async () => {
-    if (!form.titulo.trim() || !selectedDate) return
-    if (editingTask) {
-      await updateDoc(doc(db, "reminders", editingTask.id), {
-        ...form,
-        fecha: selectedDate.toISOString(),
-        folderId: form.folderId || null,
-      })
-    } else {
-      await addDoc(collection(db, "reminders"), {
-        uid: user.uid,
-        ...form,
-        fecha: selectedDate.toISOString(),
-        completado: false,
-        creadoEn: new Date(),
-        folderId: form.folderId || null,
-      })
-    }
+  const resetModal = () => {
     setModalOpen(false)
     setEditingTask(null)
     setForm({ titulo: "", descripcion: "", prioridad: "Normal", categoria: "General", folderId: "" })
     setSelectedDate(null)
-    fetchTasks()
+  }
+
+  const handleSave = async () => {
+    if (!form.titulo.trim() || !selectedDate) return
+    try {
+      if (editingTask) {
+        await updateDoc(doc(db, "reminders", editingTask.id), {
+          ...form,
+          fecha: selectedDate.toISOString(),
+          folderId: form.folderId || null,
+        })
+      } else {
+        await addDoc(collection(db, "reminders"), {
+          uid: user.uid,
+          ...form,
+          fecha: selectedDate.toISOString(),
+          completado: false,
+          creadoEn: new Date(),
+          folderId: form.folderId || null,
+        })
+      }
+      resetModal()
+      fetchTasks()
+    } catch (err) {
+      console.error(err)
+      toast.error("Error al guardar el recordatorio.")
+    }
   }
 
   const handleEdit = (task) => {
@@ -113,13 +122,23 @@ const Reminders = () => {
   }
 
   const handleToggle = async (task) => {
-    await updateDoc(doc(db, "reminders", task.id), { completado: !task.completado })
-    fetchTasks()
+    try {
+      await updateDoc(doc(db, "reminders", task.id), { completado: !task.completado })
+      fetchTasks()
+    } catch (err) {
+      console.error(err)
+      toast.error("Error al actualizar el recordatorio.")
+    }
   }
 
   const handleDelete = async (id) => {
-    await deleteDoc(doc(db, "reminders", id))
-    fetchTasks()
+    try {
+      await deleteDoc(doc(db, "reminders", id))
+      fetchTasks()
+    } catch (err) {
+      console.error(err)
+      toast.error("Error al eliminar el recordatorio.")
+    }
   }
 
   const FILTROS = [
@@ -319,7 +338,7 @@ const Reminders = () => {
           <div className="bg-bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-text-main font-semibold">{editingTask ? (i18n.language === "es" ? "Editar recordatorio" : "Edit reminder") : t("reminders.new")}</h2>
-              <button onClick={() => { setModalOpen(false); setEditingTask(null) }} className="text-text-muted hover:text-text-main text-xl">✕</button>
+              <button onClick={resetModal} className="text-text-muted hover:text-text-main text-xl">✕</button>
             </div>
 
             <div className="space-y-4">
@@ -356,7 +375,7 @@ const Reminders = () => {
                   dateFormat="dd/MM/yyyy h:mm aa"
                   locale={datePickerLocale}
                   placeholderText={i18n.language === "es" ? "Selecciona fecha y hora" : "Select date and time"}
-                  minDate={new Date()}
+                  minDate={editingTask ? undefined : new Date()}
                   className="w-full bg-bg-input border border-border text-text-main rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-text-muted/40"
                 />
               </div>
@@ -409,7 +428,7 @@ const Reminders = () => {
 
             <div className="flex gap-3 mt-6">
               <button
-                onClick={() => setModalOpen(false)}
+                onClick={resetModal}
                 className="flex-1 bg-bg-input border border-border text-text-muted py-2.5 rounded-xl hover:bg-bg-hover transition text-sm"
               >
                 {t("reminders.cancel")}
