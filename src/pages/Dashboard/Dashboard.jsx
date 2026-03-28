@@ -138,6 +138,29 @@ const Dashboard = () => {
     })
   }, [i18n.language])
 
+  const MOTIVATIONAL_PHRASES = [
+    "Cada post que publicas es un paso hacia tus metas.",
+    "La consistencia es la clave del éxito en redes sociales.",
+    "Hoy es un buen día para crear contenido increíble.",
+    "Tu creatividad es tu mayor activo.",
+    "El mejor momento para planificar es ahora.",
+    "Pequeñas acciones diarias construyen grandes resultados.",
+    "Organiza hoy, cosecha mañana.",
+    "Tu presencia digital importa. Hazla brillar.",
+    "Un plan sólido es la base de todo buen contenido.",
+    "Cada cliente satisfecho es una historia de éxito.",
+    "El trabajo constante supera al talento sin disciplina.",
+    "Planifica con intención, publica con propósito.",
+    "Tu estrategia de hoy es el crecimiento de mañana.",
+    "Haz que cada contenido cuente.",
+    "Los grandes resultados empiezan con una buena planificación.",
+  ]
+
+  const motivationalPhrase = useMemo(() => {
+    return MOTIVATIONAL_PHRASES[Math.floor(Math.random() * MOTIVATIONAL_PHRASES.length)]
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const [loading,       setLoading]       = useState(true)
   const [loadError,     setLoadError]     = useState(false)
   const [userPlan,      setUserPlan]      = useState("free")
@@ -300,7 +323,7 @@ const Dashboard = () => {
                 </span>
               )}
             </div>
-            <p className="text-text-muted text-xs mt-0.5 capitalize">{todayLabel}</p>
+            <p className="text-text-muted text-xs mt-0.5 italic">{motivationalPhrase}</p>
           </div>
 
           <button
