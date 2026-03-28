@@ -232,7 +232,7 @@ If asked something outside your area, redirect politely to marketing and social 
             <div className="relative w-5 h-5 rounded-lg overflow-hidden flex-shrink-0">
               <img src="/logos/stratega-ia.png" alt="AI" className="w-full h-full object-cover" />
             </div>
-            <span className="text-sm font-semibold">Strat AI</span>
+            <span className="text-sm font-semibold">Stratega AI</span>
             <Sparkles size={13} className="opacity-80" />
           </>
         )}
