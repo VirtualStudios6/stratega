@@ -1,0 +1,42 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ── Avatars de usuario ────────────────────────────────────────
+    // avatars/{uid}  — solo el propio usuario puede leer/escribir
+    match /avatars/{uid} {
+      allow read:  if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // ── Logos de empresa (Quotes) ─────────────────────────────────
+    // logos/{uid}/...
+    match /logos/{uid}/{allPaths=**} {
+      allow read:  if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // ── Feed: avatar de perfil de feed ────────────────────────────
+    // profile/{uid}/{feedId}/avatar
+    match /profile/{uid}/{allPaths=**} {
+      allow read:  if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // ── Feed: archivos multimedia ─────────────────────────────────
+    // feed/{uid}/{feedId}/{filename}
+    match /feed/{uid}/{allPaths=**} {
+      allow read:  if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // ── Folders: archivos ─────────────────────────────────────────
+    // folders/{uid}/{folderId}/{filename}
+    match /folders/{uid}/{allPaths=**} {
+      allow read:  if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Denegar todo lo demás por defecto
+  }
+}
