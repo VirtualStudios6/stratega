@@ -10,7 +10,7 @@ import { useState, useEffect } from "react"
 import { Capacitor } from "@capacitor/core"
 
 const PADDLE_TOKEN   = "live_fba5dd15829a77f957863e3d469"
-const CHECKOUT_URL   = "https://stratega-git-main-virtualstudios-projects.vercel.app/subscription"
+const CHECKOUT_URL   = "https://strategaplanner.com/subscription"
 
 let _scriptInjected  = false
 let _paddleReady     = false
