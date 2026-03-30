@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import LanguageSwitcher from "../../components/shared/LanguageSwitcher"
@@ -17,6 +17,18 @@ const Landing = () => {
     const onScroll = () => setScrolled(window.scrollY > 24)
     window.addEventListener("scroll", onScroll, { passive: true })
     return () => window.removeEventListener("scroll", onScroll)
+  }, [])
+
+  // Scroll reveal
+  useEffect(() => {
+    const els = document.querySelectorAll(".lp-reveal")
+    if (!els.length) return
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add("lp-revealed"); io.unobserve(e.target) } }),
+      { threshold: 0.12 }
+    )
+    els.forEach(el => io.observe(el))
+    return () => io.disconnect()
   }, [])
 
   // Cierra el menú al hacer click fuera
@@ -217,8 +229,8 @@ const Landing = () => {
 
       {/* ── Stats ────────────────────────────────────────────────────── */}
       <div className="lp-stats">
-        {[["10+", t("stats.modules")],["100%", t("stats.cloud")],["AI", t("stats.ai")],["7", t("stats.trial")]].map(([n,l]) => (
-          <div key={l} className="lp-stat">
+        {[["10+", t("stats.modules")],["100%", t("stats.cloud")],["AI", t("stats.ai")],["7", t("stats.trial")]].map(([n,l], i) => (
+          <div key={l} className={`lp-stat lp-reveal lp-reveal--d${i+1}`}>
             <div className="lp-stat-num">{n}</div>
             <div className="lp-stat-label">{l}</div>
           </div>
@@ -227,12 +239,12 @@ const Landing = () => {
 
       {/* ── Features ─────────────────────────────────────────────────── */}
       <section className="lp-section" id="features">
-        <div className="lp-section-tag">{t("features.tag")}</div>
-        <h2 className="lp-section-title">{t("features.title")}</h2>
-        <p className="lp-section-sub">{t("features.subtitle")}</p>
+        <div className="lp-section-tag lp-reveal">{t("features.tag")}</div>
+        <h2 className="lp-section-title lp-reveal lp-reveal--d1">{t("features.title")}</h2>
+        <p className="lp-section-sub lp-reveal lp-reveal--d2">{t("features.subtitle")}</p>
         <div className="lp-features-grid">
-          {features.map(f => (
-            <div key={f.title} className="lp-feat-card">
+          {features.map((f, i) => (
+            <div key={f.title} className={`lp-feat-card lp-reveal lp-reveal--d${i+1}`}>
               <div className="lp-feat-icon" style={{background:f.bg}}>
                 <f.icon size={20} color={f.stroke} strokeWidth={1.7} />
               </div>
@@ -246,7 +258,7 @@ const Landing = () => {
       {/* ── AI ───────────────────────────────────────────────────────── */}
       <section className="lp-section" id="ia">
         <div className="lp-ai-card">
-          <div>
+          <div className="lp-reveal lp-reveal--left">
             <div className="lp-section-tag" style={{textAlign:"left",marginBottom:"12px"}}>{t("ai_section.tag")}</div>
             <h2>{t("ai_section.title")}</h2>
             <p className="lp-ai-desc">{t("ai_section.subtitle")}</p>
@@ -259,7 +271,7 @@ const Landing = () => {
               ))}
             </div>
           </div>
-          <div className="lp-chat-box">
+          <div className="lp-chat-box lp-reveal lp-reveal--right">
             <div className="lp-chat-label">Strat AI</div>
             <div className="lp-chat-bubble">
               <div className="lp-chat-avatar"><Bot size={14} color="white" strokeWidth={1.8} /></div>
@@ -278,17 +290,17 @@ const Landing = () => {
 
       {/* ── Pricing ──────────────────────────────────────────────────── */}
       <section className="lp-section lp-pricing" id="pricing">
-        <div className="lp-section-tag">{t("pricing.tag")}</div>
-        <h2 className="lp-section-title">{t("pricing.title")}</h2>
-        <p className="lp-section-sub">{t("pricing.subtitle")}</p>
-        <div className="lp-toggle">
+        <div className="lp-section-tag lp-reveal">{t("pricing.tag")}</div>
+        <h2 className="lp-section-title lp-reveal lp-reveal--d1">{t("pricing.title")}</h2>
+        <p className="lp-section-sub lp-reveal lp-reveal--d2">{t("pricing.subtitle")}</p>
+        <div className="lp-toggle lp-reveal lp-reveal--d3">
           <button className={`lp-toggle-btn ${billing === "monthly" ? "active" : ""}`} onClick={() => setBilling("monthly")}>{t("pricing.monthly")}</button>
           <button className={`lp-toggle-btn ${billing === "annual" ? "active" : ""}`} onClick={() => setBilling("annual")}>
             {t("pricing.annual")} <span className="lp-save-badge">{t("pricing.save")}</span>
           </button>
         </div>
         <div className="lp-plans">
-          <div className="lp-plan">
+          <div className="lp-plan lp-reveal lp-reveal--d4">
             <div className="lp-plan-name">{t("pricing.basic_name")}</div>
             <div className="lp-plan-desc">{t("pricing.basic_desc")}</div>
             <div className="lp-plan-price">{p.basic}</div>
@@ -301,7 +313,7 @@ const Landing = () => {
             <button onClick={() => navigate("/subscription")} className="lp-plan-cta secondary">{t("pricing.start_free")}</button>
             <div className="lp-plan-trial">{t("pricing.trial_note")}</div>
           </div>
-          <div className="lp-plan featured">
+          <div className="lp-plan featured lp-reveal lp-reveal--d5">
             <div className="lp-plan-badge">{t("pricing.popular")}</div>
             <div className="lp-plan-name">{t("pricing.pro_name")}</div>
             <div className="lp-plan-desc">{t("pricing.pro_desc")}</div>
@@ -318,7 +330,7 @@ const Landing = () => {
         </div>
 
         {/* Garantía */}
-        <div className="lp-guarantee">
+        <div className="lp-guarantee lp-reveal lp-reveal--d6">
           <Shield size={22} color="#c18c35" strokeWidth={1.5} />
           <h3>{t("pricing.guarantee_title")}</h3>
           <p>{t("pricing.guarantee_desc")}</p>
@@ -327,11 +339,11 @@ const Landing = () => {
 
       {/* ── Testimonials ─────────────────────────────────────────────── */}
       <section className="lp-section">
-        <div className="lp-section-tag">{t("testimonials.tag")}</div>
-        <h2 className="lp-section-title" style={{marginBottom:"44px"}}>{t("testimonials.title")}</h2>
+        <div className="lp-section-tag lp-reveal">{t("testimonials.tag")}</div>
+        <h2 className="lp-section-title lp-reveal lp-reveal--d1" style={{marginBottom:"44px"}}>{t("testimonials.title")}</h2>
         <div className="lp-testimonials-grid">
-          {testimonials.map(tst => (
-            <div key={tst.name} className="lp-testi">
+          {testimonials.map((tst, i) => (
+            <div key={tst.name} className={`lp-testi lp-reveal lp-reveal--d${i+1}`}>
               <p className="lp-testi-text">"{tst.text}"</p>
               <div className="lp-testi-author">
                 <div className="lp-author-initial">{tst.initial}</div>
@@ -347,13 +359,13 @@ const Landing = () => {
 
       {/* ── FAQ ──────────────────────────────────────────────────────── */}
       <section className="lp-section" id="faq">
-        <div className="lp-section-tag">{t("faq.tag")}</div>
-        <h2 className="lp-section-title" style={{marginBottom:"40px"}}>{t("faq.title")}</h2>
+        <div className="lp-section-tag lp-reveal">{t("faq.tag")}</div>
+        <h2 className="lp-section-title lp-reveal lp-reveal--d1" style={{marginBottom:"40px"}}>{t("faq.title")}</h2>
         <div className="lp-faq-wrap">
           {faqs.map(([q, a], i) => (
             <div
               key={q}
-              className={`lp-faq-item ${openFaq === i ? "open" : ""}`}
+              className={`lp-faq-item lp-reveal lp-reveal--d${Math.min(i+1,6)} ${openFaq === i ? "open" : ""}`}
               onClick={() => setOpenFaq(openFaq === i ? null : i)}
             >
               <div className="lp-faq-header">
@@ -371,7 +383,7 @@ const Landing = () => {
       </section>
 
       {/* ── CTA Final ────────────────────────────────────────────────── */}
-      <div className="lp-cta-final">
+      <div className="lp-cta-final lp-reveal">
         <h2>{t("cta_final.title1")} <span className="lp-gradient-text">{t("cta_final.title2")}</span></h2>
         <p className="lp-cta-desc">{t("cta_final.subtitle")}</p>
         <button className="lp-btn-primary" style={{fontSize:"15px",padding:"16px 36px"}} onClick={() => navigate("/register")}>

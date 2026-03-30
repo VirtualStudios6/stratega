@@ -56,14 +56,14 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-bg-main flex items-center justify-center px-4 relative overflow-hidden">
 
-      <div className="absolute w-72 h-72 bg-primary opacity-20 rounded-full blur-3xl -top-10 -left-10 pointer-events-none" />
-      <div className="absolute w-72 h-72 bg-primary-light opacity-10 rounded-full blur-3xl bottom-0 right-0 pointer-events-none" />
+      <div className="absolute w-72 h-72 bg-primary opacity-20 rounded-full blur-3xl -top-10 -left-10 pointer-events-none animate-fade-in" />
+      <div className="absolute w-72 h-72 bg-primary-light opacity-10 rounded-full blur-3xl bottom-0 right-0 pointer-events-none animate-fade-in" />
 
-      <div className="relative w-full max-w-md">
+      <div className="relative w-full max-w-md animate-slide-up">
         <div className="bg-bg-card border border-border rounded-3xl p-8 shadow-2xl">
 
           {/* Logo — centrado, selector de tema en absoluto top-right */}
-          <div className="relative text-center mb-8">
+          <div className="relative text-center mb-8 animate-fade-in" style={{animationDelay:"0.1s"}}>
             <img
               src="/logos/logo2d-512x512-sin-fondo.png"
               alt="Stratega Planner"
@@ -127,7 +127,7 @@ const Login = () => {
             </div>
           )}
 
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-4 animate-slide-up" style={{animationDelay:"0.18s"}}>
             <div>
               <label className="block text-xs font-medium text-text-muted mb-1.5 uppercase tracking-wider">{t("auth.email")}</label>
               <input
@@ -167,13 +167,13 @@ const Login = () => {
             </button>
           </form>
 
-          <div className="flex items-center my-6 gap-4">
+          <div className="flex items-center my-6 gap-4 animate-fade-in" style={{animationDelay:"0.28s"}}>
             <div className="flex-1 border-t border-border" />
             <span className="text-xs text-text-muted">o</span>
             <div className="flex-1 border-t border-border" />
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 animate-slide-up" style={{animationDelay:"0.32s"}}>
             <button
               onClick={handleGoogle}
               className="w-full bg-bg-input border border-border rounded-xl py-3 flex items-center justify-center gap-3 hover:bg-bg-hover transition"
@@ -192,7 +192,7 @@ const Login = () => {
             </button>
           </div>
 
-          <p className="text-center text-xs text-text-muted mt-6">
+          <p className="text-center text-xs text-text-muted mt-6 animate-fade-in" style={{animationDelay:"0.4s"}}>
             {t("auth.no_account")}{" "}
             <Link to="/register" className="text-primary-light font-medium hover:text-accent transition">
               {t("auth.register_link")}

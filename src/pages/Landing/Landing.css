@@ -846,3 +846,51 @@
   .lp-footer-links { justify-content: center; }
   .lp-scroll-hint { display: none; }
 }
+
+/* ── Mobile menu slide-down ───────────────────────────────── */
+@keyframes lpMenuDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.lp-mobile-menu { animation: lpMenuDown 0.22s cubic-bezier(0.16,1,0.3,1) both; }
+
+/* ── Scroll reveal ───────────────────────────────────────── */
+.lp-reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.6s cubic-bezier(0.16,1,0.3,1),
+              transform 0.6s cubic-bezier(0.16,1,0.3,1);
+}
+.lp-reveal.lp-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Directional variants */
+.lp-reveal--left  { transform: translateX(-30px); }
+.lp-reveal--right { transform: translateX(30px); }
+.lp-reveal--left.lp-revealed,
+.lp-reveal--right.lp-revealed { transform: translateX(0); }
+
+/* Stagger delays */
+.lp-reveal--d1 { transition-delay: 0.07s; }
+.lp-reveal--d2 { transition-delay: 0.14s; }
+.lp-reveal--d3 { transition-delay: 0.21s; }
+.lp-reveal--d4 { transition-delay: 0.28s; }
+.lp-reveal--d5 { transition-delay: 0.35s; }
+.lp-reveal--d6 { transition-delay: 0.42s; }
+
+/* Hover transforms must come AFTER .lp-reveal.lp-revealed to win cascade */
+.lp-plan:hover      { transform: translateY(-4px); }
+.lp-feat-card:hover { transform: translateY(-4px); }
+.lp-testi:hover     { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.07); }
+.lp-guarantee:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(193,140,53,0.08); }
+
+/* Testi + guarantee transitions */
+.lp-testi     { transition: transform 0.2s, box-shadow 0.2s; }
+.lp-guarantee { transition: transform 0.2s, box-shadow 0.2s; }
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .lp-reveal { transition: none; opacity: 1; transform: none; }
+}
