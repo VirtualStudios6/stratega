@@ -121,11 +121,15 @@ const DashboardLayout = ({ children }) => {
       >
 
         {/* ── Topbar MÓVIL ── */}
-        {/* sticky con top: env(safe-area-inset-top) para que el header quede
-            justo debajo del status bar nativo (iOS/Android) y no se deslice bajo él al hacer scroll */}
+        {/* top-0 sticky + paddingTop safe-area-inset-top: el header cubre el
+            status bar con su propio fondo y empuja el contenido por debajo de él.
+            minHeight = safe-area + 56px para que la altura sea consistente. */}
         <header
-          className="lg:hidden sticky z-30 flex items-center justify-between px-4 h-14 bg-bg-card/96 backdrop-blur-xl border-b border-border"
-          style={{ top: 'env(safe-area-inset-top)' }}
+          className="lg:hidden sticky top-0 z-30 flex items-center justify-between px-4 bg-bg-card/96 backdrop-blur-xl border-b border-border"
+          style={{
+            paddingTop: 'env(safe-area-inset-top, 0px)',
+            minHeight: 'calc(env(safe-area-inset-top, 0px) + 3.5rem)',
+          }}
         >
           {/* Hamburguesa + logo */}
           <div className="flex items-center gap-2.5">
@@ -159,8 +163,11 @@ const DashboardLayout = ({ children }) => {
 
         {/* ── Topbar DESKTOP ── */}
         <header
-          className="hidden lg:flex items-center justify-between px-6 h-[52px] bg-bg-card/80 backdrop-blur-md border-b border-border sticky z-20"
-          style={{ top: 'env(safe-area-inset-top)' }}
+          className="hidden lg:flex items-center justify-between px-6 bg-bg-card/80 backdrop-blur-md border-b border-border sticky top-0 z-20"
+          style={{
+            paddingTop: 'env(safe-area-inset-top, 0px)',
+            minHeight: 'calc(env(safe-area-inset-top, 0px) + 52px)',
+          }}
         >
           <span className="text-text-muted text-sm capitalize select-none">
             {new Date().toLocaleDateString(
