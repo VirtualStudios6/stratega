@@ -54,13 +54,13 @@ const Register = () => {
   return (
     <div className="min-h-screen bg-bg-main flex items-center justify-center px-4 relative overflow-hidden">
 
-      <div className="absolute w-72 h-72 bg-primary opacity-20 rounded-full blur-3xl -top-10 -right-10 pointer-events-none" />
-      <div className="absolute w-72 h-72 bg-primary-light opacity-5 rounded-full blur-3xl bottom-0 left-0 pointer-events-none" />
+      <div className="absolute w-72 h-72 bg-primary opacity-20 rounded-full blur-3xl -top-10 -right-10 pointer-events-none animate-fade-in" />
+      <div className="absolute w-72 h-72 bg-primary-light opacity-5 rounded-full blur-3xl bottom-0 left-0 pointer-events-none animate-fade-in" />
 
-      <div className="relative w-full max-w-md">
+      <div className="relative w-full max-w-md animate-slide-up">
         <div className="bg-bg-card border border-border rounded-3xl p-8 shadow-2xl">
 
-          <div className="text-center mb-8">
+          <div className="text-center mb-8 animate-fade-in" style={{animationDelay:"0.1s"}}>
             <img
               src="/logos/logo.png"
               alt="Stratega Planner"
@@ -76,7 +76,7 @@ const Register = () => {
             </div>
           )}
 
-          <form onSubmit={handleRegister} className="space-y-4">
+          <form onSubmit={handleRegister} className="space-y-4 animate-slide-up" style={{animationDelay:"0.18s"}}>
             <div>
               <label className="block text-xs font-medium text-text-muted mb-1.5 uppercase tracking-wider">{t("auth.name_label")}</label>
               <input
@@ -122,13 +122,13 @@ const Register = () => {
             </button>
           </form>
 
-          <div className="flex items-center my-6 gap-4">
+          <div className="flex items-center my-6 gap-4 animate-fade-in" style={{animationDelay:"0.28s"}}>
             <div className="flex-1 border-t border-border" />
             <span className="text-xs text-text-muted">o</span>
             <div className="flex-1 border-t border-border" />
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 animate-slide-up" style={{animationDelay:"0.32s"}}>
             <button
               onClick={() => handleSocialRegister(loginWithGoogle, "auth.error_google_register")}
               className="w-full bg-bg-input border border-border rounded-xl py-3 flex items-center justify-center gap-3 hover:bg-bg-hover transition"
@@ -147,7 +147,7 @@ const Register = () => {
             </button>
           </div>
 
-          <p className="text-center text-xs text-text-muted mt-6">
+          <p className="text-center text-xs text-text-muted mt-6 animate-fade-in" style={{animationDelay:"0.4s"}}>
             {t("auth.have_account")}{" "}
             <Link to="/login" className="text-primary-light font-medium hover:text-accent transition">
               {t("auth.login_link")}

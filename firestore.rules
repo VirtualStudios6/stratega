@@ -1,0 +1,98 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ───────────────────────────────────────────────────
+    function isAuth() {
+      return request.auth != null;
+    }
+    function isOwner() {
+      return request.auth.uid == resource.data.uid;
+    }
+    function willBeOwner() {
+      return request.auth.uid == request.resource.data.uid;
+    }
+
+    // ── User profiles ─────────────────────────────────────────────
+    // Doc ID == uid, so only the owner can read/write their own doc
+    match /users/{userId} {
+      allow read, write: if isAuth() && request.auth.uid == userId;
+    }
+
+    // ── Company profiles ──────────────────────────────────────────
+    match /company_profiles/{userId} {
+      allow read, write: if isAuth() && request.auth.uid == userId;
+    }
+
+    // ── Reminders ─────────────────────────────────────────────────
+    match /reminders/{docId} {
+      allow read, delete: if isAuth() && isOwner();
+      allow create:       if isAuth() && willBeOwner();
+      allow update:       if isAuth() && isOwner() && willBeOwner();
+    }
+
+    // ── Planner posts ─────────────────────────────────────────────
+    match /planners/{docId} {
+      allow read, delete: if isAuth() && isOwner();
+      allow create:       if isAuth() && willBeOwner();
+      allow update:       if isAuth() && isOwner() && willBeOwner();
+    }
+
+    // ── Quotes ────────────────────────────────────────────────────
+    match /quotes/{docId} {
+      allow read, delete: if isAuth() && isOwner();
+      allow create:       if isAuth() && willBeOwner();
+      allow update:       if isAuth() && isOwner() && willBeOwner();
+    }
+
+    // ── Accounting ────────────────────────────────────────────────
+    match /accounting/{docId} {
+      allow read, delete: if isAuth() && isOwner();
+      allow create:       if isAuth() && willBeOwner();
+      allow update:       if isAuth() && isOwner() && willBeOwner();
+    }
+
+    // ── Feeds ─────────────────────────────────────────────────────
+    match /feeds/{docId} {
+      allow read, delete: if isAuth() && isOwner();
+      allow create:       if isAuth() && willBeOwner();
+      allow update:       if isAuth() && isOwner() && willBeOwner();
+    }
+
+    // ── Feed posts ────────────────────────────────────────────────
+    match /feed_posts/{docId} {
+      allow read, delete: if isAuth() && isOwner();
+      allow create:       if isAuth() && willBeOwner();
+      allow update:       if isAuth() && isOwner() && willBeOwner();
+    }
+
+    // ── Folders ───────────────────────────────────────────────────
+    match /folders/{docId} {
+      allow read, delete: if isAuth() && isOwner();
+      allow create:       if isAuth() && willBeOwner();
+      allow update:       if isAuth() && isOwner() && willBeOwner();
+    }
+
+    // ── Folder files ─────────────────────────────────────────────
+    // No uid field — ownership derived from the parent folder
+    match /folder_files/{docId} {
+      allow read, delete: if isAuth() &&
+        get(/databases/$(database)/documents/folders/$(resource.data.folderId)).data.uid == request.auth.uid;
+      allow create: if isAuth() &&
+        get(/databases/$(database)/documents/folders/$(request.resource.data.folderId)).data.uid == request.auth.uid;
+      allow update: if isAuth() &&
+        get(/databases/$(database)/documents/folders/$(resource.data.folderId)).data.uid == request.auth.uid &&
+        get(/databases/$(database)/documents/folders/$(request.resource.data.folderId)).data.uid == request.auth.uid;
+    }
+
+    // ── Team members ──────────────────────────────────────────────
+    match /team_members/{docId} {
+      allow read, delete: if isAuth() && isOwner();
+      allow create:       if isAuth() && willBeOwner();
+      allow update:       if isAuth() && isOwner() && willBeOwner();
+    }
+
+    // NOTE: Paddle webhook and Cloud Functions use the Firebase Admin SDK,
+    // which bypasses these rules — subscription writes are always server-side.
+  }
+}

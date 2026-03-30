@@ -27,12 +27,12 @@ const ForgotPassword = () => {
   return (
     <div className="min-h-screen bg-bg-main flex items-center justify-center px-4 relative overflow-hidden">
 
-      <div className="absolute w-72 h-72 bg-primary opacity-15 rounded-full blur-3xl top-10 left-1/2 -translate-x-1/2 pointer-events-none" />
+      <div className="absolute w-72 h-72 bg-primary opacity-15 rounded-full blur-3xl top-10 left-1/2 -translate-x-1/2 pointer-events-none animate-fade-in" />
 
-      <div className="relative w-full max-w-md">
+      <div className="relative w-full max-w-md animate-slide-up">
         <div className="bg-bg-card border border-border rounded-3xl p-8 shadow-2xl">
 
-          <div className="text-center mb-8">
+          <div className="text-center mb-8 animate-fade-in" style={{animationDelay:"0.1s"}}>
             <img
               src="/logos/logo.png"
               alt="Stratega Planner"
@@ -54,7 +54,7 @@ const ForgotPassword = () => {
             </div>
           )}
 
-          <form onSubmit={handleReset} className="space-y-4">
+          <form onSubmit={handleReset} className="space-y-4 animate-slide-up" style={{animationDelay:"0.18s"}}>
             <div>
               <label className="block text-xs font-medium text-text-muted mb-1.5 uppercase tracking-wider">{t("auth.email")}</label>
               <input
@@ -76,7 +76,7 @@ const ForgotPassword = () => {
             </button>
           </form>
 
-          <p className="text-center text-xs text-text-muted mt-6">
+          <p className="text-center text-xs text-text-muted mt-6 animate-fade-in" style={{animationDelay:"0.28s"}}>
             <Link to="/login" className="text-primary-light font-medium hover:text-accent transition">
               ← {t("auth.back_to_login")}
             </Link>
