@@ -19,7 +19,7 @@ const config: CapacitorConfig = {
     // Habilita captura de teclado para inputs dentro de WebView
     captureInput: true,
     // Escala el texto igual que en el navegador
-    webContentsDebuggingEnabled: false,
+    webContentsDebuggingEnabled: true,
   },
 
   // ── iOS ──────────────────────────────────────────────────────────────────
