@@ -9,6 +9,13 @@ export const LANGUAGES = {
   fr: { flag: "🇫🇷", label: "FR", full: "Français" },
   de: { flag: "🇩🇪", label: "DE", full: "Deutsch" },
   it: { flag: "🇮🇹", label: "IT", full: "Italiano" },
+  ja: { flag: "🇯🇵", label: "JA", full: "日本語" },
+  zh: { flag: "🇨🇳", label: "ZH", full: "中文" },
+  ar: { flag: "🇸🇦", label: "AR", full: "العربية" },
+  ru: { flag: "🇷🇺", label: "RU", full: "Русский" },
+  ko: { flag: "🇰🇷", label: "KO", full: "한국어" },
+  nl: { flag: "🇳🇱", label: "NL", full: "Nederlands" },
+  tr: { flag: "🇹🇷", label: "TR", full: "Türkçe" },
 }
 
 const changeLang = (i18n, lang) => {
