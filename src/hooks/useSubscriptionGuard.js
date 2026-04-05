@@ -114,9 +114,10 @@ const useSubscriptionGuard = () => {
           return
         }
 
-        // Paid subscription — always active
+        // Paid subscription — active (cancellation may be scheduled but access continues)
         if (rawStatus === "active") {
-          save({ status: "active", plan, isActive: true, daysLeft: 0, loading: false })
+          const status = data.cancellationScheduled ? "cancellation_scheduled" : "active"
+          save({ status, plan, isActive: true, daysLeft: 0, loading: false })
           return
         }
 

@@ -148,19 +148,21 @@ const PlanPaddleButton = ({ planId, planNombre, billing, uid, userEmail }) => {
 // ---------------------------------------------------------------------------
 // Sección de suscripción activa
 // ---------------------------------------------------------------------------
-const ActiveSubscription = ({ subData, uid, onCancel }) => {
-  const [cancelling, setCancelling] = useState(false)
+const ActiveSubscription = ({ subData, onCancelScheduled }) => {
+  const [cancelling, setCancelling]     = useState(false)
+  const [showConfirm, setShowConfirm]   = useState(false)
   const planLabel  = subData.plan  === "pro"   ? "Pro"    : "Básico"
   const cicloLabel = subData.ciclo === "anual" ? "Anual"  : "Mensual"
+  const isScheduled = !!subData.cancellationScheduled
 
   const handleCancel = async () => {
-    if (!window.confirm("¿Seguro que quieres cancelar tu suscripción? Seguirás teniendo acceso hasta el final del período pagado.")) return
     setCancelling(true)
+    setShowConfirm(false)
     try {
       const cancelFn = httpsCallable(getFunctions(), "cancelPaddleSubscription")
       await cancelFn({ subscriptionID: subData.subscriptionID })
-      toast.success("Suscripción cancelada. Acceso activo hasta fin del período.")
-      onCancel()
+      toast.success("Cancelación programada. Seguirás teniendo acceso hasta fin del período.")
+      onCancelScheduled()
     } catch (err) {
       console.error(err)
       toast.error(err?.message || "No se pudo cancelar. Inténtalo más tarde.")
@@ -170,23 +172,66 @@ const ActiveSubscription = ({ subData, uid, onCancel }) => {
   }
 
   return (
-    <div className="max-w-md mx-auto bg-bg-card border-2 border-primary/40 rounded-2xl p-6 text-center space-y-4">
-      <span className="text-4xl">🎉</span>
-      <h2 className="text-text-main font-bold text-xl">Plan {planLabel} activo</h2>
-      <p className="text-text-muted text-sm">
-        Ciclo: <span className="text-primary-light font-medium">{cicloLabel}</span>
-      </p>
-      {subData.subscriptionID && (
-        <p className="text-text-muted/60 text-xs break-all">ID: {subData.subscriptionID}</p>
+    <>
+      <div className="max-w-md mx-auto bg-bg-card border-2 border-primary/40 rounded-2xl p-6 text-center space-y-4">
+        <span className="text-4xl">{isScheduled ? "⏳" : "🎉"}</span>
+        <h2 className="text-text-main font-bold text-xl">Plan {planLabel} {isScheduled ? "" : "activo"}</h2>
+        <p className="text-text-muted text-sm">
+          Ciclo: <span className="text-primary-light font-medium">{cicloLabel}</span>
+        </p>
+
+        {/* Aviso de cancelación programada */}
+        {isScheduled && (
+          <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl px-4 py-3 text-left">
+            <p className="text-yellow-400 text-xs font-medium">Cancelación programada</p>
+            <p className="text-text-muted text-xs mt-1">
+              Tu acceso se mantiene activo hasta el final del período pagado. No se renovará automáticamente.
+            </p>
+          </div>
+        )}
+
+        {subData.subscriptionID && (
+          <p className="text-text-muted/60 text-xs break-all">ID: {subData.subscriptionID}</p>
+        )}
+
+        {!isScheduled && (
+          <button
+            onClick={() => setShowConfirm(true)}
+            disabled={cancelling}
+            className="mt-2 px-5 py-2.5 rounded-xl text-sm font-medium border border-red-500/40 text-red-400 bg-red-500/10 hover:bg-red-500/20 transition disabled:opacity-50"
+          >
+            {cancelling ? "Cancelando…" : "Cancelar suscripción"}
+          </button>
+        )}
+      </div>
+
+      {/* Modal de confirmación (reemplaza window.confirm que no funciona en Capacitor) */}
+      {showConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+          <div className="bg-bg-card border border-border rounded-2xl p-6 max-w-sm w-full space-y-4 shadow-xl">
+            <h3 className="text-text-main font-bold text-lg">¿Cancelar suscripción?</h3>
+            <p className="text-text-muted text-sm">
+              Seguirás teniendo acceso hasta el final del período pagado. No se aplican reembolsos parciales.
+            </p>
+            <div className="flex gap-3 pt-1">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="flex-1 py-2.5 rounded-xl text-sm font-medium border border-border text-text-muted bg-bg-hover hover:bg-border/40 transition"
+              >
+                Mantener plan
+              </button>
+              <button
+                onClick={handleCancel}
+                disabled={cancelling}
+                className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-red-500/20 text-red-400 border border-red-500/40 hover:bg-red-500/30 transition disabled:opacity-50"
+              >
+                {cancelling ? "Cancelando…" : "Sí, cancelar"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
-      <button
-        onClick={handleCancel}
-        disabled={cancelling}
-        className="mt-2 px-5 py-2.5 rounded-xl text-sm font-medium border border-red-500/40 text-red-400 bg-red-500/10 hover:bg-red-500/20 transition disabled:opacity-50"
-      >
-        {cancelling ? "Cancelando…" : "Cancelar suscripción"}
-      </button>
-    </div>
+    </>
   )
 }
 
@@ -203,21 +248,23 @@ const Subscription = () => {
   // Precarga Paddle en cuanto se monta la página (no bloquea la UI)
   usePaddle()
 
-  useEffect(() => {
-    if (!user?.uid) {
-      setLoadingSub(false)
-      return
-    }
+  const fetchSubData = () => {
+    if (!user?.uid) { setLoadingSub(false); return }
+    setLoadingSub(true)
     getDoc(doc(db, "users", user.uid))
       .then((snap) => {
         if (snap.exists()) {
           const data = snap.data()
+          // Mostrar tarjeta activa también si la cancelación está programada
           if (data.subscriptionStatus === "active") setSubData(data)
+          else setSubData(null)
         }
       })
       .catch(console.error)
       .finally(() => setLoadingSub(false))
-  }, [user])
+  }
+
+  useEffect(() => { fetchSubData() }, [user])
 
   return (
     <DashboardLayout>
@@ -251,8 +298,14 @@ const Subscription = () => {
           <div className="w-7 h-7 rounded-full border-2 border-border border-t-primary animate-spin opacity-60" />
         </div>
       ) : subData ? (
-        /* Usuario ya suscrito */
-        <ActiveSubscription subData={subData} uid={user?.uid} onCancel={() => setSubData(null)} />
+        /* Usuario ya suscrito (activo o con cancelación programada) */
+        <ActiveSubscription
+          subData={subData}
+          onCancelScheduled={() => {
+            invalidateSubscriptionCache()
+            fetchSubData()
+          }}
+        />
       ) : (
         <>
           {/* Toggle mensual / anual */}

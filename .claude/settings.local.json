@@ -22,7 +22,19 @@
       "Bash(find c:UsersVirtualStudiosDesktopStratega-Plannersrc -type f \\\\\\(-name *.jsx -o -name *.js \\\\\\))",
       "Bash(cmd /c \"dir /a /b \"\"c:\\\\Users\\\\VirtualStudios\\\\Desktop\\\\Stratega-Planner\"\"\")",
       "Bash(cmd /c \"dir /a:h /b \"\"c:\\\\Users\\\\VirtualStudios\\\\Desktop\\\\Stratega-Planner\"\"\")",
-      "Bash(powershell -Command \"Get-ChildItem -Path ''C:\\\\Users\\\\VirtualStudios\\\\Desktop\\\\Stratega-Planner'' -Force -File | Where-Object { $_Name -like ''*.env*'' -or $_Name -like ''.env*'' } | Select-Object Name, Length\")"
+      "Bash(powershell -Command \"Get-ChildItem -Path ''C:\\\\Users\\\\VirtualStudios\\\\Desktop\\\\Stratega-Planner'' -Force -File | Where-Object { $_Name -like ''*.env*'' -or $_Name -like ''.env*'' } | Select-Object Name, Length\")",
+      "Bash(xargs ls:*)",
+      "Bash(grep -rn \"localhost\\\\|127.0.0.1\" /c/Users/VirtualStudios/Desktop/Stratega-Planner/src --include=*.jsx --include=*.js)",
+      "Bash(xargs grep:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(grep -r \"collection.*collection\\\\|doc.*collection\" /c/Users/VirtualStudios/Desktop/Stratega-Planner/src --include=*.js --include=*.jsx)",
+      "Bash(grep -r \"where.*folderId\\\\|where.*feedId\\\\|where.*uid\" /c/Users/VirtualStudios/Desktop/Stratega-Planner/src --include=*.jsx --include=*.js)",
+      "Bash(node -e \"const p=require\\(''./package.json''\\); const deps={...p.dependencies,...p.devDependencies}; const cap=Object.entries\\(deps\\).filter\\(\\([k]\\)=>k.includes\\(''capacitor''\\)||k.includes\\(''@capacitor''\\)\\); cap.forEach\\(\\([k,v]\\)=>console.log\\(k,v\\)\\)\")",
+      "Bash(firebase deploy:*)",
+      "Bash(firebase functions:secrets:access PADDLE_API_KEY)",
+      "Bash(firebase functions:secrets:access PADDLE_WEBHOOK_SECRET)"
     ]
   }
 }

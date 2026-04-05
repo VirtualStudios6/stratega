@@ -7,7 +7,13 @@
       "Bash(mkdir -p /c/Users/VirtualStudios/Desktop/Stratega-Planner/assets)",
       "Bash(cp /c/Users/VirtualStudios/Desktop/Stratega-Planner/public/logos/logo2d-512x512-con-fondo.png /c/Users/VirtualStudios/Desktop/Stratega-Planner/assets/icon-only.png)",
       "Bash(cp /c/Users/VirtualStudios/Desktop/Stratega-Planner/public/logos/logo2d-512x512-con-fondo.png /c/Users/VirtualStudios/Desktop/Stratega-Planner/assets/splash.png)",
-      "Bash(npx capacitor-assets:*)"
+      "Bash(npx capacitor-assets:*)",
+      "Bash(ls -la /c/Users/VirtualStudios/Desktop/Stratega-Planner/.env*)",
+      "Bash(find /c/Users/VirtualStudios/Desktop/Stratega-Planner -name *.env -o -name .env* -o -name env.*)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); c=d[''''client''''][0]; print\\(''''project_number:'''', d[''''project_info''''][''''project_number'''']\\); print\\(''''project_id:'''', d[''''project_info''''][''''project_id'''']\\); print\\(''''storage_bucket:'''', d[''''project_info''''][''''storage_bucket'''']\\); print\\(''''mobilesdk_app_id:'''', c[''''client_info''''][''''mobilesdk_app_id'''']\\)\")",
+      "Bash(node:*)",
+      "Bash(npm run:*)",
+      "Bash(npx cap:*)"
     ]
   }
 }

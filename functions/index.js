@@ -307,11 +307,12 @@ exports.paddleWebhook = onRequest(
         await db.collection("users").doc(userId).set({
           plan,
           ciclo,
-          subscriptionID:     data.subscription_id || data.id,
-          subscriptionStatus: "active",
-          subscriptionDate:   admin.firestore.FieldValue.serverTimestamp(),
-          paymentProvider:    "paddle",
-          lastPaymentDate:    admin.firestore.FieldValue.serverTimestamp(),
+          subscriptionID:        data.subscription_id || data.id,
+          subscriptionStatus:    "active",
+          cancellationScheduled: false,
+          subscriptionDate:      admin.firestore.FieldValue.serverTimestamp(),
+          paymentProvider:       "paddle",
+          lastPaymentDate:       admin.firestore.FieldValue.serverTimestamp(),
         }, { merge: true })
 
         console.log(`paddleWebhook: activated uid=${userId} plan=${plan}/${ciclo}`)
@@ -331,20 +332,21 @@ exports.paddleWebhook = onRequest(
         .limit(1)
         .get()
 
+      // Si la suscripción se reactiva, limpiar cancellationScheduled
+      const updatePayload = { subscriptionStatus: newStatus }
+      if (newStatus === "active") updatePayload.cancellationScheduled = false
+
       if (snap.empty) {
         // Fallback: buscar por user_id en custom_data si está disponible
         const userId = data.custom_data?.user_id
         if (userId) {
-          await db.collection("users").doc(userId).set(
-            { subscriptionStatus: newStatus },
-            { merge: true }
-          )
+          await db.collection("users").doc(userId).set(updatePayload, { merge: true })
           console.log(`paddleWebhook: updated by uid=${userId} event=${event_type} status=${newStatus}`)
         } else {
           console.warn(`paddleWebhook: no user found for subscriptionID=${subscriptionId}`)
         }
       } else {
-        await snap.docs[0].ref.update({ subscriptionStatus: newStatus })
+        await snap.docs[0].ref.update(updatePayload)
         console.log(`paddleWebhook: updated uid=${snap.docs[0].id} event=${event_type} status=${newStatus}`)
       }
 
@@ -399,8 +401,10 @@ exports.cancelPaddleSubscription = onCall(
       throw new HttpsError("internal", "No se pudo cancelar la suscripción en Paddle.")
     }
 
-    // Actualizar Firestore inmediatamente (el webhook también lo hará)
-    await db.collection("users").doc(uid).update({ subscriptionStatus: "cancelled" })
+    // Marcar como cancelación programada — el status real pasa a "cancelled"
+    // cuando Paddle dispara subscription.cancelled al final del período.
+    // NO se cambia subscriptionStatus aquí para que el usuario mantenga acceso.
+    await db.collection("users").doc(uid).update({ cancellationScheduled: true })
 
     return { success: true }
   }
