@@ -9,14 +9,14 @@
     "login": "Entrar"
   },
   "hero": {
-    "badge": "7 dias grátis",
+    "badge": "5 dias grátis",
     "title1": "Bem-vindo ao modo Estrategista.",
     "title2": "Comece",
-    "title3": "a criar seu conteúdo.",
+    "title3": "a programar seu conteúdo.",
     "subtitle": "Aqui você não vem organizar tarefas. Você vem executar marketing de verdade. Faça parte do 1% que planeja sua semana de forma estratégica em minutos.",
     "cta_primary": "Começar teste grátis →",
     "cta_secondary": "Ver funcionalidades",
-    "trust": "✓ 7 dias grátis · ✓ Cancele quando quiser"
+    "trust": "✓ 5 dias grátis · ✓ Cancele quando quiser"
   },
   "stats": {
     "modules": "Módulos integrados",
@@ -26,8 +26,8 @@
   },
   "features": {
     "tag": "Funcionalidades",
-    "title": "Tudo o que você precisa em um só lugar",
-    "subtitle": "Desenvolvido especialmente para community managers e agências de marketing digital.",
+    "title": "Você não precisa trabalhar mais.",
+    "subtitle": "Você precisa de um sistema que trabalhe para você. Está a alguns passos de tê-lo.",
     "planner_title": "Planner & Calendário",
     "planner_desc": "Planeje e organize seu conteúdo com um calendário visual interativo. Arraste, solte e gerencie suas publicações com facilidade.",
     "feed_title": "Organizador de Feed",
@@ -56,15 +56,15 @@
   "pricing": {
     "tag": "Preços",
     "title": "Planos para cada etapa",
-    "subtitle": "Comece grátis por 7 dias.",
+    "subtitle": "Comece grátis por 5 dias.",
     "monthly": "Mensal",
     "annual": "Anual",
     "save": "Economize 20%",
     "popular": "⭐ Mais popular",
     "start_free": "Começar grátis",
     "start_free_arrow": "Começar grátis →",
-    "trial_note": "✓ 7 dias sem cobrança",
-    "per_month": "/mês · 7 dias grátis",
+    "trial_note": "✓ 5 dias sem cobrança",
+    "per_month": "/mês · 5 dias grátis",
     "per_year": "/ano · Economize 20%",
     "basic_name": "Básico",
     "basic_desc": "Para community managers que estão começando",
@@ -100,7 +100,7 @@
     "tag": "FAQ",
     "title": "Perguntas frequentes",
     "q1": "Preciso de cartão de crédito para o teste grátis?",
-    "a1": "Não. Você pode começar seu teste de 7 dias completamente grátis sem precisar de cartão de crédito.",
+    "a1": "Não. Você pode começar seu teste de 5 dias completamente grátis sem precisar de cartão de crédito.",
     "q2": "Posso cancelar a qualquer momento?",
     "a2": "Sim, você pode cancelar sua assinatura a qualquer momento sem penalidades. Manterá o acesso até o final do período faturado.",
     "q3": "Quais métodos de pagamento vocês aceitam?",
@@ -113,9 +113,9 @@
   "cta_final": {
     "title1": "Comece a crescer hoje com",
     "title2": "Stratega Planner",
-    "subtitle": "Junte-se aos community managers que já organizam seu trabalho de forma inteligente. 7 dias grátis, sem compromissos.",
+    "subtitle": "Junte-se aos community managers que já organizam seu trabalho de forma inteligente. 5 dias grátis, sem compromissos.",
     "btn": "Começar teste grátis →",
-    "note": "✓ 7 dias grátis · ✓ Cancele quando quiser"
+    "note": "✓ 5 dias grátis · ✓ Cancele quando quiser"
   },
   "footer": {
     "terms": "Termos",
@@ -468,5 +468,11 @@
   },
   "layout": {
     "collapse_menu": "Recolher menu"
+  },
+  "banner": {
+    "offer": "🔥 Oferta por tempo limitado",
+    "desc": "Plano Pro · Preço especial de lançamento",
+    "ends": "Termina em",
+    "cta": "Ativar oferta"
   }
 }

@@ -111,6 +111,7 @@ const Feed = () => {
   const [avatarUploading, setAvatarUploading] = useState(false)
   const avatarHeaderRef = useRef(null)
   const avatarModalRef = useRef(null)
+  const gridUploadRef = useRef(null)
 
   // Threshold de 10px antes de activar el drag.
   // Sin esto en táctil, cualquier tap se convierte en arrastre accidental.
@@ -454,6 +455,14 @@ const Feed = () => {
 
               {/* Upload row */}
               <div className="px-5 pt-4 flex justify-end gap-2">
+                {/* Input oculto para el "+" del grid */}
+                <input
+                  ref={gridUploadRef}
+                  type="file"
+                  accept="image/*,video/*"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
                 <label className="flex items-center gap-2 bg-bg-input border border-border text-text-main font-semibold px-4 py-2 rounded-xl hover:bg-bg-hover transition cursor-pointer text-xs">
                   <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
@@ -562,7 +571,11 @@ const Feed = () => {
                     <div className="grid grid-cols-3 gap-px bg-border">
                       {Array.from({ length: 9 }).map((_, i) => (
                         i === 4 ? (
-                          <div key={i} className="aspect-square bg-bg-card flex flex-col items-center justify-center gap-2">
+                          <div
+                            key={i}
+                            className="aspect-square bg-bg-card flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-bg-hover transition"
+                            onClick={() => gridUploadRef.current?.click()}
+                          >
                             <div className="w-10 h-10 rounded-full bg-primary/10 border-2 border-dashed border-primary/30 flex items-center justify-center">
                               <svg width="18" height="18" fill="none" stroke="var(--primary)" strokeWidth="2" viewBox="0 0 24 24">
                                 <path d="M12 5v14M5 12h14"/>
@@ -583,7 +596,11 @@ const Feed = () => {
                             <SortableImage key={item.id} item={item} onDelete={handleDelete} onPreview={setPreviewItem} index={index} />
                           ))}
                           {Array.from({ length: emptySlots }).map((_, i) => (
-                            <div key={`empty-${i}`} className="aspect-square bg-bg-card flex flex-col items-center justify-center gap-1 text-text-muted/30">
+                            <div
+                              key={`empty-${i}`}
+                              className="aspect-square bg-bg-card flex flex-col items-center justify-center gap-1 text-text-muted/30 cursor-pointer hover:bg-bg-hover hover:text-text-muted/60 transition"
+                              onClick={() => gridUploadRef.current?.click()}
+                            >
                               <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                                 <path d="M12 5v14M5 12h14"/>
                               </svg>

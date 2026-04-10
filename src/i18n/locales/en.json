@@ -9,14 +9,14 @@
     "login": "Sign in"
   },
   "hero": {
-    "badge": "7 days free",
+    "badge": "5 days free",
     "title1": "The all-in-one platform",
     "title2": "for",
     "title3": "Community Managers",
     "subtitle": "Plan content, organize your feed, manage clients and let AI work with you. All in one place.",
     "cta_primary": "Start free trial →",
     "cta_secondary": "See features",
-    "trust": "✓ 7 days free · ✓ Cancel anytime"
+    "trust": "✓ 5 days free · ✓ Cancel anytime"
   },
   "stats": {
     "modules": "Integrated modules",
@@ -26,8 +26,8 @@
   },
   "features": {
     "tag": "Features",
-    "title": "Everything you need in one place",
-    "subtitle": "Designed specifically for community managers and digital marketing agencies.",
+    "title": "You don't need to work more.",
+    "subtitle": "You need a system that works for you. You're just a few steps away from having it.",
     "planner_title": "Planner & Calendar",
     "planner_desc": "Plan and organize your content with an interactive visual calendar. Drag, drop and manage your posts with ease.",
     "feed_title": "Feed Organizer",
@@ -56,15 +56,15 @@
   "pricing": {
     "tag": "Pricing",
     "title": "Plans for every stage",
-    "subtitle": "Start free for 7 days.",
+    "subtitle": "Start free for 5 days.",
     "monthly": "Monthly",
     "annual": "Annual",
     "save": "Save 20%",
     "popular": "⭐ Most popular",
     "start_free": "Start free",
     "start_free_arrow": "Start free →",
-    "trial_note": "✓ 7 days free",
-    "per_month": "/month · 7 days free",
+    "trial_note": "✓ 5 days free",
+    "per_month": "/month · 5 days free",
     "per_year": "/year · Save 20%",
     "basic_name": "Basic",
     "basic_desc": "For community managers just getting started",
@@ -100,7 +100,7 @@
     "tag": "FAQ",
     "title": "Frequently asked questions",
     "q1": "Do I need a credit card for the free trial?",
-    "a1": "No. You can start your 7-day trial completely free without a credit card.",
+    "a1": "No. You can start your 5-day trial completely free without a credit card.",
     "q2": "Can I cancel at any time?",
     "a2": "Yes, you can cancel your subscription at any time without penalties. You'll keep access until the end of the billing period.",
     "q3": "What payment methods do you accept?",
@@ -113,9 +113,9 @@
   "cta_final": {
     "title1": "Start growing today with",
     "title2": "Stratega Planner",
-    "subtitle": "Join the community managers who already organize their work intelligently. 7 days free, no commitment.",
+    "subtitle": "Join the community managers who already organize their work intelligently. 5 days free, no commitment.",
     "btn": "Start free trial →",
-    "note": "✓ 7 days free · ✓ Cancel anytime"
+    "note": "✓ 5 days free · ✓ Cancel anytime"
   },
   "footer": {
     "terms": "Terms",
@@ -468,5 +468,11 @@
   },
   "layout": {
     "collapse_menu": "Collapse menu"
+  },
+  "banner": {
+    "offer": "🔥 Limited time offer",
+    "desc": "Pro Plan · Special launch pricing",
+    "ends": "Ends in",
+    "cta": "Activate offer"
   }
 }

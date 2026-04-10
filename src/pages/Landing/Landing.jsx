@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import LanguageSwitcher from "../../components/shared/LanguageSwitcher"
@@ -12,6 +12,25 @@ const Landing = () => {
   const [openFaq, setOpenFaq] = useState(null)
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 })
+
+  // Countdown to April 30 2026
+  useEffect(() => {
+    const target = new Date("2026-04-30T23:59:59").getTime()
+    const tick = () => {
+      const diff = target - Date.now()
+      if (diff <= 0) { setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 }); return }
+      setTimeLeft({
+        days:    Math.floor(diff / 86400000),
+        hours:   Math.floor((diff % 86400000) / 3600000),
+        minutes: Math.floor((diff % 3600000)  / 60000),
+        seconds: Math.floor((diff % 60000)    / 1000),
+      })
+    }
+    tick()
+    const id = setInterval(tick, 1000)
+    return () => clearInterval(id)
+  }, [])
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24)
@@ -84,6 +103,27 @@ const Landing = () => {
 
   return (
     <div className="lp">
+
+      {/* ── Announcement Banner ──────────────────────────────────────── */}
+      <div className="lp-banner">
+        <div className="lp-banner-inner">
+          <span className="lp-banner-offer">{t("banner.offer")}</span>
+          <span className="lp-banner-sep">·</span>
+          <span className="lp-banner-desc">{t("banner.desc")}</span>
+          <span className="lp-banner-sep">—</span>
+          <span className="lp-banner-ends">{t("banner.ends")}</span>
+          <div className="lp-countdown">
+            <div className="lp-countdown-block"><span className="lp-cd-num">{String(timeLeft.days).padStart(2,"0")}</span><span className="lp-cd-lbl">d</span></div>
+            <span className="lp-cd-colon">:</span>
+            <div className="lp-countdown-block"><span className="lp-cd-num">{String(timeLeft.hours).padStart(2,"0")}</span><span className="lp-cd-lbl">h</span></div>
+            <span className="lp-cd-colon">:</span>
+            <div className="lp-countdown-block"><span className="lp-cd-num">{String(timeLeft.minutes).padStart(2,"0")}</span><span className="lp-cd-lbl">m</span></div>
+            <span className="lp-cd-colon">:</span>
+            <div className="lp-countdown-block"><span className="lp-cd-num">{String(timeLeft.seconds).padStart(2,"0")}</span><span className="lp-cd-lbl">s</span></div>
+          </div>
+          <button className="lp-banner-cta" onClick={() => navigate("/register")}>{t("banner.cta")}</button>
+        </div>
+      </div>
 
       {/* ── Nav ──────────────────────────────────────────────────────── */}
       <nav className={`lp-nav ${scrolled ? "scrolled" : ""}`}>
@@ -229,7 +269,7 @@ const Landing = () => {
 
       {/* ── Stats ────────────────────────────────────────────────────── */}
       <div className="lp-stats">
-        {[["10+", t("stats.modules")],["100%", t("stats.cloud")],["AI", t("stats.ai")],["7", t("stats.trial")]].map(([n,l], i) => (
+        {[["10+", t("stats.modules")],["100%", t("stats.cloud")],["AI", t("stats.ai")],["5", t("stats.trial")]].map(([n,l], i) => (
           <div key={l} className={`lp-stat lp-reveal lp-reveal--d${i+1}`}>
             <div className="lp-stat-num">{n}</div>
             <div className="lp-stat-label">{l}</div>
@@ -239,7 +279,6 @@ const Landing = () => {
 
       {/* ── Features ─────────────────────────────────────────────────── */}
       <section className="lp-section" id="features">
-        <div className="lp-section-tag lp-reveal">{t("features.tag")}</div>
         <h2 className="lp-section-title lp-reveal lp-reveal--d1">{t("features.title")}</h2>
         <p className="lp-section-sub lp-reveal lp-reveal--d2">{t("features.subtitle")}</p>
         <div className="lp-features-grid">

@@ -26,6 +26,7 @@ const COLORES = [
   { name: "Rosa",     value: "#EC4899" },
   { name: "Fucsia",   value: "#D946EF" },
   { name: "Gris",     value: "#64748B" },
+  { name: "Negro",    value: "#111111" },
 ]
 
 const Folders = () => {

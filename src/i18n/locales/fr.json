@@ -9,14 +9,14 @@
     "login": "Se connecter"
   },
   "hero": {
-    "badge": "7 jours gratuits",
+    "badge": "5 jours gratuits",
     "title1": "Bienvenue en mode Stratège.",
     "title2": "Commencez",
-    "title3": "à créer votre contenu.",
+    "title3": "à planifier votre contenu.",
     "subtitle": "Ici, vous ne venez pas organiser des tâches. Vous venez exécuter un vrai marketing. Rejoignez le 1% qui planifie sa semaine stratégiquement en quelques minutes.",
     "cta_primary": "Démarrer l'essai gratuit →",
     "cta_secondary": "Voir les fonctionnalités",
-    "trust": "✓ 7 jours gratuits · ✓ Annulez quand vous voulez"
+    "trust": "✓ 5 jours gratuits · ✓ Annulez quand vous voulez"
   },
   "stats": {
     "modules": "Modules intégrés",
@@ -26,8 +26,8 @@
   },
   "features": {
     "tag": "Fonctionnalités",
-    "title": "Tout ce dont vous avez besoin en un seul endroit",
-    "subtitle": "Conçu spécialement pour les community managers et les agences de marketing digital.",
+    "title": "Vous n'avez pas besoin de travailler plus.",
+    "subtitle": "Vous avez besoin d'un système qui travaille pour vous. Vous n'êtes qu'à quelques pas.",
     "planner_title": "Planner & Calendrier",
     "planner_desc": "Planifiez et organisez votre contenu avec un calendrier visuel interactif. Glissez, déposez et gérez vos publications facilement.",
     "feed_title": "Organisateur de Feed",
@@ -56,15 +56,15 @@
   "pricing": {
     "tag": "Tarifs",
     "title": "Des plans pour chaque étape",
-    "subtitle": "Commencez gratuitement pendant 7 jours.",
+    "subtitle": "Commencez gratuitement pendant 5 jours.",
     "monthly": "Mensuel",
     "annual": "Annuel",
     "save": "Économisez 20%",
     "popular": "⭐ Le plus populaire",
     "start_free": "Commencer gratuitement",
     "start_free_arrow": "Commencer gratuitement →",
-    "trial_note": "✓ 7 jours sans frais",
-    "per_month": "/mois · 7 jours gratuits",
+    "trial_note": "✓ 5 jours sans frais",
+    "per_month": "/mois · 5 jours gratuits",
     "per_year": "/an · Économisez 20%",
     "basic_name": "Basique",
     "basic_desc": "Pour les community managers qui débutent",
@@ -100,7 +100,7 @@
     "tag": "FAQ",
     "title": "Questions fréquentes",
     "q1": "Ai-je besoin d'une carte bancaire pour l'essai gratuit?",
-    "a1": "Non. Vous pouvez commencer votre essai de 7 jours complètement gratuitement sans carte bancaire.",
+    "a1": "Non. Vous pouvez commencer votre essai de 5 jours complètement gratuitement sans carte bancaire.",
     "q2": "Puis-je annuler à tout moment?",
     "a2": "Oui, vous pouvez annuler votre abonnement à tout moment sans pénalités. Vous conserverez l'accès jusqu'à la fin de la période facturée.",
     "q3": "Quels modes de paiement acceptez-vous?",
@@ -113,9 +113,9 @@
   "cta_final": {
     "title1": "Commencez à grandir aujourd'hui avec",
     "title2": "Stratega Planner",
-    "subtitle": "Rejoignez les community managers qui organisent déjà leur travail intelligemment. 7 jours gratuits, sans engagement.",
+    "subtitle": "Rejoignez les community managers qui organisent déjà leur travail intelligemment. 5 jours gratuits, sans engagement.",
     "btn": "Démarrer l'essai gratuit →",
-    "note": "✓ 7 jours gratuits · ✓ Annulez quand vous voulez"
+    "note": "✓ 5 jours gratuits · ✓ Annulez quand vous voulez"
   },
   "footer": {
     "terms": "Conditions",
@@ -468,5 +468,11 @@
   },
   "layout": {
     "collapse_menu": "Réduire le menu"
+  },
+  "banner": {
+    "offer": "🔥 Offre limitée dans le temps",
+    "desc": "Plan Pro · Prix spécial de lancement",
+    "ends": "Se termine dans",
+    "cta": "Activer l'offre"
   }
 }

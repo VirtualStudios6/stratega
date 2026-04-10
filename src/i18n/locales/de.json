@@ -9,14 +9,14 @@
     "login": "Anmelden"
   },
   "hero": {
-    "badge": "7 Tage kostenlos",
+    "badge": "5 Tage kostenlos",
     "title1": "Willkommen im Strategen-Modus.",
     "title2": "Beginne",
-    "title3": "deinen Content zu erstellen.",
+    "title3": "deinen Content zu planen.",
     "subtitle": "Hier organisierst du keine Aufgaben. Du führst echtes Marketing durch. Werde Teil der 1%, die ihre Woche in Minuten strategisch planen.",
     "cta_primary": "Kostenlose Testversion starten →",
     "cta_secondary": "Funktionen ansehen",
-    "trust": "✓ 7 Tage kostenlos · ✓ Jederzeit kündbar"
+    "trust": "✓ 5 Tage kostenlos · ✓ Jederzeit kündbar"
   },
   "stats": {
     "modules": "Integrierte Module",
@@ -26,8 +26,8 @@
   },
   "features": {
     "tag": "Funktionen",
-    "title": "Alles, was du brauchst, an einem Ort",
-    "subtitle": "Speziell für Community Manager und digitale Marketing-Agenturen entwickelt.",
+    "title": "Du musst nicht mehr so viel arbeiten.",
+    "subtitle": "Du brauchst ein System, das für dich arbeitet. Du bist nur wenige Schritte davon entfernt.",
     "planner_title": "Planer & Kalender",
     "planner_desc": "Plane und organisiere deine Inhalte mit einem interaktiven visuellen Kalender. Ziehe, lasse los und verwalte deine Beiträge mit Leichtigkeit.",
     "feed_title": "Feed-Organisator",
@@ -56,15 +56,15 @@
   "pricing": {
     "tag": "Preise",
     "title": "Pläne für jede Phase",
-    "subtitle": "Starte kostenlos für 7 Tage.",
+    "subtitle": "Starte kostenlos für 5 Tage.",
     "monthly": "Monatlich",
     "annual": "Jährlich",
     "save": "Spare 20%",
     "popular": "⭐ Am beliebtesten",
     "start_free": "Kostenlos starten",
     "start_free_arrow": "Kostenlos starten →",
-    "trial_note": "✓ 7 Tage kostenlos",
-    "per_month": "/Monat · 7 Tage kostenlos",
+    "trial_note": "✓ 5 Tage kostenlos",
+    "per_month": "/Monat · 5 Tage kostenlos",
     "per_year": "/Jahr · Spare 20%",
     "basic_name": "Basic",
     "basic_desc": "Für Community Manager, die gerade anfangen",
@@ -100,7 +100,7 @@
     "tag": "FAQ",
     "title": "Häufig gestellte Fragen",
     "q1": "Benötige ich eine Kreditkarte für die kostenlose Testversion?",
-    "a1": "Nein. Du kannst deine 7-tägige Testversion komplett kostenlos ohne Kreditkarte starten.",
+    "a1": "Nein. Du kannst deine 5-tägige Testversion komplett kostenlos ohne Kreditkarte starten.",
     "q2": "Kann ich jederzeit kündigen?",
     "a2": "Ja, du kannst dein Abonnement jederzeit ohne Strafen kündigen. Du behältst den Zugang bis zum Ende des Abrechnungszeitraums.",
     "q3": "Welche Zahlungsmethoden akzeptiert ihr?",
@@ -113,9 +113,9 @@
   "cta_final": {
     "title1": "Beginne heute zu wachsen mit",
     "title2": "Stratega Planner",
-    "subtitle": "Schließe dich den Community Managern an, die ihre Arbeit bereits intelligent organisieren. 7 Tage kostenlos, ohne Verpflichtungen.",
+    "subtitle": "Schließe dich den Community Managern an, die ihre Arbeit bereits intelligent organisieren. 5 Tage kostenlos, ohne Verpflichtungen.",
     "btn": "Kostenlose Testversion starten →",
-    "note": "✓ 7 Tage kostenlos · ✓ Jederzeit kündbar"
+    "note": "✓ 5 Tage kostenlos · ✓ Jederzeit kündbar"
   },
   "footer": {
     "terms": "Nutzungsbedingungen",
@@ -468,5 +468,11 @@
   },
   "layout": {
     "collapse_menu": "Menü einklappen"
+  },
+  "banner": {
+    "offer": "🔥 Zeitlich begrenztes Angebot",
+    "desc": "Pro-Plan · Sonderpreis zum Start",
+    "ends": "Endet in",
+    "cta": "Angebot aktivieren"
   }
 }
