@@ -148,12 +148,13 @@ const Register = () => {
           <div className="space-y-4">
             <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5">
               <Sparkles size={13} className="text-primary-light" />
-              <span className="text-primary-light text-xs font-medium">7 días gratis · Sin tarjeta</span>
+              <span className="text-primary-light text-xs font-medium">5 días gratis · Sin tarjeta</span>
             </div>
             <h2 className="text-4xl font-bold text-text-main leading-tight">
-              Empieza gratis y<br />
-              gestiona todo tu<br />
-              <span className="gradient-text">contenido.</span>
+              Bienvenido al modo<br />
+              Estratega.<br />
+              <span className="gradient-text">Empieza a programar</span><br />
+              tu contenido.
             </h2>
             <p className="text-text-muted text-base max-w-sm leading-relaxed">
               Únete a los community managers que ya usan Stratega para planificar mejor y trabajar en equipo.

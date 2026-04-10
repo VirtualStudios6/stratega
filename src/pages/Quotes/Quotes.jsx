@@ -766,9 +766,15 @@ const Quotes = () => {
                         <Receipt size={13} />Factura
                       </button>
                     )}
-                    <button onClick={() => navigate(`/quotes/ver/${selectedQuote.id}`)} className="flex items-center gap-1.5 bg-primary/20 border border-primary/30 text-primary-light text-sm px-3 py-2 rounded-xl hover:bg-primary/30 transition focus:outline-none">
-                      <Monitor size={13} />Presentar
-                    </button>
+                    {isPro ? (
+                      <button onClick={() => navigate(`/quotes/ver/${selectedQuote.id}`)} className="flex items-center gap-1.5 bg-primary/20 border border-primary/30 text-primary-light text-sm px-3 py-2 rounded-xl hover:bg-primary/30 transition focus:outline-none">
+                        <Monitor size={13} />Presentar
+                      </button>
+                    ) : (
+                      <button onClick={() => navigate("/subscription")} title="Disponible en plan Pro" className="flex items-center gap-1.5 bg-bg-input border border-border text-text-muted/40 text-sm px-3 py-2 rounded-xl cursor-pointer hover:border-amber-500/40 hover:text-amber-400 transition focus:outline-none">
+                        <Lock size={13} />Presentar
+                      </button>
+                    )}
                     {isPro ? (
                       <button onClick={() => handleDownloadPDF(selectedQuote)} className="flex items-center gap-1.5 bg-bg-input border border-border text-text-muted text-sm px-3 py-2 rounded-xl hover:border-primary/40 hover:text-primary-light transition focus:outline-none">
                         <Download size={13} />PDF

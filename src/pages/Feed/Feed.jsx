@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react"
+import toast from "react-hot-toast"
 import {
   DndContext, closestCenter, KeyboardSensor,
   PointerSensor, useSensor, useSensors
@@ -261,7 +262,7 @@ const Feed = () => {
       })
       setPostModalOpen(false); setCaption(""); setSelectedFile(null); setPreview(null); setMediaType("photo")
       fetchItems(selectedFeed.id)
-    } catch (err) { console.error(err) }
+    } catch (err) { console.error(err); toast.error("Error al subir el archivo. Inténtalo de nuevo.") }
     setUploading(false)
   }
 

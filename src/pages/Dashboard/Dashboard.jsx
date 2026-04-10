@@ -360,7 +360,7 @@ const Dashboard = () => {
 
   return (
     <DashboardLayout>
-      <div className="max-w-7xl mx-auto space-y-4">
+      <div className="w-full space-y-5">
 
         {/* ── Header ────────────────────────────────────────────────── */}
         <div className="flex items-center justify-between gap-3">
@@ -414,7 +414,7 @@ const Dashboard = () => {
         )}
 
         {/* ── Stat cards ────────────────────────────────────────────── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
           <StatCard
             index={0}
             icon={<Bell size={18} className="text-amber-400" />}
