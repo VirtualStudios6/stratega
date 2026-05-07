@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tema de splash para Android 12+ (API 31) — usa SplashScreen API nativa con ícono animado -->
+<resources>
+
+    <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+        <!-- Fondo oscuro de marca -->
+        <item name="android:windowSplashScreenBackground">#080810</item>
+        <!-- Ícono animado (AnimatedVectorDrawable) -->
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_splash_animated</item>
+        <!-- Duración de la animación en ms -->
+        <item name="android:windowSplashScreenAnimationDuration">700</item>
+        <!-- Barra de estado y navegación oscuras -->
+        <item name="android:statusBarColor">#080810</item>
+        <item name="android:navigationBarColor">#080810</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <!-- Tema a aplicar después del splash -->
+        <item name="postSplashScreenTheme">@style/AppTheme</item>
+    </style>
+
+</resources>
