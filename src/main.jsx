@@ -7,6 +7,21 @@ import "./i18n/index.js"
 import "./index.css"
 import App from "./App.jsx"
 
+// Capacitor: inyecta --sat (safe-area-top) como CSS variable antes de que
+// React monte. En Android nativo usamos max(env(...), 28px) como mínimo
+// porque env(safe-area-inset-top) puede devolver 0 en WebViews donde
+// los insets no se propagan correctamente (timing race en algunos OEMs).
+// En web/iOS dejamos env() puro para no añadir padding innecesario.
+if (typeof window !== "undefined") {
+  const isAndroidNative = window?.Capacitor?.getPlatform?.() === "android"
+  document.documentElement.style.setProperty(
+    "--sat",
+    isAndroidNative
+      ? "max(env(safe-area-inset-top, 0px), 28px)"
+      : "env(safe-area-inset-top, 0px)"
+  )
+}
+
 // Capacitor: registra el listener del botón "atrás" de Android al iniciar
 if (typeof window !== "undefined") {
   import("@capacitor/app").then(({ App: CapApp }) => {

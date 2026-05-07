@@ -9,6 +9,9 @@
    ThemeContext las sobreescribe al montar, esto evita el flash oscuro.
    ───────────────────────────────────────────────────────────────────────── */
 :root {
+  /* Safe area top — sobrescrito por main.jsx con max(env(...),28px) en Android nativo */
+  --sat: env(safe-area-inset-top, 0px);
+
   --bg-main:          #F2F2F7;
   --bg-card:          #FFFFFF;
   --bg-input:         #EAEAF2;

@@ -78,7 +78,7 @@ const DashboardLayout = ({ children }) => {
           transition-[width] duration-300 ease-in-out
           ${sidebarWidth}
         `}
-        style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+        style={{ paddingTop: 'var(--sat, env(safe-area-inset-top, 0px))' }}
       >
         <Sidebar
           open={true}
@@ -94,7 +94,7 @@ const DashboardLayout = ({ children }) => {
           su altura (notch de iPhone, pastilla del Dynamic Island, Android). */}
       <button
         onClick={toggleDesktop}
-        style={{ top: 'calc(env(safe-area-inset-top, 0px) + 14px)' }}
+        style={{ top: 'calc(var(--sat, env(safe-area-inset-top, 0px)) + 14px)' }}
         className={`
           hidden lg:flex fixed z-40
           w-8 h-8 bg-bg-card border border-border rounded-lg
@@ -127,8 +127,8 @@ const DashboardLayout = ({ children }) => {
         <header
           className="lg:hidden sticky top-0 z-30 flex items-center justify-between px-4 bg-bg-card/96 backdrop-blur-xl border-b border-border"
           style={{
-            paddingTop: 'env(safe-area-inset-top, 0px)',
-            minHeight: 'calc(env(safe-area-inset-top, 0px) + 3.5rem)',
+            paddingTop: 'var(--sat, env(safe-area-inset-top, 0px))',
+            minHeight: 'calc(var(--sat, env(safe-area-inset-top, 0px)) + 3.5rem)',
           }}
         >
           {/* Hamburguesa + logo */}
@@ -165,8 +165,8 @@ const DashboardLayout = ({ children }) => {
         <header
           className="hidden lg:flex items-center justify-between px-6 bg-bg-card/80 backdrop-blur-md border-b border-border sticky top-0 z-20"
           style={{
-            paddingTop: 'env(safe-area-inset-top, 0px)',
-            minHeight: 'calc(env(safe-area-inset-top, 0px) + 52px)',
+            paddingTop: 'var(--sat, env(safe-area-inset-top, 0px))',
+            minHeight: 'calc(var(--sat, env(safe-area-inset-top, 0px)) + 52px)',
           }}
         >
           <span className="text-text-muted text-sm capitalize select-none">

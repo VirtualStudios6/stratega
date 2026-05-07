@@ -6,15 +6,24 @@ const AuthContext = createContext()
 
 export const useAuth = () => useContext(AuthContext)
 
-// Oculta el splash nativo tan pronto como el estado de auth es conocido.
+// Duración mínima del splash: la animación dura 700 ms + 300 ms de fade = 1000 ms.
+// Añadimos 400 ms de buffer para que el usuario perciba la transición completa.
+const SPLASH_MIN_MS = 1400
+const splashStart = Date.now()
+
+// Oculta el splash respetando el tiempo mínimo para que la animación termine.
 // Reintenta hasta 3 veces con delay porque en algunos dispositivos Android
 // el plugin no está listo en el primer intento.
 const hideSplash = (attempt = 0) => {
-  import("@capacitor/splash-screen")
-    .then(({ SplashScreen }) => SplashScreen.hide({ fadeOutDuration: 300 }))
-    .catch(() => {
-      if (attempt < 3) setTimeout(() => hideSplash(attempt + 1), 500)
-    })
+  const remaining = SPLASH_MIN_MS - (Date.now() - splashStart)
+  const delay = Math.max(0, remaining)
+  setTimeout(() => {
+    import("@capacitor/splash-screen")
+      .then(({ SplashScreen }) => SplashScreen.hide({ fadeOutDuration: 400 }))
+      .catch(() => {
+        if (attempt < 3) setTimeout(() => hideSplash(attempt + 1), 500)
+      })
+  }, delay)
 }
 
 export const AuthProvider = ({ children }) => {
