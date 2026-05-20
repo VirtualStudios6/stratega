@@ -67,12 +67,15 @@ const Reminders = () => {
 
   useEffect(() => { fetchTasks(); fetchFolders() }, [user])
 
-  // Pedir permiso de notificaciones al cargar
-  useEffect(() => {
-    if ("Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission()
-    }
-  }, [])
+  const [notifPerm, setNotifPerm] = useState(() =>
+    "Notification" in window ? Notification.permission : "granted"
+  )
+
+  const handleRequestNotifPermission = async () => {
+    if (!("Notification" in window)) return
+    const result = await Notification.requestPermission()
+    setNotifPerm(result)
+  }
 
   const resetModal = () => {
     setModalOpen(false)
@@ -224,12 +227,29 @@ const Reminders = () => {
       </div>
 
       {/* Permiso notificaciones */}
-      {"Notification" in window && Notification.permission === "denied" && (
-        <div className="bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-sm px-4 py-3 rounded-xl mb-6 flex items-center gap-2">
-          <AlertTriangle size={16} className="flex-shrink-0" />
-          {i18n.language === "es"
-            ? "Las notificaciones están bloqueadas. Actívalas en la configuración del navegador para recibir alertas."
-            : "Notifications are blocked. Enable them in your browser settings to receive alerts."}
+      {notifPerm === "default" && (
+        <div className="bg-primary/8 border border-primary/25 text-text-main text-sm px-4 py-3 rounded-xl mb-6 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 min-w-0">
+            <Bell size={16} className="text-primary-light flex-shrink-0" />
+            <span className="text-text-muted text-sm">Activa las notificaciones para recibir alertas de tus recordatorios.</span>
+          </div>
+          <button
+            onClick={handleRequestNotifPermission}
+            className="flex-shrink-0 bg-primary text-white text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-primary-light transition"
+          >
+            Activar
+          </button>
+        </div>
+      )}
+      {notifPerm === "denied" && (
+        <div className="bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-sm px-4 py-3 rounded-xl mb-6 flex items-start gap-2">
+          <AlertTriangle size={16} className="flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-medium mb-0.5">Notificaciones bloqueadas</p>
+            <p className="text-yellow-400/80 text-xs">
+              Tu navegador las bloqueó. Para activarlas: haz clic en el candado 🔒 de la barra de direcciones → <strong>Permisos del sitio</strong> → <strong>Notificaciones → Permitir</strong>, luego recarga la página.
+            </p>
+          </div>
         </div>
       )}
 
