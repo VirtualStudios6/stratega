@@ -85,8 +85,9 @@ const Accounting = () => {
   }
 
   const handleSave = async () => {
-    if (!form.descripcion.trim() || !form.monto) return
-    const payload = { tipo, ...form, monto: parseFloat(form.monto) }
+    const montoNum = parseFloat(form.monto)
+    if (!form.descripcion.trim() || isNaN(montoNum) || montoNum <= 0) return
+    const payload = { tipo, ...form, monto: montoNum }
     if (editingTrans) {
       await updateDoc(doc(db, "accounting", editingTrans.id), payload)
     } else {
@@ -105,7 +106,8 @@ const Accounting = () => {
 
   // ── Computed ────────────────────────────────────────────────────────────
   const filtradas = transacciones.filter(t => {
-    const f = new Date(t.fecha)
+    // Parse as local time (appending T00:00:00 avoids UTC-midnight offset issue)
+    const f = new Date(t.fecha + "T00:00:00")
     return f.getMonth() === filtroMes && f.getFullYear() === filtroAnio
   })
 
@@ -119,7 +121,7 @@ const Accounting = () => {
     d.setMonth(d.getMonth() - (5 - i))
     const mes  = d.getMonth()
     const anio = d.getFullYear()
-    const del  = transacciones.filter(t => { const f = new Date(t.fecha); return f.getMonth() === mes && f.getFullYear() === anio })
+    const del  = transacciones.filter(t => { const f = new Date(t.fecha + "T00:00:00"); return f.getMonth() === mes && f.getFullYear() === anio })
     return {
       mes: MESES_CORTO[mes],
       Ingresos: del.filter(t => t.tipo === "ingreso").reduce((a, t) => a + t.monto, 0),
@@ -129,7 +131,7 @@ const Accounting = () => {
 
   // ── Reporte mensual ─────────────────────────────────────────────────────
   const reporteFiltradas = transacciones.filter(t => {
-    const f = new Date(t.fecha)
+    const f = new Date(t.fecha + "T00:00:00")
     return f.getMonth() === reporteMes && f.getFullYear() === reporteAnio
   })
   const rIngresos    = reporteFiltradas.filter(t => t.tipo === "ingreso").reduce((a, t) => a + t.monto, 0)
@@ -434,7 +436,7 @@ const Accounting = () => {
                   {(() => {
                     const diasMap = {}
                     reporteFiltradas.forEach(t => {
-                      const d = new Date(t.fecha).getDate()
+                      const d = new Date(t.fecha + "T00:00:00").getDate()
                       if (!diasMap[d]) diasMap[d] = { dia: `${d}`, Ingresos: 0, Gastos: 0 }
                       if (t.tipo === "ingreso") diasMap[d].Ingresos += t.monto
                       else diasMap[d].Gastos += t.monto

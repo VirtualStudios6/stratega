@@ -77,8 +77,8 @@ const Planner = () => {
     descripcion: "",
     objetivo: "",
     hook: "",
-    formato: "",
-    plataforma: "",
+    formato: [],
+    plataforma: [],
     cta: "",
     prioridad: "Normal",
     hora: "09:00",
@@ -160,7 +160,7 @@ const Planner = () => {
   const handleDateClick = (info) => {
     setSelectedDate(info.dateStr)
     setSelectedEvent(null)
-    setForm({ titulo: "", descripcion: "", objetivo: "", hook: "", formato: "", plataforma: "", cta: "", prioridad: "Normal", hora: "09:00", folderId: selectedCompany || "" })
+    setForm({ titulo: "", descripcion: "", objetivo: "", hook: "", formato: [], plataforma: [], cta: "", prioridad: "Normal", hora: "09:00", folderId: selectedCompany || "" })
     setModalOpen(true)
   }
 
@@ -188,8 +188,14 @@ const Planner = () => {
       descripcion: previewEvent.descripcion || "",
       objetivo: previewEvent.objetivo || "",
       hook: previewEvent.hook || "",
-      formato: previewEvent.formato || "",
-      plataforma: previewEvent.plataforma || "",
+      // Normalize legacy string values to array
+      formato: Array.isArray(previewEvent.formato)
+        ? previewEvent.formato
+        : previewEvent.formato ? [previewEvent.formato] : [],
+      // Normalize legacy string values to array
+      plataforma: Array.isArray(previewEvent.plataforma)
+        ? previewEvent.plataforma
+        : previewEvent.plataforma ? [previewEvent.plataforma] : [],
       cta: previewEvent.cta || "",
       prioridad: previewEvent.prioridad || "Normal",
       hora: previewEvent.hora || "09:00",
@@ -336,7 +342,10 @@ const Planner = () => {
         ev.title || "",
         d.objetivo || "",
         d.hook ? `"${d.hook}"` : "",
-        [d.formato, d.plataforma].filter(Boolean).join(" · ") || "",
+        [
+          (Array.isArray(d.formato)    ? d.formato.join(", ")    : d.formato    || ""),
+          (Array.isArray(d.plataforma) ? d.plataforma.join(", ") : d.plataforma || ""),
+        ].filter(Boolean).join(" · ") || "",
         d.hora || "",
         d.prioridad || "Normal",
       ]
@@ -423,7 +432,7 @@ const Planner = () => {
   const openNewForDate = (dateStr) => {
     setSelectedDate(dateStr)
     setSelectedEvent(null)
-    setForm({ titulo: "", descripcion: "", objetivo: "", hook: "", formato: "", plataforma: "", cta: "", prioridad: "Normal", hora: "09:00", folderId: selectedCompany || "" })
+    setForm({ titulo: "", descripcion: "", objetivo: "", hook: "", formato: [], plataforma: [], cta: "", prioridad: "Normal", hora: "09:00", folderId: selectedCompany || "" })
     setModalOpen(true)
   }
 
@@ -642,7 +651,9 @@ const Planner = () => {
               {eventosOrdenados.map((ev, i) => {
                 const d = ev.extendedProps
                 const prioridad = PRIORIDADES.find(p => p.value === d.prioridad) || PRIORIDADES[2]
-                const plat = PLATAFORMAS.find(p => p.label === d.plataforma)
+                const plats = PLATAFORMAS.filter(p =>
+                  Array.isArray(d.plataforma) ? d.plataforma.includes(p.label) : d.plataforma === p.label
+                )
                 const isToday = ev.date === new Date().toISOString().split("T")[0]
                 return (
                   <div
@@ -694,20 +705,21 @@ const Planner = () => {
 
                     {/* Formato + Plataforma + Prioridad */}
                     <div className="flex items-center gap-2 flex-wrap md:flex-nowrap">
-                      {d.formato && (
-                        <span className="px-2 py-0.5 rounded-md bg-primary/10 border border-primary/20 text-primary-light text-[11px] font-medium whitespace-nowrap">
-                          {d.formato}
+                      {(Array.isArray(d.formato) ? d.formato : d.formato ? [d.formato] : []).map(f => (
+                        <span key={f} className="px-2 py-0.5 rounded-md bg-primary/10 border border-primary/20 text-primary-light text-[11px] font-medium whitespace-nowrap">
+                          {f}
                         </span>
-                      )}
-                      {plat && (
+                      ))}
+                      {plats.map(plat => (
                         <span
+                          key={plat.label}
                           className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium whitespace-nowrap"
                           style={{ backgroundColor: plat.color + "22", color: plat.color, border: `1px solid ${plat.color}44` }}
                         >
                           <plat.Icon />
                           {plat.label}
                         </span>
-                      )}
+                      ))}
                       <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: prioridad.color }} title={d.prioridad} />
                     </div>
                   </div>
@@ -786,41 +798,61 @@ const Planner = () => {
                 />
               </div>
 
-              {/* Formato */}
+              {/* Formato — selección múltiple */}
               <div>
-                <label className="block text-sm font-medium text-text-main mb-2">{t("planner.format_label")}</label>
+                <label className="block text-sm font-medium text-text-main mb-0.5">{t("planner.format_label")}</label>
+                <p className="text-xs text-text-muted mb-2">Puedes elegir más de uno</p>
                 <div className="flex flex-wrap gap-2">
-                  {FORMATOS.map(f => (
-                    <button
-                      key={f}
-                      type="button"
-                      onClick={() => setForm({ ...form, formato: form.formato === f ? "" : f })}
-                      className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition ${
-                        form.formato === f
-                          ? "bg-primary/20 border-primary/50 text-primary-light"
-                          : "bg-bg-input border-border text-text-muted hover:bg-bg-hover"
-                      }`}
-                    >
-                      {f}
-                    </button>
-                  ))}
+                  {FORMATOS.map(f => {
+                    const active = form.formato.includes(f)
+                    return (
+                      <button
+                        key={f}
+                        type="button"
+                        onClick={() => {
+                          const next = active
+                            ? form.formato.filter(x => x !== f)
+                            : [...form.formato, f]
+                          setForm({ ...form, formato: next })
+                        }}
+                        className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition ${
+                          active
+                            ? "bg-primary/20 border-primary/50 text-primary-light"
+                            : "bg-bg-input border-border text-text-muted hover:bg-bg-hover"
+                        }`}
+                      >
+                        {f}
+                      </button>
+                    )
+                  })}
                 </div>
+                {form.formato.length > 0 && (
+                  <p className="text-[11px] text-primary-light mt-1.5">
+                    Seleccionado: {form.formato.join(", ")}
+                  </p>
+                )}
               </div>
 
-              {/* Plataforma */}
+              {/* Plataforma — selección múltiple */}
               <div>
-                <label className="block text-sm font-medium text-text-main mb-2">{t("planner.platform_label")}</label>
+                <label className="block text-sm font-medium text-text-main mb-0.5">{t("planner.platform_label")}</label>
+                <p className="text-xs text-text-muted mb-2">Puedes elegir más de una</p>
                 <div className="flex flex-wrap gap-2">
                   {PLATAFORMAS.map(p => {
-                    const active = form.plataforma === p.label
+                    const active = form.plataforma.includes(p.label)
                     return (
                       <button
                         key={p.label}
                         type="button"
-                        onClick={() => setForm({ ...form, plataforma: active ? "" : p.label })}
+                        onClick={() => {
+                          const next = active
+                            ? form.plataforma.filter(x => x !== p.label)
+                            : [...form.plataforma, p.label]
+                          setForm({ ...form, plataforma: next })
+                        }}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition ${
                           active
-                            ? "border-transparent text-white"
+                            ? "border-transparent"
                             : "bg-bg-input border-border text-text-muted hover:bg-bg-hover"
                         }`}
                         style={active ? { backgroundColor: p.color + "33", borderColor: p.color + "88", color: p.color } : {}}
@@ -833,6 +865,11 @@ const Planner = () => {
                     )
                   })}
                 </div>
+                {form.plataforma.length > 0 && (
+                  <p className="text-[11px] text-text-muted mt-1.5">
+                    Seleccionada: {form.plataforma.join(", ")}
+                  </p>
+                )}
               </div>
 
               {/* CTA */}
@@ -976,7 +1013,11 @@ const Planner = () => {
       {/* Modal preview de evento */}
       {previewEvent && (() => {
         const prioridad = PRIORIDADES.find(p => p.value === previewEvent.prioridad) || PRIORIDADES[2]
-        const plat = PLATAFORMAS.find(p => p.label === previewEvent.plataforma)
+        const plats = PLATAFORMAS.filter(p =>
+          Array.isArray(previewEvent.plataforma)
+            ? previewEvent.plataforma.includes(p.label)
+            : previewEvent.plataforma === p.label
+        )
         const fecha = previewEvent.fecha
           ? new Date(previewEvent.fecha + "T12:00:00").toLocaleDateString(
               i18n.language === "es" ? "es-ES" : "en-US",
@@ -1001,20 +1042,24 @@ const Planner = () => {
 
               {/* Chips — formato + plataforma + prioridad */}
               <div className="flex items-center gap-2 flex-wrap px-6 pb-4">
-                {previewEvent.formato && (
-                  <span className="px-2.5 py-1 rounded-lg bg-primary/10 border border-primary/20 text-primary-light text-xs font-medium">
-                    {previewEvent.formato}
+                {(Array.isArray(previewEvent.formato)
+                  ? previewEvent.formato
+                  : previewEvent.formato ? [previewEvent.formato] : []
+                ).map(f => (
+                  <span key={f} className="px-2.5 py-1 rounded-lg bg-primary/10 border border-primary/20 text-primary-light text-xs font-medium">
+                    {f}
                   </span>
-                )}
-                {plat && (
+                ))}
+                {plats.map(plat => (
                   <span
+                    key={plat.label}
                     className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium"
                     style={{ backgroundColor: plat.color + "22", color: plat.color, border: `1px solid ${plat.color}44` }}
                   >
                     <plat.Icon />
                     {plat.label}
                   </span>
-                )}
+                ))}
                 <span className={`px-2.5 py-1 rounded-lg text-xs font-medium border ${prioridad.bg} ${prioridad.border} ${prioridad.text}`}>
                   {priorityLabel(previewEvent.prioridad)}
                 </span>
@@ -1123,7 +1168,7 @@ const Planner = () => {
                   setFechaClaveModal(null)
                   setSelectedDate(new Date().toISOString().split("T")[0])
                   setSelectedEvent(null)
-                  setForm({ titulo: cleanTitle, descripcion: fechaClaveModal.sugerencia, objetivo: "", hook: "", formato: "", plataforma: "", cta: "", prioridad: "Normal", hora: "09:00" })
+                  setForm({ titulo: cleanTitle, descripcion: fechaClaveModal.sugerencia, objetivo: "", hook: "", formato: [], plataforma: [], cta: "", prioridad: "Normal", hora: "09:00" })
                   setModalOpen(true)
                 }}
                 className="flex-1 bg-primary text-white font-medium py-2.5 rounded-xl hover:bg-primary-light transition text-sm shadow-lg shadow-primary/30"

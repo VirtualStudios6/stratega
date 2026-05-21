@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import toast from "react-hot-toast"
-import { doc, setDoc, getDoc } from "firebase/firestore"
+import { doc, getDoc } from "firebase/firestore"
 import { getFunctions, httpsCallable } from "firebase/functions"
 import DashboardLayout from "../../components/layout/DashboardLayout"
 import { useAuth } from "../../context/AuthContext"
@@ -71,10 +71,43 @@ const PLANES = [
 // ---------------------------------------------------------------------------
 // Botón de suscripción Paddle por plan
 // ---------------------------------------------------------------------------
+// Polls Firestore every 2 s (up to 30 s) until subscriptionStatus === "active",
+// then invalidates the cache and navigates to the dashboard.
+// This replaces the unsafe client-side setDoc: the webhook writes the actual
+// activation and the client just waits for it to propagate.
+async function waitForActivation(uid, planNombre, navigate, setLoading) {
+  const MAX_ATTEMPTS = 15   // 15 × 2 s = 30 s max
+  const INTERVAL_MS  = 2000
+
+  for (let i = 0; i < MAX_ATTEMPTS; i++) {
+    await new Promise(r => setTimeout(r, INTERVAL_MS))
+    try {
+      const snap = await getDoc(doc(db, "users", uid))
+      if (snap.exists() && snap.data().subscriptionStatus === "active") {
+        invalidateSubscriptionCache()
+        toast.success(`¡Suscripción activada! Bienvenido al plan ${planNombre} 🎉`)
+        setLoading(false)
+        navigate("/dashboard")
+        return
+      }
+    } catch {
+      // network hiccup — keep polling
+    }
+  }
+
+  // Webhook took too long (>30 s). User still paid — tell them to check later.
+  setLoading(false)
+  invalidateSubscriptionCache()
+  toast.success("Pago recibido. Tu cuenta se activará en unos minutos.")
+  navigate("/dashboard")
+}
+
 const PlanPaddleButton = ({ planId, planNombre, billing, uid, userEmail }) => {
   const navigate = useNavigate()
   const { ready, openCheckout } = usePaddle()
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading]       = useState(false)
+  const [verifying, setVerifying]   = useState(false)
+  const pollingRef = useRef(false)
 
   const handleCheckout = () => {
     if (!ready) return
@@ -86,29 +119,17 @@ const PlanPaddleButton = ({ planId, planNombre, billing, uid, userEmail }) => {
       priceId,
       email:  userEmail,
       userId: uid,
-      onSuccess: async (data) => {
-        try {
-          await setDoc(
-            doc(db, "users", uid),
-            {
-              plan:               planId,
-              ciclo:              billing,
-              subscriptionID:     data?.subscription?.id || data?.transaction?.id || null,
-              subscriptionStatus: "active",
-              subscriptionDate:   new Date(),
-              paymentProvider:    "paddle",
-            },
-            { merge: true }
-          )
-          invalidateSubscriptionCache()
-          toast.success(`¡Suscripción activada! Bienvenido al plan ${planNombre} 🎉`)
-          setTimeout(() => navigate("/dashboard"), 2000)
-        } catch (err) {
-          console.error("[Paddle] Error guardando suscripción:", err)
-          toast.error("Pago procesado. Contacta soporte si no se activa tu cuenta.")
-        } finally {
-          setLoading(false)
-        }
+      onSuccess: () => {
+        if (pollingRef.current) return   // duplicate event guard
+        pollingRef.current = true
+        setVerifying(true)
+        toast.loading("Verificando tu pago…", { id: "paddle-verify" })
+        waitForActivation(uid, planNombre, navigate, (val) => {
+          setLoading(val)
+          setVerifying(false)
+          pollingRef.current = false
+          toast.dismiss("paddle-verify")
+        })
       },
       onError: (data) => {
         console.error("[Paddle] Error en checkout:", data)
@@ -116,7 +137,7 @@ const PlanPaddleButton = ({ planId, planNombre, billing, uid, userEmail }) => {
         setLoading(false)
       },
       onClose: () => {
-        setLoading(false)
+        if (!pollingRef.current) setLoading(false)
       },
     })
   }
@@ -134,7 +155,7 @@ const PlanPaddleButton = ({ planId, planNombre, billing, uid, userEmail }) => {
       {loading ? (
         <>
           <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-          Abriendo checkout…
+          {verifying ? "Verificando pago…" : "Abriendo checkout…"}
         </>
       ) : !ready ? (
         "Cargando…"

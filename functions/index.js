@@ -12,6 +12,7 @@
  *   firebase functions:secrets:set PAYPAL_SECRET
  *   firebase functions:secrets:set PADDLE_API_KEY
  *   firebase functions:secrets:set PADDLE_WEBHOOK_SECRET
+ *   firebase functions:secrets:set GROQ_API_KEY
  *
  * DEPLOY:
  *   firebase deploy --only functions
@@ -37,6 +38,60 @@ const PAYPAL_CLIENT_ID       = defineSecret("PAYPAL_CLIENT_ID")
 const PAYPAL_SECRET          = defineSecret("PAYPAL_SECRET")
 const PADDLE_API_KEY         = defineSecret("PADDLE_API_KEY")
 const PADDLE_WEBHOOK_SECRET  = defineSecret("PADDLE_WEBHOOK_SECRET")
+const GROQ_API_KEY           = defineSecret("GROQ_API_KEY")
+
+// ---------------------------------------------------------------------------
+// 0. Groq AI proxy — keeps the API key server-side
+//
+// Set the secret before deploying:
+//   firebase functions:secrets:set GROQ_API_KEY
+//
+// Client usage (via SDK):
+//   const fn = httpsCallable(getFunctions(), "groqProxy")
+//   const { data } = await fn({ prompt: "...", systemPrompt: "..." })
+//   // data.content → string reply from Groq
+// ---------------------------------------------------------------------------
+
+exports.groqProxy = onCall(
+  { secrets: [GROQ_API_KEY] },
+  async (request) => {
+    if (!request.auth) throw new HttpsError("unauthenticated", "Debes estar autenticado.")
+
+    const { prompt, systemPrompt } = request.data || {}
+    if (!prompt || typeof prompt !== "string") {
+      throw new HttpsError("invalid-argument", "El campo 'prompt' es requerido.")
+    }
+
+    const messages = []
+    if (systemPrompt && typeof systemPrompt === "string") {
+      messages.push({ role: "system", content: systemPrompt })
+    }
+    messages.push({ role: "user", content: prompt })
+
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method:  "POST",
+      headers: {
+        "Content-Type":  "application/json",
+        "Authorization": `Bearer ${GROQ_API_KEY.value()}`,
+      },
+      body: JSON.stringify({
+        model:       "llama-3.1-8b-instant",
+        messages,
+        max_tokens:  1024,
+        temperature: 0.7,
+      }),
+    })
+
+    const json = await res.json()
+
+    if (!res.ok) {
+      console.error("groqProxy: Groq API error", json)
+      throw new HttpsError("internal", json.error?.message || "Error con Groq API")
+    }
+
+    return { content: json.choices[0]?.message?.content || "" }
+  }
+)
 
 // ---------------------------------------------------------------------------
 // 1. Scheduled reminder notifications
