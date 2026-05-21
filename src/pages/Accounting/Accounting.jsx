@@ -298,8 +298,8 @@ const Accounting = () => {
                     <span className={`text-sm font-bold ${t.tipo === "ingreso" ? "text-green-400" : "text-red-400"}`}>
                       {t.tipo === "ingreso" ? "+" : "-"}${fmt(t.monto)}
                     </span>
-                    <button onClick={() => handleEdit(t)} className="text-text-muted hover:text-primary-light transition p-1"><Pencil size={13} /></button>
-                    <button onClick={() => handleDelete(t.id)} className="text-text-muted hover:text-red-400 transition p-1"><Trash2 size={13} /></button>
+                    <button onClick={() => handleEdit(t)} className="text-text-muted hover:text-primary-light transition p-2 rounded-lg"><Pencil size={14} /></button>
+                    <button onClick={() => handleDelete(t.id)} className="text-text-muted hover:text-red-400 transition p-2 rounded-lg"><Trash2 size={14} /></button>
                   </div>
                 </div>
               ))}

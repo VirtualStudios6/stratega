@@ -1089,7 +1089,7 @@ const Quotes = () => {
                           className="w-full bg-bg-input border border-border text-text-main rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                         />
                       </div>
-                      <div className="col-span-7 sm:col-span-3">
+                      <div className="col-span-6 sm:col-span-3">
                         <label className="block text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-1 px-1">Precio unit.</label>
                         <input
                           type="number"
@@ -1102,7 +1102,7 @@ const Quotes = () => {
                       <button
                         onClick={() => setServicios(servicios.filter((_, idx) => idx !== i))}
                         disabled={servicios.length === 1}
-                        className="col-span-1 flex items-center justify-center text-red-400 hover:text-red-300 disabled:opacity-20 focus:outline-none pb-1"
+                        className="col-span-2 sm:col-span-1 flex items-center justify-center text-red-400 hover:text-red-300 disabled:opacity-20 focus:outline-none p-1"
                       >
                         <X size={16} />
                       </button>

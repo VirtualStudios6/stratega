@@ -318,13 +318,13 @@ const Reminders = () => {
 
                 <button
                   onClick={() => handleEdit(task)}
-                  className="text-text-muted hover:text-primary-light transition flex-shrink-0 mr-1 p-0.5"
+                  className="text-text-muted hover:text-primary-light transition flex-shrink-0 p-2 rounded-lg"
                 >
                   <Pencil size={14} />
                 </button>
                 <button
                   onClick={() => handleDelete(task.id)}
-                  className="text-text-muted hover:text-red-400 transition flex-shrink-0 p-0.5"
+                  className="text-text-muted hover:text-red-400 transition flex-shrink-0 p-2 rounded-lg"
                 >
                   <Trash2 size={16} />
                 </button>
