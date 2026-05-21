@@ -124,20 +124,29 @@ const QuotePresentation = () => {
 
           {/* Header empresa */}
           <div className="px-8 py-8 border-b border-border bg-gradient-to-r from-primary/5 to-transparent">
-            <div className="flex items-start justify-between gap-6">
-              <div className="flex items-center gap-4">
+            <div className="flex items-start justify-between gap-6 flex-wrap sm:flex-nowrap">
+
+              {/* Izquierda: logo + datos empresa */}
+              <div className="flex items-start gap-4 min-w-0">
                 {company?.logoBase64 && (
-                  <img src={company.logoBase64} alt="Logo" className="w-16 h-16 object-contain rounded-xl border border-border bg-bg-input" />
+                  <div className="flex-shrink-0 flex items-center justify-center">
+                    <img
+                      src={company.logoBase64}
+                      alt="Logo"
+                      className="max-h-16 max-w-[160px] w-auto h-auto object-contain"
+                    />
+                  </div>
                 )}
-                <div>
-                  <h1 className="text-text-main font-bold text-xl leading-tight">{company?.nombre || "Mi Empresa"}</h1>
-                  {company?.tagline && <p className="text-text-muted text-sm mt-0.5">{company.tagline}</p>}
-                  {company?.email && <p className="text-text-muted/70 text-xs mt-1">{company.email}</p>}
+                <div className="min-w-0">
+                  <h1 className="text-text-main font-bold text-xl leading-tight break-words">{company?.nombre || "Mi Empresa"}</h1>
+                  {company?.tagline  && <p className="text-text-muted text-sm mt-0.5 break-words">{company.tagline}</p>}
+                  {company?.email    && <p className="text-text-muted/70 text-xs mt-1">{company.email}</p>}
                   {company?.telefono && <p className="text-text-muted/70 text-xs">{company.telefono}</p>}
                 </div>
               </div>
 
-              <div className="text-right flex-shrink-0">
+              {/* Derecha: número de cotización */}
+              <div className="text-right flex-shrink-0 self-start">
                 <div className="bg-primary/10 border border-primary/20 rounded-xl px-4 py-3">
                   <p className="text-primary-light font-bold text-lg">COT-{quote.numero || quote.id?.slice(0,6).toUpperCase()}</p>
                   <p className="text-text-muted text-xs mt-0.5">Fecha: {today}</p>
@@ -146,6 +155,7 @@ const QuotePresentation = () => {
                   )}
                 </div>
               </div>
+
             </div>
           </div>
 
@@ -198,10 +208,10 @@ const QuotePresentation = () => {
 
           {/* Nota */}
           {quote.nota && (
-            <div className="px-8 pb-6">
+            <div className="px-8 pt-2 pb-6 border-t border-border">
+              <p className="text-text-muted text-xs uppercase tracking-widest mb-3">Notas</p>
               <div className="bg-bg-input border border-border rounded-xl px-5 py-4">
-                <p className="text-text-muted text-xs uppercase tracking-widest mb-2">Notas</p>
-                <p className="text-text-main text-sm leading-relaxed whitespace-pre-line">{quote.nota}</p>
+                <p className="text-text-main text-sm leading-relaxed whitespace-pre-wrap break-words">{quote.nota}</p>
               </div>
             </div>
           )}
