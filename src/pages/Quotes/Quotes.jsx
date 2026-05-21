@@ -1071,12 +1071,39 @@ const Quotes = () => {
                 <p className="text-xs text-text-muted uppercase tracking-wider mb-3">Servicios</p>
                 <div className="space-y-3">
                   {servicios.map((s, i) => (
-                    <div key={i} className="grid grid-cols-12 gap-2 items-center">
-                      {/* col-span-12 on mobile wraps to its own row; sm: fits in one line */}
-                      <input type="text" value={s.descripcion} onChange={e => { const u = [...servicios]; u[i].descripcion = e.target.value; setServicios(u) }} placeholder="Descripción del servicio" className="col-span-12 sm:col-span-6 bg-bg-input border border-border text-text-main rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-text-muted/40" />
-                      <input type="number" value={s.cantidad} onChange={e => { const u = [...servicios]; u[i].cantidad = e.target.value; setServicios(u) }} placeholder="Cant." min="1" className="col-span-4 sm:col-span-2 bg-bg-input border border-border text-text-main rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
-                      <input type="number" value={s.precio} onChange={e => { const u = [...servicios]; u[i].precio = e.target.value; setServicios(u) }} placeholder="Precio" min="0" className="col-span-7 sm:col-span-3 bg-bg-input border border-border text-text-main rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
-                      <button onClick={() => setServicios(servicios.filter((_, idx) => idx !== i))} disabled={servicios.length === 1} className="col-span-1 flex items-center justify-center text-red-400 hover:text-red-300 disabled:opacity-20 focus:outline-none">
+                    <div key={i} className="grid grid-cols-12 gap-2 items-end">
+                      <input
+                        type="text"
+                        value={s.descripcion}
+                        onChange={e => { const u = [...servicios]; u[i].descripcion = e.target.value; setServicios(u) }}
+                        placeholder="Descripción del servicio"
+                        className="col-span-12 sm:col-span-6 bg-bg-input border border-border text-text-main rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-text-muted/40"
+                      />
+                      <div className="col-span-4 sm:col-span-2">
+                        <label className="block text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-1 px-1">Cantidad</label>
+                        <input
+                          type="number"
+                          value={s.cantidad}
+                          onChange={e => { const u = [...servicios]; u[i].cantidad = e.target.value; setServicios(u) }}
+                          min="1"
+                          className="w-full bg-bg-input border border-border text-text-main rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                        />
+                      </div>
+                      <div className="col-span-7 sm:col-span-3">
+                        <label className="block text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-1 px-1">Precio unit.</label>
+                        <input
+                          type="number"
+                          value={s.precio}
+                          onChange={e => { const u = [...servicios]; u[i].precio = e.target.value; setServicios(u) }}
+                          min="0"
+                          className="w-full bg-bg-input border border-border text-text-main rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                        />
+                      </div>
+                      <button
+                        onClick={() => setServicios(servicios.filter((_, idx) => idx !== i))}
+                        disabled={servicios.length === 1}
+                        className="col-span-1 flex items-center justify-center text-red-400 hover:text-red-300 disabled:opacity-20 focus:outline-none pb-1"
+                      >
                         <X size={16} />
                       </button>
                     </div>
