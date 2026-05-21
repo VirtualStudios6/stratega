@@ -172,6 +172,7 @@ const Planner = () => {
         title: info.event.title,
         sugerencia: props.sugerencia,
         color: props.colorOriginal,
+        date: info.event.startStr,
       })
       return
     }
@@ -1166,7 +1167,7 @@ const Planner = () => {
                 onClick={() => {
                   const cleanTitle = fechaClaveModal.title.replace(/^\S+\s/, "")
                   setFechaClaveModal(null)
-                  setSelectedDate(new Date().toISOString().split("T")[0])
+                  setSelectedDate(fechaClaveModal.date)
                   setSelectedEvent(null)
                   setForm({ titulo: cleanTitle, descripcion: fechaClaveModal.sugerencia, objetivo: "", hook: "", formato: [], plataforma: [], cta: "", prioridad: "Normal", hora: "09:00" })
                   setModalOpen(true)
