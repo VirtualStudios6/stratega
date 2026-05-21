@@ -147,9 +147,8 @@ const Login = () => {
         <div className="space-y-8">
           <div className="space-y-4">
             <h2 className="text-4xl font-bold text-text-main leading-tight">
-              Tu espacio de trabajo<br />
-              para community<br />
-              <span className="gradient-text">managers.</span>
+              Tu espacio para organizar<br />
+              mejor tus <span className="gradient-text">estrategias.</span>
             </h2>
             <p className="text-text-muted text-base max-w-sm leading-relaxed">
               Planifica, colabora y crece con todas las herramientas que necesitas en un solo lugar.
