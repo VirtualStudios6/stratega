@@ -265,32 +265,51 @@ const Planner = () => {
     const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" })
     const pageW = 297
 
-    // ── Paleta neutra/minimalista
-    const BLACK   = [15, 15, 15]
+    // ── Paleta base
     const DARK    = [40, 40, 40]
     const MEDIUM  = [100, 100, 100]
     const LIGHT   = [200, 200, 200]
-    const XLIGHT  = [248, 248, 248]
     const WHITE   = [255, 255, 255]
+
+    // ── Colores del tema activo
+    const hexToRgb = (hex) => {
+      const h = hex.replace("#", "")
+      return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)]
+    }
+    const blendWithWhite = (hex, alpha) => {
+      const [r,g,b] = hexToRgb(hex)
+      return [Math.round(r*alpha+255*(1-alpha)), Math.round(g*alpha+255*(1-alpha)), Math.round(b*alpha+255*(1-alpha))]
+    }
+    const isLightColor = (hex) => {
+      const [r,g,b] = hexToRgb(hex)
+      const sRGB = c => { c/=255; return c<=0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055,2.4) }
+      return (0.2126*sRGB(r) + 0.7152*sRGB(g) + 0.0722*sRGB(b)) > 0.179
+    }
+
+    const PRIMARY     = hexToRgb(primaryHex)
+    const PRIMARY_DIM = blendWithWhite(primaryHex, 0.7)  // header on page 2+
+    const PRIMARY_ROW = blendWithWhite(primaryHex, 0.08) // alternating row tint
+    const PRIMARY_TOT = blendWithWhite(primaryHex, 0.15) // "Total" badge
+    const HDR_TEXT    = isLightColor(primaryHex) ? DARK : WHITE
 
     const companyFolder = selectedCompany ? folders.find(f => f.id === selectedCompany) : null
 
-    // ── Franja superior negra fina
-    pdf.setFillColor(...BLACK)
+    // ── Franja superior con color de tema
+    pdf.setFillColor(...PRIMARY)
     pdf.rect(0, 0, pageW, 10, "F")
 
     // ── Título en la franja
     pdf.setFontSize(9)
     pdf.setFont("helvetica", "bold")
-    pdf.setTextColor(...WHITE)
+    pdf.setTextColor(...HDR_TEXT)
     pdf.setCharSpace(1.5)
     pdf.text("CALENDARIO DE CONTENIDO", 14, 6.5)
     pdf.setCharSpace(0)
 
-    // ── "Stratega Planner" a la derecha en gris claro
+    // ── "Stratega Planner" a la derecha
     pdf.setFontSize(7.5)
     pdf.setFont("helvetica", "normal")
-    pdf.setTextColor(180, 180, 180)
+    pdf.setTextColor(...(isLightColor(primaryHex) ? MEDIUM : [220,220,220]))
     pdf.text("Stratega Planner", pageW - 14, 6.5, { align: "right" })
 
     // ── Subtítulo: empresa y fecha
@@ -327,7 +346,7 @@ const Planner = () => {
       pdf.text(`${label}: ${count}`, x + 21, y + 0.5, { align: "center" })
     }
 
-    drawBadge(14,  28, "Total",      sorted.length, [235,235,235], DARK)
+    drawBadge(14,  28, "Total",      sorted.length, PRIMARY_TOT,   isLightColor(primaryHex) ? DARK : PRIMARY_DIM)
     drawBadge(60,  28, "Urgentes",   urgentes,      [254,226,226], [180,30,30])
     drawBadge(106, 28, "Importantes",importantes,   [254,243,199], [146,64,14])
     drawBadge(152, 28, "Normales",   normales,      [241,245,249], [51,65,85])
@@ -367,13 +386,13 @@ const Planner = () => {
         font: "helvetica",
       },
       headStyles: {
-        fillColor: BLACK,
-        textColor: WHITE,
+        fillColor: PRIMARY,
+        textColor: HDR_TEXT,
         fontStyle: "bold",
         fontSize: 7.5,
         cellPadding: { top: 3.5, bottom: 3.5, left: 3, right: 3 },
       },
-      alternateRowStyles: { fillColor: XLIGHT },
+      alternateRowStyles: { fillColor: PRIMARY_ROW },
       columnStyles: {
         0: { cellWidth: 22 },
         1: { cellWidth: 22 },
@@ -394,11 +413,11 @@ const Planner = () => {
       },
       willDrawPage: (data) => {
         if (data.pageNumber > 1) {
-          pdf.setFillColor(...BLACK)
+          pdf.setFillColor(...PRIMARY)
           pdf.rect(0, 0, pageW, 8, "F")
           pdf.setFontSize(7.5)
           pdf.setFont("helvetica", "bold")
-          pdf.setTextColor(...WHITE)
+          pdf.setTextColor(...HDR_TEXT)
           pdf.setCharSpace(1.5)
           pdf.text("CALENDARIO DE CONTENIDO", 14, 5.5)
           pdf.setCharSpace(0)
