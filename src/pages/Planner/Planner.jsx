@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { CalendarDays, Clock, Pencil } from "lucide-react"
+import { CalendarDays, Clock, Pencil, Trash2 } from "lucide-react"
 import toast from "react-hot-toast"
 import FullCalendar from "@fullcalendar/react"
 import dayGridPlugin from "@fullcalendar/daygrid"
@@ -68,6 +68,7 @@ const Planner = () => {
   const [selectedEvent, setSelectedEvent] = useState(null)
   const [viewMode, setViewMode] = useState(() => localStorage.getItem("planner_view") || "calendar")
   const [previewEvent, setPreviewEvent] = useState(null)
+  const [confirmDelete, setConfirmDelete] = useState(false)
   const [showFechasClave, setShowFechasClave] = useState(() => {
     const saved = localStorage.getItem("planner_fechas_clave")
     return saved === null ? true : saved === "true"
@@ -1026,8 +1027,14 @@ const Planner = () => {
             )
           : ""
         return (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4 animate-fade-in">
-            <div className="bg-bg-card border border-border rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-scale-in">
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4 animate-fade-in"
+            onClick={() => { setPreviewEvent(null); setConfirmDelete(false) }}
+          >
+            <div
+              className="bg-bg-card border border-border rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-scale-in"
+              onClick={e => e.stopPropagation()}
+            >
 
               {/* Banda de prioridad */}
               <div className="h-1 w-full" style={{ backgroundColor: prioridad.color }} />
@@ -1038,7 +1045,7 @@ const Planner = () => {
                   <p className="text-xs text-text-muted capitalize mb-0.5">{fecha}</p>
                   <h2 className="text-base font-semibold text-text-main leading-snug">{previewEvent.title}</h2>
                 </div>
-                <button onClick={() => setPreviewEvent(null)} className="text-text-muted hover:text-text-main text-xl flex-shrink-0">✕</button>
+                <button onClick={() => { setPreviewEvent(null); setConfirmDelete(false) }} className="text-text-muted hover:text-text-main text-xl flex-shrink-0">✕</button>
               </div>
 
               {/* Chips — formato + plataforma + prioridad */}
@@ -1104,19 +1111,55 @@ const Planner = () => {
               </div>
 
               {/* Footer */}
-              <div className="flex gap-3 px-6 py-4 border-t border-border">
-                <button
-                  onClick={() => setPreviewEvent(null)}
-                  className="flex-1 bg-bg-input border border-border text-text-muted font-medium py-2.5 rounded-xl hover:bg-bg-hover transition text-sm"
-                >
-                  {t("common.close")}
-                </button>
-                <button
-                  onClick={openEditFromPreview}
-                  className="flex-1 bg-primary text-white font-medium py-2.5 rounded-xl hover:bg-primary-light transition text-sm shadow-lg shadow-primary/30"
-                >
-                  <Pencil size={14} className="inline mr-1" />{t("planner.edit")}
-                </button>
+              <div className="px-6 py-4 border-t border-border">
+                {confirmDelete ? (
+                  /* Confirmación inline */
+                  <div className="space-y-2">
+                    <p className="text-sm text-text-muted text-center">¿Eliminar este evento?</p>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => setConfirmDelete(false)}
+                        className="flex-1 bg-bg-input border border-border text-text-muted font-medium py-2.5 rounded-xl hover:bg-bg-hover transition text-sm"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={async () => {
+                          await deleteDoc(doc(db, "planners", previewEvent.id))
+                          setPreviewEvent(null)
+                          setConfirmDelete(false)
+                          fetchEventos()
+                        }}
+                        className="flex-1 bg-red-500/20 border border-red-500/40 text-red-400 font-medium py-2.5 rounded-xl hover:bg-red-500/30 transition text-sm"
+                      >
+                        <Trash2 size={14} className="inline mr-1" />Sí, eliminar
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  /* Botones normales */
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => { setPreviewEvent(null); setConfirmDelete(false) }}
+                      className="flex-1 bg-bg-input border border-border text-text-muted font-medium py-2.5 rounded-xl hover:bg-bg-hover transition text-sm"
+                    >
+                      {t("common.close")}
+                    </button>
+                    <button
+                      onClick={() => setConfirmDelete(true)}
+                      className="px-4 py-2.5 rounded-xl border border-red-500/30 text-red-400 bg-red-500/10 hover:bg-red-500/20 transition text-sm"
+                      title="Eliminar evento"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                    <button
+                      onClick={openEditFromPreview}
+                      className="flex-1 bg-primary text-white font-medium py-2.5 rounded-xl hover:bg-primary-light transition text-sm shadow-lg shadow-primary/30"
+                    >
+                      <Pencil size={14} className="inline mr-1" />{t("planner.edit")}
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
