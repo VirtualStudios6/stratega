@@ -73,6 +73,13 @@ service cloud.firestore {
       allow update:       if isAuth() && isOwner() && willBeOwner();
     }
 
+    // ── Folder notes ─────────────────────────────────────────────
+    match /folder_notes/{docId} {
+      allow read, delete: if isAuth() && isOwner();
+      allow create:       if isAuth() && willBeOwner();
+      allow update:       if isAuth() && isOwner();
+    }
+
     // ── Folder files ─────────────────────────────────────────────
     // No uid field — ownership derived from the parent folder
     match /folder_files/{docId} {
