@@ -34,11 +34,10 @@ admin.initializeApp()
 // Secrets
 // ---------------------------------------------------------------------------
 
-const PAYPAL_CLIENT_ID       = defineSecret("PAYPAL_CLIENT_ID")
-const PAYPAL_SECRET          = defineSecret("PAYPAL_SECRET")
-const PADDLE_API_KEY         = defineSecret("PADDLE_API_KEY")
-const PADDLE_WEBHOOK_SECRET  = defineSecret("PADDLE_WEBHOOK_SECRET")
-const GROQ_API_KEY           = defineSecret("GROQ_API_KEY")
+// Only GROQ_API_KEY uses defineSecret (needed by groqProxy).
+// PayPal/Paddle secrets are listed as strings so they don't block
+// single-function deploys when the others aren't set yet.
+const GROQ_API_KEY = defineSecret("GROQ_API_KEY")
 
 // ---------------------------------------------------------------------------
 // 0. Groq AI proxy — keeps the API key server-side
@@ -52,8 +51,16 @@ const GROQ_API_KEY           = defineSecret("GROQ_API_KEY")
 //   // data.content → string reply from Groq
 // ---------------------------------------------------------------------------
 
+// Models tried in order. Falls back on rate-limit or model unavailability.
+const GROQ_MODELS = [
+  "llama-3.3-70b-versatile",
+  "llama-3.1-8b-instant",
+  "llama3-8b-8192",
+  "mixtral-8x7b-32768",
+]
+
 exports.groqProxy = onCall(
-  { secrets: [GROQ_API_KEY] },
+  { secrets: [GROQ_API_KEY], timeoutSeconds: 30 },
   async (request) => {
     if (!request.auth) throw new HttpsError("unauthenticated", "Debes estar autenticado.")
 
@@ -68,28 +75,48 @@ exports.groqProxy = onCall(
     }
     messages.push({ role: "user", content: prompt })
 
-    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method:  "POST",
-      headers: {
-        "Content-Type":  "application/json",
-        "Authorization": `Bearer ${GROQ_API_KEY.value()}`,
-      },
-      body: JSON.stringify({
-        model:       "llama-3.1-8b-instant",
-        messages,
-        max_tokens:  1024,
-        temperature: 0.7,
-      }),
-    })
+    for (const model of GROQ_MODELS) {
+      // Up to 2 attempts per model (handles transient 429s)
+      for (let attempt = 0; attempt < 2; attempt++) {
+        if (attempt > 0) await new Promise(r => setTimeout(r, 1500))
 
-    const json = await res.json()
+        let res, json
+        try {
+          res  = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method:  "POST",
+            headers: {
+              "Content-Type":  "application/json",
+              "Authorization": `Bearer ${GROQ_API_KEY.value()}`,
+            },
+            body: JSON.stringify({
+              model,
+              messages,
+              max_tokens:  700,
+              temperature: 0.7,
+            }),
+          })
+          json = await res.json()
+        } catch (fetchErr) {
+          console.error(`groqProxy: fetch error model=${model} attempt=${attempt}`, fetchErr.message)
+          continue
+        }
 
-    if (!res.ok) {
-      console.error("groqProxy: Groq API error", json)
-      throw new HttpsError("internal", json.error?.message || "Error con Groq API")
+        if (res.ok) {
+          return { content: json.choices[0]?.message?.content || "" }
+        }
+
+        console.warn(`groqProxy: model=${model} attempt=${attempt} status=${res.status}`, json.error?.message)
+
+        if (res.status === 429) {
+          continue
+        }
+
+        // 400/404 → model unavailable, skip to next
+        break
+      }
     }
 
-    return { content: json.choices[0]?.message?.content || "" }
+    throw new HttpsError("internal", "El asistente no está disponible ahora. Intenta de nuevo en un momento.")
   }
 )
 
@@ -221,7 +248,7 @@ async function getPaypalToken(clientId, secret) {
 }
 
 exports.cancelPaypalSubscription = onCall(
-  { secrets: [PAYPAL_CLIENT_ID, PAYPAL_SECRET] },
+  { secrets: ["PAYPAL_CLIENT_ID", "PAYPAL_SECRET"] },
   async (request) => {
     if (!request.auth) throw new HttpsError("unauthenticated", "Debes estar autenticado.")
 
@@ -236,7 +263,7 @@ exports.cancelPaypalSubscription = onCall(
       throw new HttpsError("permission-denied", "Suscripción no pertenece a este usuario.")
     }
 
-    const token     = await getPaypalToken(PAYPAL_CLIENT_ID.value(), PAYPAL_SECRET.value())
+    const token     = await getPaypalToken(process.env.PAYPAL_CLIENT_ID, process.env.PAYPAL_SECRET)
     const paypalRes = await fetch(
       `https://api-m.paypal.com/v1/billing/subscriptions/${subscriptionID}/cancel`,
       {
@@ -320,7 +347,7 @@ function priceIdToPlan(priceId) {
 }
 
 exports.paddleWebhook = onRequest(
-  { secrets: [PADDLE_WEBHOOK_SECRET], rawBody: true, cors: false },
+  { secrets: ["PADDLE_WEBHOOK_SECRET"], rawBody: true, cors: false },
   async (req, res) => {
     if (req.method !== "POST") return res.status(405).send("Method Not Allowed")
 
@@ -332,7 +359,7 @@ exports.paddleWebhook = onRequest(
     }
 
     const rawBody = req.rawBody?.toString("utf8") || JSON.stringify(req.body)
-    const isValid = verifyPaddleSignature(rawBody, signatureHeader, PADDLE_WEBHOOK_SECRET.value())
+    const isValid = verifyPaddleSignature(rawBody, signatureHeader, process.env.PADDLE_WEBHOOK_SECRET)
 
     if (!isValid) {
       console.error("paddleWebhook: invalid signature")
@@ -422,7 +449,7 @@ exports.paddleWebhook = onRequest(
 // ---------------------------------------------------------------------------
 
 exports.cancelPaddleSubscription = onCall(
-  { secrets: [PADDLE_API_KEY] },
+  { secrets: ["PADDLE_API_KEY"] },
   async (request) => {
     if (!request.auth) throw new HttpsError("unauthenticated", "Debes estar autenticado.")
 
@@ -443,7 +470,7 @@ exports.cancelPaddleSubscription = onCall(
       {
         method:  "POST",
         headers: {
-          Authorization:  `Bearer ${PADDLE_API_KEY.value()}`,
+          Authorization:  `Bearer ${process.env.PADDLE_API_KEY}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ effective_from: "next_billing_period" }),
