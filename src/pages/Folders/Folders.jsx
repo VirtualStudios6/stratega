@@ -76,7 +76,11 @@ const Folders = () => {
   }
 
   const fetchNotes = async (folderId) => {
-    const q = query(collection(db, "folder_notes"), where("folderId", "==", folderId))
+    const q = query(
+      collection(db, "folder_notes"),
+      where("uid", "==", user.uid),
+      where("folderId", "==", folderId)
+    )
     const snap = await getDocs(q)
     const data = snap.docs.map(d => ({ id: d.id, ...d.data() }))
       .sort((a, b) => new Date(b.creadoEn?.toDate?.() || 0) - new Date(a.creadoEn?.toDate?.() || 0))
