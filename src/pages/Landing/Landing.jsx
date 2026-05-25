@@ -14,12 +14,14 @@ const Landing = () => {
   const [menuOpen, setMenuOpen] = useState(false)
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 })
 
-  // Countdown to April 30 2026
+  // Countdown always targets end of current month — auto-rolls every month
   useEffect(() => {
-    const target = new Date("2026-04-30T23:59:59").getTime()
+    const getTarget = () => {
+      const now = new Date()
+      return new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).getTime()
+    }
     const tick = () => {
-      const diff = target - Date.now()
-      if (diff <= 0) { setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 }); return }
+      const diff = getTarget() - Date.now()
       setTimeLeft({
         days:    Math.floor(diff / 86400000),
         hours:   Math.floor((diff % 86400000) / 3600000),
