@@ -10,6 +10,9 @@ const STATUS_STYLES = {
   Enviada:   "bg-blue-500/15 text-blue-400",
   Aprobada:  "bg-green-500/15 text-green-400",
   Rechazada: "bg-red-500/15 text-red-400",
+  Emitida:   "bg-blue-500/15 text-blue-400",
+  Pagada:    "bg-green-500/15 text-green-400",
+  Anulada:   "bg-red-500/15 text-red-400",
 }
 
 const fmt = (n, decimals = 2) =>
@@ -84,8 +87,9 @@ const QuotePresentation = () => {
     </div>
   )
 
-  const subtotal = quote.servicios?.reduce((acc, s) => acc + (s.precio * s.cantidad || 0), 0) || quote.total || 0
-  const today    = new Date().toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })
+  const isFactura = quote.tipo === "factura"
+  const subtotal  = quote.servicios?.reduce((acc, s) => acc + (s.precio * s.cantidad || 0), 0) || quote.total || 0
+  const today     = new Date().toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })
 
   return (
     <div className="min-h-screen bg-bg-main">
@@ -145,13 +149,16 @@ const QuotePresentation = () => {
                 </div>
               </div>
 
-              {/* Derecha: número de cotización */}
+              {/* Derecha: número de documento */}
               <div className="text-right flex-shrink-0 self-start">
                 <div className="bg-primary/10 border border-primary/20 rounded-xl px-4 py-3">
-                  <p className="text-primary-light font-bold text-lg">COT-{quote.numero || quote.id?.slice(0,6).toUpperCase()}</p>
+                  <p className="text-primary-light/60 text-[10px] font-semibold uppercase tracking-widest mb-0.5">
+                    {isFactura ? "Factura" : "Cotización"}
+                  </p>
+                  <p className="text-primary-light font-bold text-lg">{quote.numero || quote.id?.slice(0,6).toUpperCase()}</p>
                   <p className="text-text-muted text-xs mt-0.5">Fecha: {today}</p>
                   {quote.validez && (
-                    <p className="text-text-muted text-xs">Válida hasta: {new Date(quote.validez).toLocaleDateString("es-ES")}</p>
+                    <p className="text-text-muted text-xs">{isFactura ? "Vence:" : "Válida hasta:"} {new Date(quote.validez).toLocaleDateString("es-ES")}</p>
                   )}
                 </div>
               </div>
@@ -161,7 +168,7 @@ const QuotePresentation = () => {
 
           {/* Para */}
           <div className="px-8 py-6 border-b border-border">
-            <p className="text-text-muted text-xs uppercase tracking-widest mb-3">Cotización para</p>
+            <p className="text-text-muted text-xs uppercase tracking-widest mb-3">{isFactura ? "Factura para" : "Cotización para"}</p>
             <div className="flex items-start gap-6 flex-wrap">
               <div>
                 <p className="text-text-main font-bold text-lg">{quote.cliente}</p>
@@ -171,9 +178,9 @@ const QuotePresentation = () => {
             </div>
           </div>
 
-          {/* Servicios */}
+          {/* Servicios / Items */}
           <div className="px-8 py-6">
-            <p className="text-text-muted text-xs uppercase tracking-widest mb-4">Servicios</p>
+            <p className="text-text-muted text-xs uppercase tracking-widest mb-4">{isFactura ? "Conceptos" : "Servicios"}</p>
             <div className="rounded-xl overflow-hidden border border-border">
               <table className="w-full text-sm">
                 <thead>

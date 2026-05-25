@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import toast from "react-hot-toast"
-import { FolderOpen, Folder, X, Download, FileText, Film, File, Eye, Play, Pencil, Trash2, ArrowLeft, User, CalendarDays, Bell } from "lucide-react"
+import { FolderOpen, Folder, X, Download, FileText, Film, File, Eye, Play, Pencil, Trash2, ArrowLeft, User, CalendarDays, Bell, StickyNote, Plus } from "lucide-react"
 import DashboardLayout from "../../components/layout/DashboardLayout"
 import { db, storage } from "../../firebase/config"
 import {
@@ -37,6 +37,11 @@ const Folders = () => {
   const [linkedFeeds, setLinkedFeeds] = useState([])
   const [linkedPlanners, setLinkedPlanners] = useState([])
   const [linkedReminders, setLinkedReminders] = useState([])
+  const [notes, setNotes] = useState([])
+  const [noteModal, setNoteModal] = useState(false)
+  const [editingNote, setEditingNote] = useState(null)
+  const [noteForm, setNoteForm] = useState({ titulo: "", contenido: "" })
+  const [activeTab, setActiveTab] = useState("archivos")
   const [modalFolder, setModalFolder] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [folderForm, setFolderForm] = useState({ nombre: "", color: "#6022EC" })
@@ -70,6 +75,14 @@ const Folders = () => {
     setLinkedPlanners(data)
   }
 
+  const fetchNotes = async (folderId) => {
+    const q = query(collection(db, "folder_notes"), where("folderId", "==", folderId))
+    const snap = await getDocs(q)
+    const data = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => new Date(b.creadoEn?.toDate?.() || 0) - new Date(a.creadoEn?.toDate?.() || 0))
+    setNotes(data)
+  }
+
   const fetchLinkedReminders = async (folderId) => {
     const q = query(collection(db, "reminders"), where("uid", "==", user.uid), where("folderId", "==", folderId))
     const snap = await getDocs(q)
@@ -81,11 +94,14 @@ const Folders = () => {
   useEffect(() => { fetchFolders() }, [user])
   useEffect(() => {
     if (selectedFolder) {
+      setActiveTab("archivos")
       fetchFiles(selectedFolder.id)
+      fetchNotes(selectedFolder.id)
       fetchLinkedFeeds(selectedFolder.id)
       fetchLinkedPlanners(selectedFolder.id)
       fetchLinkedReminders(selectedFolder.id)
     } else {
+      setNotes([])
       setLinkedFeeds([])
       setLinkedPlanners([])
       setLinkedReminders([])
@@ -121,6 +137,40 @@ const Folders = () => {
     await deleteDoc(doc(db, "folders", folder.id))
     if (selectedFolder?.id === folder.id) setSelectedFolder(null)
     fetchFolders()
+  }
+
+  const openNoteModal = (note = null) => {
+    setEditingNote(note)
+    setNoteForm(note ? { titulo: note.titulo, contenido: note.contenido } : { titulo: "", contenido: "" })
+    setNoteModal(true)
+  }
+
+  const handleSaveNote = async () => {
+    if (!noteForm.contenido.trim() || !selectedFolder) return
+    if (editingNote) {
+      await updateDoc(doc(db, "folder_notes", editingNote.id), {
+        titulo: noteForm.titulo,
+        contenido: noteForm.contenido,
+        actualizadoEn: new Date(),
+      })
+    } else {
+      await addDoc(collection(db, "folder_notes"), {
+        uid: user.uid,
+        folderId: selectedFolder.id,
+        titulo: noteForm.titulo,
+        contenido: noteForm.contenido,
+        creadoEn: new Date(),
+      })
+    }
+    setNoteModal(false)
+    setEditingNote(null)
+    setNoteForm({ titulo: "", contenido: "" })
+    fetchNotes(selectedFolder.id)
+  }
+
+  const handleDeleteNote = async (noteId) => {
+    await deleteDoc(doc(db, "folder_notes", noteId))
+    fetchNotes(selectedFolder.id)
   }
 
   const handleUploadFile = async (e) => {
@@ -267,19 +317,105 @@ const Folders = () => {
             </div>
           ) : (
             <div className="bg-bg-card border border-border rounded-2xl p-6">
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <FolderOpen size={24} style={{ color: selectedFolder.color }} />
                   <div>
                     <h2 className="text-text-main font-semibold">{selectedFolder.nombre}</h2>
-                    <p className="text-text-muted text-xs">{files.length} archivos</p>
+                    <p className="text-text-muted text-xs">{files.length} archivos · {notes.length} notas</p>
                   </div>
                 </div>
-                <label className={`bg-primary/20 border border-primary/30 text-primary-light text-sm px-4 py-2 rounded-xl hover:bg-primary/30 transition cursor-pointer ${uploading ? "opacity-50 pointer-events-none" : ""}`}>
-                  {uploading ? "Subiendo..." : "+ Subir archivo"}
-                  <input type="file" className="hidden" accept="image/*,video/*,application/pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar" onChange={handleUploadFile} />
-                </label>
+                {activeTab === "archivos" ? (
+                  <label className={`bg-primary/20 border border-primary/30 text-primary-light text-sm px-4 py-2 rounded-xl hover:bg-primary/30 transition cursor-pointer ${uploading ? "opacity-50 pointer-events-none" : ""}`}>
+                    {uploading ? "Subiendo..." : "+ Subir archivo"}
+                    <input type="file" className="hidden" accept="image/*,video/*,application/pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar" onChange={handleUploadFile} />
+                  </label>
+                ) : (
+                  <button
+                    onClick={() => openNoteModal()}
+                    className="flex items-center gap-1.5 bg-primary/20 border border-primary/30 text-primary-light text-sm px-4 py-2 rounded-xl hover:bg-primary/30 transition"
+                  >
+                    <Plus size={14} /> Nueva nota
+                  </button>
+                )}
               </div>
+
+              {/* Tabs */}
+              <div className="flex bg-bg-hover border border-border rounded-xl p-1 gap-1 mb-5">
+                {[
+                  { key: "archivos", label: "Archivos", icon: <File size={12} /> },
+                  { key: "notas",    label: "Notas",    icon: <StickyNote size={12} /> },
+                ].map(tab => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+                      activeTab === tab.key ? "bg-primary text-white shadow" : "text-text-muted hover:text-text-main"
+                    }`}
+                  >
+                    {tab.icon}{tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* ── Tab: Notas ── */}
+              {activeTab === "notas" && (
+                <div>
+                  {notes.length === 0 ? (
+                    <div className="text-center py-12">
+                      <StickyNote size={40} className="text-text-muted/25 mb-3 mx-auto" />
+                      <p className="text-text-muted text-sm">Sin notas aún</p>
+                      <p className="text-text-muted/50 text-xs mt-1">Anota ideas, instrucciones o información del cliente</p>
+                      <button
+                        onClick={() => openNoteModal()}
+                        className="mt-4 flex items-center gap-1.5 bg-primary/10 border border-primary/20 text-primary-light text-xs px-4 py-2 rounded-xl hover:bg-primary/20 transition mx-auto"
+                      >
+                        <Plus size={13} /> Agregar primera nota
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {notes.map(note => (
+                        <div
+                          key={note.id}
+                          className="group bg-bg-input border border-border rounded-xl px-4 py-3 hover:border-primary/30 transition cursor-pointer"
+                          onClick={() => openNoteModal(note)}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-start gap-3 min-w-0 flex-1">
+                              <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style={{ backgroundColor: selectedFolder.color + "22" }}>
+                                <StickyNote size={13} style={{ color: selectedFolder.color }} />
+                              </div>
+                              <div className="min-w-0">
+                                {note.titulo && (
+                                  <p className="text-text-main text-sm font-semibold leading-tight truncate">{note.titulo}</p>
+                                )}
+                                <p className={`text-text-muted text-xs leading-relaxed line-clamp-2 ${note.titulo ? "mt-0.5" : ""}`}>
+                                  {note.contenido}
+                                </p>
+                                <p className="text-text-muted/40 text-[10px] mt-1.5">
+                                  {note.creadoEn?.toDate
+                                    ? note.creadoEn.toDate().toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })
+                                    : "Hoy"}
+                                </p>
+                              </div>
+                            </div>
+                            <button
+                              onClick={e => { e.stopPropagation(); handleDeleteNote(note.id) }}
+                              className="opacity-0 group-hover:opacity-100 text-text-muted hover:text-red-400 transition p-1.5 rounded-lg hover:bg-red-500/10 flex-shrink-0"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── Tab: Archivos ── */}
+              {activeTab === "archivos" && <>
 
               {/* Feeds vinculados */}
               {linkedFeeds.length > 0 && (
@@ -382,6 +518,7 @@ const Folders = () => {
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {files.map(file => (
+
                     <div
                       key={file.id}
                       className="group relative bg-bg-input border border-border rounded-xl overflow-hidden cursor-pointer"
@@ -432,10 +569,62 @@ const Folders = () => {
                   ))}
                 </div>
               )}
+              </> }
             </div>
           )}
         </div>
       </div>
+
+      {/* ── Modal de nota ── */}
+      {noteModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4 py-8 overflow-y-auto animate-fade-in">
+          <div className="bg-bg-card border border-border rounded-2xl p-6 w-full max-w-lg shadow-2xl my-auto animate-scale-in">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ backgroundColor: selectedFolder?.color + "22" }}>
+                  <StickyNote size={15} style={{ color: selectedFolder?.color }} />
+                </div>
+                <h2 className="text-text-main font-semibold">{editingNote ? "Editar nota" : "Nueva nota"}</h2>
+              </div>
+              <button onClick={() => { setNoteModal(false); setEditingNote(null) }} className="text-text-muted hover:text-text-main"><X size={18} /></button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs text-text-muted uppercase tracking-wider mb-1.5">Título (opcional)</label>
+                <input
+                  type="text"
+                  value={noteForm.titulo}
+                  onChange={e => setNoteForm(p => ({ ...p, titulo: e.target.value }))}
+                  placeholder="Ej: Instrucciones del cliente"
+                  className="w-full bg-bg-input border border-border text-text-main rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-text-muted/40"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-text-muted uppercase tracking-wider mb-1.5">Nota *</label>
+                <textarea
+                  value={noteForm.contenido}
+                  onChange={e => setNoteForm(p => ({ ...p, contenido: e.target.value }))}
+                  placeholder="Escribe aquí tus anotaciones, ideas, instrucciones..."
+                  rows={7}
+                  className="w-full bg-bg-input border border-border text-text-main rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-text-muted/40 resize-none leading-relaxed"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-5">
+              <button onClick={() => { setNoteModal(false); setEditingNote(null) }} className="flex-1 bg-bg-input border border-border text-text-muted py-2.5 rounded-xl hover:bg-bg-hover transition text-sm">Cancelar</button>
+              <button
+                onClick={handleSaveNote}
+                disabled={!noteForm.contenido.trim()}
+                className="flex-1 bg-primary text-white font-medium py-2.5 rounded-xl hover:bg-primary-light transition text-sm shadow-lg shadow-primary/30 disabled:opacity-50"
+              >
+                {editingNote ? "Guardar cambios" : "Guardar nota"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Modal de previsualización ── */}
       {previewFile && (

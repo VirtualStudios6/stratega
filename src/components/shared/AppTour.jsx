@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react"
 import { useLocation } from "react-router-dom"
+import { useAuth } from "../../context/AuthContext"
+import { db } from "../../firebase/config"
+import { doc, getDoc, setDoc } from "firebase/firestore"
 import {
   LayoutDashboard, CalendarDays, Image, Bell,
   FolderOpen, FileText, Wallet, Sparkles, X, ChevronRight, ChevronLeft, Check
@@ -60,19 +63,31 @@ const STEPS = [
 
 const AppTour = () => {
   const location      = useLocation()
+  const { user }      = useAuth()
   const [show,  setShow]  = useState(false)
   const [step,  setStep]  = useState(0)
 
   useEffect(() => {
-    // No mostrar si el onboarding nuevo ya lo marcó como visto
-    if (location.pathname === "/dashboard") {
-      const done = localStorage.getItem(TOUR_KEY)
-      if (!done) setShow(true)
-    }
-  }, [location.pathname])
+    if (location.pathname !== "/dashboard" || !user) return
+    // Fast path: already done in this browser
+    if (localStorage.getItem(TOUR_KEY)) return
+    // Slow path: check Firestore so it persists across devices
+    getDoc(doc(db, "users", user.uid))
+      .then(snap => {
+        if (snap.exists() && snap.data().tourDone) {
+          localStorage.setItem(TOUR_KEY, "1")
+        } else {
+          setShow(true)
+        }
+      })
+      .catch(() => setShow(true))
+  }, [location.pathname, user])
 
   const finish = () => {
     localStorage.setItem(TOUR_KEY, "1")
+    if (user) {
+      setDoc(doc(db, "users", user.uid), { tourDone: true }, { merge: true }).catch(() => {})
+    }
     setShow(false)
   }
 
