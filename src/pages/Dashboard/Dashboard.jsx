@@ -122,7 +122,7 @@ const Dashboard = () => {
   const { user } = useAuth()
   const navigate = useNavigate()
   const { i18n } = useTranslation()
-  const { plan: currentPlan, status: currentStatus } = useSubscriptionGuard()
+  const { plan: currentPlan } = useSubscriptionGuard()
 
   const firstName = useMemo(() =>
     user?.displayName?.split(" ")[0] || user?.email?.split("@")[0] || "Usuario",
@@ -135,12 +135,6 @@ const Dashboard = () => {
     if (h < 19) return "Buenas tardes"
     return "Buenas noches"
   }, [])
-
-  const todayLabel = useMemo(() => {
-    return new Date().toLocaleDateString(i18n.language === "es" ? "es-ES" : "en-US", {
-      weekday: "long", day: "numeric", month: "long"
-    })
-  }, [i18n.language])
 
   const MOTIVATIONAL_PHRASES = [
     // Consistencia y disciplina

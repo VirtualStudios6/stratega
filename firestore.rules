@@ -12,11 +12,35 @@ service cloud.firestore {
     function willBeOwner() {
       return request.auth.uid == request.resource.data.uid;
     }
+    function allowedUserFields() {
+      return [
+        "name", "email", "createdAt", "trialStartDate", "trialEndDate",
+        "subscriptionStatus", "plan", "avatar", "cargo", "empresa",
+        "telefono", "bio", "website", "notificaciones", "fcmToken",
+        "tourDone", "onboardingCompleted"
+      ];
+    }
+    function userMutableFields() {
+      return [
+        "name", "email", "avatar", "cargo", "empresa", "telefono",
+        "bio", "website", "notificaciones", "fcmToken", "tourDone",
+        "onboardingCompleted"
+      ];
+    }
+    function validTrialCreate() {
+      return request.resource.data.keys().hasOnly(allowedUserFields()) &&
+        request.resource.data.subscriptionStatus == "trial" &&
+        request.resource.data.plan == "trial";
+    }
 
     // ── User profiles ─────────────────────────────────────────────
     // Doc ID == uid, so only the owner can read/write their own doc
     match /users/{userId} {
-      allow read, write: if isAuth() && request.auth.uid == userId;
+      allow read: if isAuth() && request.auth.uid == userId;
+      allow create: if isAuth() && request.auth.uid == userId && validTrialCreate();
+      allow update: if isAuth() && request.auth.uid == userId &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(userMutableFields());
+      allow delete: if isAuth() && request.auth.uid == userId;
     }
 
     // ── Company profiles ──────────────────────────────────────────

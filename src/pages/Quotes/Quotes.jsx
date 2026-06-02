@@ -1,12 +1,11 @@
 import { useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import DashboardLayout from "../../components/layout/DashboardLayout"
-import { db, storage } from "../../firebase/config"
+import { db } from "../../firebase/config"
 import {
   collection, addDoc, getDocs, query,
   where, deleteDoc, doc, setDoc, getDoc, updateDoc
 } from "firebase/firestore"
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { useAuth } from "../../context/AuthContext"
 import useSubscriptionGuard from "../../hooks/useSubscriptionGuard"
 import jsPDF from "jspdf"
@@ -176,9 +175,8 @@ const generateMinimalPDF = (quote, company) => {
   pdf.rect(0, 0, 210, 297, "F")
   drawGradientRect(pdf, colors, 0, 0, 210, 4)
 
-  let startY = 20
   if (company.logoBase64) {
-    try { pdf.addImage(company.logoBase64, "PNG", 14, 12, 30, 15); startY = 32 } catch {}
+    try { pdf.addImage(company.logoBase64, "PNG", 14, 12, 30, 15) } catch {}
   }
 
   pdf.setFontSize(18); pdf.setFont(font, "bold"); pdf.setTextColor(...dark)
@@ -631,7 +629,6 @@ const Quotes = () => {
     return true
   })
 
-  const brandRgb = hexToRgb(company.brandColor || "#6022EC")
   const brandCss = company.brandColor || "#6022EC"
 
   return (

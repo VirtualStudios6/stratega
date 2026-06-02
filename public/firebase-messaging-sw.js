@@ -1,5 +1,5 @@
-importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js')
-importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js')
+importScripts("https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js")
+importScripts("https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js")
 
 firebase.initializeApp({
   apiKey: "AIzaSyBiEMIbwISIt5-J9_yE3xhFaLtCtyhPJOQ",
@@ -12,9 +12,8 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging()
 
-// Handles notifications when the browser tab is in the background or closed
 messaging.onBackgroundMessage((payload) => {
-  const title = payload.notification?.title || "Recordatorio — Stratega"
+  const title = payload.notification?.title || "Recordatorio - Stratega"
   const body  = payload.notification?.body  || ""
 
   self.registration.showNotification(title, {
@@ -23,6 +22,12 @@ messaging.onBackgroundMessage((payload) => {
     badge:   "/logos/logo.png",
     tag:     payload.data?.reminderId || "stratega-reminder",
     vibrate: [200, 100, 200],
-    data:    payload.data || {},
+    data:    { url: "/#/reminders", ...(payload.data || {}) },
   })
+})
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close()
+  const url = event.notification.data?.url || "/#/reminders"
+  event.waitUntil(clients.openWindow(url))
 })

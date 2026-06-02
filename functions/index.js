@@ -6,6 +6,7 @@
  * 3. cancelPaypalSubscription   — callable to cancel PayPal subscription
  * 4. paddleWebhook              — HTTP endpoint for Paddle Billing v2 events
  * 5. cancelPaddleSubscription   — callable to cancel Paddle subscription
+ * 6. adminSwitchOwnPlan         — callable admin-only plan simulator
  *
  * SECRETS (set before deploying):
  *   firebase functions:secrets:set PAYPAL_CLIENT_ID
@@ -163,7 +164,7 @@ exports.sendReminderNotifications = onSchedule("every 5 minutes", async () => {
             title: `⏰ ${reminder.titulo}`,
             body:  `${reminder.descripcion || "Recordatorio"} — ${label}`,
           },
-          data: { reminderId: reminderDoc.id, url: "/reminders" },
+          data: { reminderId: reminderDoc.id, url: "/#/reminders" },
           webpush: {
             notification: {
               icon:    "https://stratega-planner.web.app/logos/logo.png",
@@ -171,7 +172,7 @@ exports.sendReminderNotifications = onSchedule("every 5 minutes", async () => {
               vibrate: "200,100,200",
               requireInteraction: false,
             },
-            fcm_options: { link: "https://stratega-planner.web.app/reminders" },
+            fcm_options: { link: "https://stratega-planner.web.app/#/reminders" },
           },
         })
       } catch (err) {
@@ -491,3 +492,35 @@ exports.cancelPaddleSubscription = onCall(
     return { success: true }
   }
 )
+
+// ---------------------------------------------------------------------------
+// 6. Admin-only plan simulator
+// ---------------------------------------------------------------------------
+
+exports.adminSwitchOwnPlan = onCall(async (request) => {
+  if (!request.auth) throw new HttpsError("unauthenticated", "Debes estar autenticado.")
+
+  const uid = request.auth.uid
+  const { plan, status } = request.data || {}
+  const allowedPlans = ["trial", "basico", "pro"]
+  const allowedStatuses = ["trial", "active", "expired", "cancelled", "suspended", "payment_failed"]
+
+  if (!allowedPlans.includes(plan) || !allowedStatuses.includes(status)) {
+    throw new HttpsError("invalid-argument", "Plan o estado inválido.")
+  }
+
+  const userRef = admin.firestore().collection("users").doc(uid)
+  const snap = await userRef.get()
+  if (!snap.exists || snap.data().isAdmin !== true) {
+    throw new HttpsError("permission-denied", "Solo administradores pueden cambiar planes manualmente.")
+  }
+
+  await userRef.set({
+    plan,
+    subscriptionStatus: status,
+    cancellationScheduled: false,
+    devPlanUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, { merge: true })
+
+  return { success: true, plan, status }
+})

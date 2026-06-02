@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next"
 import DashboardLayout from "../../components/layout/DashboardLayout"
 import { db, storage, auth } from "../../firebase/config"
 import { doc, getDoc, updateDoc, setDoc } from "firebase/firestore"
+import { getFunctions, httpsCallable } from "firebase/functions"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { useAuth } from "../../context/AuthContext"
 import { useTheme, THEMES } from "../../context/ThemeContext"
@@ -74,7 +75,8 @@ const Settings = () => {
   const handleDevSwitchPlan = async ({ plan, status }) => {
     setDevPlanLoading(true)
     try {
-      await setDoc(doc(db, "users", user.uid), { plan, subscriptionStatus: status }, { merge: true })
+      const switchPlan = httpsCallable(getFunctions(), "adminSwitchOwnPlan")
+      await switchPlan({ plan, status })
       invalidateSubscriptionCache()
       toast.success(`Plan cambiado a "${plan}" (${status}). Recargando…`)
       setTimeout(() => window.location.reload(), 1000)

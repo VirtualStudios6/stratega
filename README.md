@@ -1,93 +1,39 @@
 # Stratega Planner
 
-Aplicación de planificación estratégica y gestión de proyectos — disponible en web, Android e iOS.
+Aplicacion de planificacion estrategica y gestion para community managers, creadores y equipos de marketing.
 
-Construida con React + Vite + Capacitor, con backend en Firebase.
-
----
+Construida con React, Vite, Firebase y Capacitor para web, Android e iOS.
 
 ## Stack
 
-- **Frontend**: React 19 + Vite + Tailwind CSS
-- **Routing**: React Router 7
-- **Backend**: Firebase (Auth, Firestore, Storage, Cloud Functions, FCM)
-- **Mobile**: Capacitor (Android + iOS)
-- **IA**: Groq (Llama) via API
-- **i18n**: i18next (ES, EN, PT, FR, DE, IT)
-- **Suscripciones**: Lemon Squeezy
-
----
+- Frontend: React 19, Vite, Tailwind CSS
+- Routing: React Router 7
+- Backend: Firebase Auth, Firestore, Storage, Cloud Functions y FCM
+- Mobile: Capacitor Android/iOS
+- IA: Groq via Cloud Function `groqProxy`
+- i18n: i18next
+- Suscripciones: Paddle Billing v2
 
 ## Requisitos
 
-- Node.js 18+
-- npm 9+
-- (Para Android) Android Studio
-- (Para iOS) Xcode en macOS
+- Node.js 22 recomendado para Cloud Functions
+- npm
+- Android Studio para Android
+- Xcode en macOS para iOS
+- Firebase CLI para reglas, hosting y functions
 
----
-
-## Instalación
+## Instalacion
 
 ```bash
 npm install
+cd functions && npm install
 ```
 
-Crea un archivo `.env` en la raíz basándote en `.env.example`:
+Crea `.env` en la raiz usando `.env.example` como base.
 
-```bash
-cp .env.example .env
-# Rellena las variables con tus claves
-```
-
----
-
-## Scripts
-
-| Comando | Descripción |
-|---|---|
-| `npm run dev` | Servidor de desarrollo |
-| `npm run build` | Build de producción |
-| `npm run cap:build` | Build + sync Capacitor |
-| `npm run cap:android` | Build + abrir Android Studio |
-| `npm run cap:ios` | Build + abrir Xcode (requiere macOS) |
-| `npm run deploy` | Deploy a GitHub Pages |
-
----
-
-## Estructura del proyecto
-
-```
-src/
-├── components/
-│   ├── layout/        # DashboardLayout, Sidebar
-│   └── shared/        # AIAssistant, GlobalSearch, NotificationBell, etc.
-├── context/           # AuthContext, ThemeContext
-├── data/              # fechasClave.js (fechas estratégicas)
-├── firebase/          # config.js, auth.js, notifications.js, deleteUserData.js
-├── hooks/             # useFCM, useReminderNotifications, useSmartNotifications
-├── i18n/              # Configuración + locales (6 idiomas)
-├── pages/             # Accounting, Auth, Dashboard, Feed, Folders, Landing,
-│                      # Planner, Quotes, Reminders, Settings, Subscription, Team
-├── services/          # groq.js (integración IA)
-└── utils/             # compressImage.js
-
-functions/             # Firebase Cloud Functions (recordatorios push)
-android/               # Proyecto nativo Android (Capacitor)
-ios/                   # Proyecto nativo iOS (Capacitor)
-public/                # Assets estáticos + SW de Firebase Messaging
-```
-
----
-
-## Variables de entorno requeridas
+## Variables de entorno web
 
 ```env
-VITE_GROQ_API_KEY=
-VITE_LS_BASIC_MONTHLY=
-VITE_LS_BASIC_ANNUAL=
-VITE_LS_PRO_MONTHLY=
-VITE_LS_PRO_ANNUAL=
 VITE_FIREBASE_API_KEY=
 VITE_FIREBASE_AUTH_DOMAIN=
 VITE_FIREBASE_PROJECT_ID=
@@ -98,36 +44,66 @@ VITE_FIREBASE_MEASUREMENT_ID=
 VITE_FIREBASE_VAPID_KEY=
 ```
 
----
+## Secrets de Functions
 
-## Despliegue multiplataforma
-
-### Web (GitHub Pages)
 ```bash
-npm run deploy
+firebase functions:secrets:set PAYPAL_CLIENT_ID
+firebase functions:secrets:set PAYPAL_SECRET
+firebase functions:secrets:set PADDLE_API_KEY
+firebase functions:secrets:set PADDLE_WEBHOOK_SECRET
+firebase functions:secrets:set GROQ_API_KEY
 ```
 
-### Android
+## Scripts
+
 ```bash
+npm run dev
+npm run build
+npm run lint
+npm run preview
+npm run cap:build
 npm run cap:android
-# Luego build desde Android Studio
+npm run cap:ios
+npm run cap:sync
 ```
 
-### iOS (requiere Mac)
+## Deploy
+
+### Web y reglas Firebase
+
 ```bash
-npm run build && npx cap sync
-# Abrir ios/App/App.xcodeproj en Xcode
+npm run build
+firebase deploy --only firestore:rules,storage:rules
 ```
 
 ### Cloud Functions
+
 ```bash
-cd functions && firebase deploy --only functions
+firebase deploy --only functions
 ```
 
----
+### Android
 
-## Notas de compatibilidad Windows / macOS
+```bash
+npm run build
+npx cap sync android
+cd android
+./gradlew assembleRelease
+```
 
-- `ios/App/CapApp-SPM/Package.swift` está en `.gitignore` porque usa rutas absolutas del SO.
-  Antes de abrir en Xcode en Mac: ejecuta `npm run build && npx cap sync` en la máquina Mac.
-- Los archivos `._*` y `.DS_Store` de macOS están en `.gitignore` — nunca se versionan.
+Para Play Store se debe generar un AAB firmado desde Android Studio o Gradle con una keystore de produccion.
+
+### iOS
+
+```bash
+npm run build
+npx cap sync ios
+```
+
+Abrir `ios/App/App.xcodeproj` en Xcode sobre macOS, configurar signing/capabilities y archivar para App Store Connect.
+
+## Notas de produccion
+
+- Los campos de suscripcion se actualizan desde Cloud Functions/webhooks, no desde el cliente.
+- El checkout de Paddle en Android/iOS se abre en navegador externo para evitar problemas de WebView con 3DS.
+- Ejecutar `npm run lint`, `npm run build`, `npm audit --omit=dev` y build nativo antes de publicar.

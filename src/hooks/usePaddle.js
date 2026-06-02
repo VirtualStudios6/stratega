@@ -134,17 +134,18 @@ export function usePaddle() {
         // En nativo no hay callback de pago inmediato.
         // La suscripción se activa vía webhook de Paddle → Firestore.
         // El usuario verá su plan actualizado al volver a la app.
+        return { mode: "native", opened: true }
       } catch (err) {
         console.error("[Paddle] Error abriendo navegador externo:", err)
         if (onError) onError(err)
+        return { mode: "native", opened: false, error: err }
       }
-      return
     }
 
     // ── WEB: overlay de Paddle.js ──────────────────────────────────────────────
     if (!window.Paddle || !_paddleReady) {
       console.warn("[Paddle] openCheckout() llamado antes de que Paddle esté listo")
-      return
+      return { mode: "web", opened: false }
     }
 
     console.info(`[Paddle] Abriendo checkout para priceId: ${priceId}`)
@@ -160,6 +161,7 @@ export function usePaddle() {
         theme:       "dark",
       },
     })
+    return { mode: "web", opened: true }
   }
 
   return { ready, openCheckout }

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import toast from "react-hot-toast"
 import { doc, getDoc } from "firebase/firestore"
 import { getFunctions, httpsCallable } from "firebase/functions"
+import { Capacitor } from "@capacitor/core"
 import DashboardLayout from "../../components/layout/DashboardLayout"
 import { useAuth } from "../../context/AuthContext"
 import { db } from "../../firebase/config"
@@ -109,13 +110,13 @@ const PlanPaddleButton = ({ planId, planNombre, billing, uid, userEmail }) => {
   const [verifying, setVerifying]   = useState(false)
   const pollingRef = useRef(false)
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (!ready) return
     setLoading(true)
 
     const priceId = PADDLE_PRICES[planId][billing]
 
-    openCheckout({
+    const result = await openCheckout({
       priceId,
       email:  userEmail,
       userId: uid,
@@ -140,6 +141,13 @@ const PlanPaddleButton = ({ planId, planNombre, billing, uid, userEmail }) => {
         if (!pollingRef.current) setLoading(false)
       },
     })
+
+    if (result?.mode === "native") {
+      setLoading(false)
+      if (result.opened) {
+        toast.success("Checkout abierto. Al volver a la app verificaremos tu suscripción.")
+      }
+    }
   }
 
   return (
@@ -286,6 +294,25 @@ const Subscription = () => {
   }
 
   useEffect(() => { fetchSubData() }, [user])
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return
+
+    let listener
+    import("@capacitor/app")
+      .then(({ App }) => App.addListener("appStateChange", ({ isActive }) => {
+        if (isActive) {
+          invalidateSubscriptionCache()
+          fetchSubData()
+        }
+      }))
+      .then((handle) => { listener = handle })
+      .catch(() => {})
+
+    return () => {
+      listener?.remove?.()
+    }
+  }, [user?.uid])
 
   return (
     <DashboardLayout>
