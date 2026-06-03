@@ -70,7 +70,9 @@ service cloud.firestore {
     }
 
     match /ncf_allocations/{docId} {
-      allow read, delete: if isAuth() && isOwner();
+      allow get:          if isAuth() && docId.matches(request.auth.uid + "_.*");
+      allow list:         if false;
+      allow delete:       if isAuth() && isOwner();
       allow create:       if isAuth() && willBeOwner();
       allow update:       if false;
     }
