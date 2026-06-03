@@ -18,6 +18,26 @@ const STATUS_STYLES = {
 const fmt = (n, decimals = 2) =>
   Number(n || 0).toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
 
+const calcSubtotal = (items = []) =>
+  items.reduce((acc, s) => acc + (parseFloat(s.precio) || 0) * (parseInt(s.cantidad) || 0), 0)
+
+const getQuoteAmounts = (quote = {}) => {
+  const subtotal = Number.isFinite(Number(quote.subtotal)) ? Number(quote.subtotal) : calcSubtotal(quote.servicios || [])
+  const taxEnabled = quote.taxEnabled === true
+  const taxRate = parseFloat(quote.taxRate) || 0
+  const taxAmount = Number.isFinite(Number(quote.taxAmount)) ? Number(quote.taxAmount) : (taxEnabled ? subtotal * taxRate / 100 : 0)
+  const total = Number.isFinite(Number(quote.total)) ? Number(quote.total) : subtotal + taxAmount
+  return { subtotal, taxEnabled, taxRate, taxAmount, total }
+}
+
+const getClientFiscalId = (quote = {}) => {
+  const rnc = String(quote.clienteRnc || "").trim()
+  const cedula = String(quote.clienteId || "").trim()
+  if (rnc) return { label: "RNC fiscal", value: rnc }
+  if (cedula) return { label: "Cedula fiscal", value: cedula }
+  return null
+}
+
 const QuotePresentation = () => {
   const { id }         = useParams()
   const navigate       = useNavigate()
@@ -88,7 +108,9 @@ const QuotePresentation = () => {
   )
 
   const isFactura = quote.tipo === "factura"
-  const subtotal  = quote.servicios?.reduce((acc, s) => acc + (s.precio * s.cantidad || 0), 0) || quote.total || 0
+  const amounts   = getQuoteAmounts(quote)
+  const ncf       = quote.ncf || ""
+  const fiscalId  = getClientFiscalId(quote)
   const today     = new Date().toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })
 
   return (
@@ -146,6 +168,7 @@ const QuotePresentation = () => {
                   {company?.tagline  && <p className="text-text-muted text-sm mt-0.5 break-words">{company.tagline}</p>}
                   {company?.email    && <p className="text-text-muted/70 text-xs mt-1">{company.email}</p>}
                   {company?.telefono && <p className="text-text-muted/70 text-xs">{company.telefono}</p>}
+                  {company?.rnc && <p className="text-text-muted/70 text-xs">RNC: {company.rnc}</p>}
                 </div>
               </div>
 
@@ -156,6 +179,8 @@ const QuotePresentation = () => {
                     {isFactura ? "Factura" : "Cotización"}
                   </p>
                   <p className="text-primary-light font-bold text-lg">{quote.numero || quote.id?.slice(0,6).toUpperCase()}</p>
+                  {ncf && <p className="text-text-muted text-xs font-mono mt-0.5">NCF asignado: {ncf}</p>}
+                  {quote.ncfType && <p className="text-text-muted text-xs">Tipo: {quote.ncfType}</p>}
                   <p className="text-text-muted text-xs mt-0.5">Fecha: {today}</p>
                   {quote.validez && (
                     <p className="text-text-muted text-xs">{isFactura ? "Vence:" : "Válida hasta:"} {new Date(quote.validez).toLocaleDateString("es-ES")}</p>
@@ -171,9 +196,13 @@ const QuotePresentation = () => {
             <p className="text-text-muted text-xs uppercase tracking-widest mb-3">{isFactura ? "Factura para" : "Cotización para"}</p>
             <div className="flex items-start gap-6 flex-wrap">
               <div>
-                <p className="text-text-main font-bold text-lg">{quote.cliente}</p>
+                <p className="text-text-main font-bold text-lg">{quote.fiscalName || quote.cliente}</p>
+                {quote.fiscalName && quote.fiscalName !== quote.cliente && <p className="text-text-muted text-sm">Cliente: {quote.cliente}</p>}
                 {quote.email && <p className="text-text-muted text-sm">{quote.email}</p>}
                 {quote.telefono && <p className="text-text-muted text-sm">{quote.telefono}</p>}
+                {fiscalId && <p className="text-text-muted text-sm">{fiscalId.label}: {fiscalId.value}</p>}
+                {quote.direccionCliente && <p className="text-text-muted text-sm">{quote.direccionCliente}</p>}
+                {quote.metodoPago && <p className="text-text-muted text-sm mt-1">Método de pago: {quote.metodoPago}</p>}
               </div>
             </div>
           </div>
@@ -207,8 +236,14 @@ const QuotePresentation = () => {
             {/* Total */}
             <div className="flex justify-end mt-4">
               <div className="bg-primary/10 border border-primary/20 rounded-xl px-6 py-4 text-right min-w-48">
+                <div className="space-y-1 mb-3 text-sm">
+                  <div className="flex justify-between gap-8 text-text-muted"><span>Subtotal</span><span>{quote.moneda} {fmt(amounts.subtotal)}</span></div>
+                  {amounts.taxEnabled && (
+                    <div className="flex justify-between gap-8 text-text-muted"><span>ITBIS ({fmt(amounts.taxRate, 0)}%)</span><span>{quote.moneda} {fmt(amounts.taxAmount)}</span></div>
+                  )}
+                </div>
                 <p className="text-text-muted text-xs uppercase tracking-wider mb-1">Total</p>
-                <p className="text-primary-light font-bold text-2xl">{quote.moneda} {fmt(subtotal)}</p>
+                <p className="text-primary-light font-bold text-2xl">{quote.moneda} {fmt(amounts.total)}</p>
               </div>
             </div>
           </div>

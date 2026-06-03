@@ -48,7 +48,7 @@ const Privacy = () => {
         </Section>
 
         <Section title="2. Datos que Recopilamos">
-          <p><strong className="text-text-main">Datos de cuenta:</strong> Nombre, dirección de correo electrónico y, si usas registro social, el nombre público e imagen de perfil de tu cuenta de Google o Facebook.</p>
+          <p><strong className="text-text-main">Datos de cuenta:</strong> Nombre, dirección de correo electrónico y, si usas registro social, el nombre público e imagen de perfil de tu cuenta de Google.</p>
           <p><strong className="text-text-main">Datos de uso:</strong> Contenido que creas dentro de la aplicación: eventos del planner, publicaciones del feed, recordatorios, cotizaciones, registros contables, archivos en carpetas y datos del equipo.</p>
           <p><strong className="text-text-main">Datos técnicos:</strong> Tipo de dispositivo, sistema operativo, versión de la app, dirección IP (de forma anónima), preferencias de idioma y tema visual.</p>
           <p><strong className="text-text-main">Datos de pago:</strong> No almacenamos datos de tarjetas de crédito ni información financiera completa. Los pagos son gestionados íntegramente por PayPal, que cuenta con sus propias políticas de privacidad y seguridad PCI-DSS. Solo recibimos el identificador de suscripción y el estado del pago.</p>
@@ -77,7 +77,6 @@ const Privacy = () => {
               { name: "Google Firebase", purpose: "Base de datos (Firestore), autenticación, almacenamiento de archivos y mensajería push (FCM). Certificado ISO 27001 y SOC 2 Tipo II." },
               { name: "PayPal", purpose: "Procesamiento de pagos y gestión de suscripciones. Cumple con PCI-DSS Nivel 1. Consulta su política en paypal.com." },
               { name: "Google (Sign-In)", purpose: "Autenticación opcional mediante cuenta de Google." },
-              { name: "Facebook (Login)", purpose: "Autenticación opcional mediante cuenta de Facebook/Meta." },
             ].map(p => (
               <div key={p.name} className="bg-bg-card border border-border rounded-xl p-3">
                 <p className="text-text-main font-semibold text-sm">{p.name}</p>

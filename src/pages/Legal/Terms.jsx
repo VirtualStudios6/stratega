@@ -46,7 +46,7 @@ const Terms = () => {
         </Section>
 
         <Section title="3. Registro y Seguridad de la Cuenta">
-          <p>Para usar Stratega Planner debes crear una cuenta proporcionando información verídica, precisa y completa. Puedes registrarte con correo electrónico y contraseña, o mediante Google o Facebook.</p>
+          <p>Para usar Stratega Planner debes crear una cuenta proporcionando información verídica, precisa y completa. Puedes registrarte con correo electrónico y contraseña, o mediante Google.</p>
           <p>Eres el único responsable de:</p>
           <ul className="list-disc pl-5 space-y-1 mt-2">
             <li>Mantener la confidencialidad de tus credenciales de acceso</li>

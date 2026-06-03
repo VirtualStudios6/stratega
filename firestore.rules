@@ -17,14 +17,14 @@ service cloud.firestore {
         "name", "email", "createdAt", "trialStartDate", "trialEndDate",
         "subscriptionStatus", "plan", "avatar", "cargo", "empresa",
         "telefono", "bio", "website", "notificaciones", "fcmToken",
-        "tourDone", "onboardingCompleted"
+        "tourDone", "onboardingCompleted", "streakDays", "lastActiveDate"
       ];
     }
     function userMutableFields() {
       return [
         "name", "email", "avatar", "cargo", "empresa", "telefono",
         "bio", "website", "notificaciones", "fcmToken", "tourDone",
-        "onboardingCompleted"
+        "onboardingCompleted", "streakDays", "lastActiveDate"
       ];
     }
     function validTrialCreate() {
@@ -67,6 +67,12 @@ service cloud.firestore {
       allow read, delete: if isAuth() && isOwner();
       allow create:       if isAuth() && willBeOwner();
       allow update:       if isAuth() && isOwner() && willBeOwner();
+    }
+
+    match /ncf_allocations/{docId} {
+      allow read, delete: if isAuth() && isOwner();
+      allow create:       if isAuth() && willBeOwner();
+      allow update:       if false;
     }
 
     // ── Accounting ────────────────────────────────────────────────

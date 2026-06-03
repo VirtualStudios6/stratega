@@ -341,7 +341,14 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (!user) return
-    const init = async () => { await updateStreak(); await fetchAllData() }
+    const init = async () => {
+      try {
+        await updateStreak()
+      } catch (error) {
+        console.warn("No se pudo actualizar la racha del usuario", error)
+      }
+      await fetchAllData()
+    }
     init()
   }, [user, updateStreak, fetchAllData])
 

@@ -4,7 +4,7 @@ import DashboardLayout from "../../components/layout/DashboardLayout"
 import { db } from "../../firebase/config"
 import {
   collection, addDoc, getDocs, query,
-  where, deleteDoc, doc, setDoc, getDoc, updateDoc
+  where, deleteDoc, doc, setDoc, getDoc, updateDoc, runTransaction
 } from "firebase/firestore"
 import { useAuth } from "../../context/AuthContext"
 import useSubscriptionGuard from "../../hooks/useSubscriptionGuard"
@@ -163,6 +163,7 @@ const extractColorsFromImage = (src) =>
 
 const generateMinimalPDF = (quote, company) => {
   const pdf    = new jsPDF()
+  const amounts = getQuoteAmounts(quote)
   const colors = company.brandColors?.length > 1 ? company.brandColors : [company.brandColor || "#6022EC"]
   const accent = hexToRgb(colors[0])
   const light  = lighten(accent)
@@ -200,6 +201,8 @@ const generateMinimalPDF = (quote, company) => {
   pdf.text(quote.tipo === "factura" ? "FACTURA" : "COTIZACIÓN", 14, 55)
   pdf.setFontSize(10); pdf.setFont(font, "normal"); pdf.setTextColor(...gray)
   pdf.text(quote.numero, 14, 63)
+  if (quote.ncf) pdf.text(`NCF: ${quote.ncf}`, 14, 68)
+  if (quote.metodoPago) pdf.text(`Pago: ${quote.metodoPago}`, 14, quote.ncf ? 73 : 68)
 
   const col2 = 130
   pdf.setFontSize(9); pdf.setTextColor(...gray); pdf.text("Fecha de emisión", col2, 55)
@@ -217,6 +220,8 @@ const generateMinimalPDF = (quote, company) => {
   pdf.setFontSize(8.5); pdf.setFont(font, "normal"); pdf.setTextColor(...gray)
   if (quote.email)    pdf.text(quote.email,    20, 94)
   if (quote.telefono) pdf.text(quote.telefono, 20, 99)
+  if (quote.clienteId) pdf.text(`ID/Cedula: ${quote.clienteId}`, 20, 104)
+  if (quote.clienteRnc) pdf.text(`RNC: ${quote.clienteRnc}`, 20, quote.clienteId ? 109 : 104)
 
   autoTable(pdf, {
     startY: 110,
@@ -237,15 +242,18 @@ const generateMinimalPDF = (quote, company) => {
   })
 
   const finalY = pdf.lastAutoTable.finalY
-  pdf.setFillColor(...accent); pdf.roundedRect(130, finalY + 8, 66, 18, 3, 3, "F")
+  pdf.setFont(font, "normal"); pdf.setFontSize(9); pdf.setTextColor(...gray)
+  pdf.text(`Subtotal: ${quote.moneda} ${amounts.subtotal.toFixed(2)}`, 196, finalY + 12, { align: "right" })
+  if (amounts.taxEnabled) pdf.text(`ITBIS (${amounts.taxRate}%): ${quote.moneda} ${amounts.taxAmount.toFixed(2)}`, 196, finalY + 18, { align: "right" })
+  pdf.setFillColor(...accent); pdf.roundedRect(130, finalY + 22, 66, 18, 3, 3, "F")
   pdf.setTextColor(255,255,255); pdf.setFont(font, "bold"); pdf.setFontSize(11)
-  pdf.text(`TOTAL: ${quote.moneda} ${quote.total.toFixed(2)}`, 163, finalY + 20, { align: "center" })
+  pdf.text(`TOTAL: ${quote.moneda} ${amounts.total.toFixed(2)}`, 163, finalY + 34, { align: "center" })
 
   if (quote.nota) {
-    pdf.setFillColor(248,248,252); pdf.roundedRect(14, finalY + 34, 116, 18, 3, 3, "F")
-    pdf.setFontSize(8); pdf.setFont(font, "bold"); pdf.setTextColor(...gray); pdf.text("NOTA:", 20, finalY + 42)
+    pdf.setFillColor(248,248,252); pdf.roundedRect(14, finalY + 48, 116, 18, 3, 3, "F")
+    pdf.setFontSize(8); pdf.setFont(font, "bold"); pdf.setTextColor(...gray); pdf.text("NOTA:", 20, finalY + 56)
     pdf.setFont(font, "normal"); pdf.setTextColor(...dark)
-    pdf.text(pdf.splitTextToSize(quote.nota, 100), 20, finalY + 49)
+    pdf.text(pdf.splitTextToSize(quote.nota, 100), 20, finalY + 63)
   }
 
   pdf.setDrawColor(220, 220, 235); pdf.line(14, 280, 196, 280)
@@ -257,6 +265,7 @@ const generateMinimalPDF = (quote, company) => {
 
 const generateDarkPDF = (quote, company) => {
   const pdf     = new jsPDF()
+  const amounts = getQuoteAmounts(quote)
   const colors  = company.brandColors?.length > 1 ? company.brandColors : [company.brandColor || "#8B5CF6"]
   const accent  = hexToRgb(colors[0])
   const bg      = [13, 13, 24]
@@ -294,6 +303,8 @@ const generateDarkPDF = (quote, company) => {
   pdf.text(quote.tipo === "factura" ? "FACTURA" : "COTIZACIÓN", 14, 70)
   pdf.setFontSize(10); pdf.setFont(font, "normal"); pdf.setTextColor(...muted)
   pdf.text(quote.numero, 14, 79)
+  if (quote.ncf) pdf.text(`NCF: ${quote.ncf}`, 14, 85)
+  if (quote.metodoPago) pdf.text(`Pago: ${quote.metodoPago}`, 14, quote.ncf ? 91 : 85)
 
   pdf.setFillColor(...bgCard); pdf.roundedRect(14, 86, 85, 32, 3, 3, "F")
   pdf.setDrawColor(...bgLight); pdf.setLineWidth(0.4); pdf.roundedRect(14, 86, 85, 32, 3, 3, "S")
@@ -302,6 +313,8 @@ const generateDarkPDF = (quote, company) => {
   pdf.setFontSize(8.5); pdf.setFont(font, "normal"); pdf.setTextColor(...muted)
   if (quote.email)    pdf.text(quote.email,    20, 111)
   if (quote.telefono) pdf.text(quote.telefono, 20, 117)
+  if (quote.clienteId) pdf.text(`ID/Cedula: ${quote.clienteId}`, 20, 123)
+  if (quote.clienteRnc) pdf.text(`RNC: ${quote.clienteRnc}`, 20, quote.clienteId ? 129 : 123)
 
   pdf.setFillColor(...bgCard); pdf.roundedRect(109, 86, 87, 32, 3, 3, "F")
   pdf.setDrawColor(...bgLight); pdf.roundedRect(109, 86, 87, 32, 3, 3, "S")
@@ -314,7 +327,7 @@ const generateDarkPDF = (quote, company) => {
   }
 
   autoTable(pdf, {
-    startY: 128,
+    startY: 136,
     head: [["Descripción", "Cant.", "Precio", "Total"]],
     body: (quote.servicios || []).map(s => [
       s.descripcion, String(s.cantidad),
@@ -333,16 +346,19 @@ const generateDarkPDF = (quote, company) => {
   })
 
   const finalY = pdf.lastAutoTable.finalY
-  pdf.setFillColor(...accent); pdf.roundedRect(130, finalY + 8, 66, 18, 3, 3, "F")
+  pdf.setFont(font, "normal"); pdf.setFontSize(9); pdf.setTextColor(...muted)
+  pdf.text(`Subtotal: ${quote.moneda} ${amounts.subtotal.toFixed(2)}`, 196, finalY + 12, { align: "right" })
+  if (amounts.taxEnabled) pdf.text(`ITBIS (${amounts.taxRate}%): ${quote.moneda} ${amounts.taxAmount.toFixed(2)}`, 196, finalY + 18, { align: "right" })
+  pdf.setFillColor(...accent); pdf.roundedRect(130, finalY + 22, 66, 18, 3, 3, "F")
   pdf.setTextColor(255,255,255); pdf.setFont(font, "bold"); pdf.setFontSize(11)
-  pdf.text(`${quote.moneda} ${quote.total.toFixed(2)}`, 163, finalY + 15, { align: "center" })
-  pdf.setFontSize(8); pdf.text("TOTAL", 163, finalY + 22, { align: "center" })
+  pdf.text(`${quote.moneda} ${amounts.total.toFixed(2)}`, 163, finalY + 29, { align: "center" })
+  pdf.setFontSize(8); pdf.text("TOTAL", 163, finalY + 36, { align: "center" })
 
   if (quote.nota) {
-    pdf.setFillColor(...bgCard); pdf.roundedRect(14, finalY + 34, 116, 18, 3, 3, "F")
-    pdf.setFontSize(8); pdf.setFont(font, "bold"); pdf.setTextColor(...accent); pdf.text("NOTA:", 20, finalY + 43)
+    pdf.setFillColor(...bgCard); pdf.roundedRect(14, finalY + 48, 116, 18, 3, 3, "F")
+    pdf.setFontSize(8); pdf.setFont(font, "bold"); pdf.setTextColor(...accent); pdf.text("NOTA:", 20, finalY + 57)
     pdf.setFont(font, "normal"); pdf.setTextColor(...muted)
-    pdf.text(pdf.splitTextToSize(quote.nota, 100), 20, finalY + 50)
+    pdf.text(pdf.splitTextToSize(quote.nota, 100), 20, finalY + 64)
   }
 
   pdf.setDrawColor(...bgLight); pdf.setLineWidth(0.5); pdf.line(14, 280, 196, 280)
@@ -354,6 +370,7 @@ const generateDarkPDF = (quote, company) => {
 
 const generateClassicPDF = (quote, company) => {
   const pdf    = new jsPDF()
+  const amounts = getQuoteAmounts(quote)
   const colors = company.brandColors?.length > 1 ? company.brandColors : [company.brandColor || "#1E40AF"]
   const accent = hexToRgb(colors[0])
   const light  = lighten(accent, 0.88)
@@ -392,6 +409,10 @@ const generateClassicPDF = (quote, company) => {
 
   pdf.setFontSize(9); pdf.setFont(font, "bold"); pdf.setTextColor(...gray); pdf.text("N°:", 14, 74)
   pdf.setFont(font, "normal"); pdf.setTextColor(...dark); pdf.text(quote.numero, 24, 74)
+  if (quote.ncf) {
+    pdf.setFont(font, "bold"); pdf.setTextColor(...gray); pdf.text("NCF:", 14, 82)
+    pdf.setFont(font, "normal"); pdf.setTextColor(...dark); pdf.text(quote.ncf, 28, 82)
+  }
   pdf.setFont(font, "bold"); pdf.setTextColor(...gray); pdf.text("Fecha:", 80, 74)
   pdf.setFont(font, "normal"); pdf.setTextColor(...dark)
   pdf.text(new Date().toLocaleDateString("es-ES"), 96, 74)
@@ -409,9 +430,12 @@ const generateClassicPDF = (quote, company) => {
   pdf.setFontSize(8.5); pdf.setFont(font, "normal"); pdf.setTextColor(...gray)
   if (quote.email)    pdf.text(quote.email,    18, 107)
   if (quote.telefono) pdf.text(quote.telefono, 18, 112)
+  if (quote.clienteId) pdf.text(`ID/Cedula: ${quote.clienteId}`, 18, 117)
+  if (quote.clienteRnc) pdf.text(`RNC: ${quote.clienteRnc}`, 18, quote.clienteId ? 122 : 117)
+  if (quote.metodoPago) pdf.text(`Pago: ${quote.metodoPago}`, 120, 100)
 
   autoTable(pdf, {
-    startY: 118,
+    startY: 128,
     head: [["#", "Descripción", "Cant.", "Precio unit.", "Total"]],
     body: (quote.servicios || []).map((s, i) => [
       String(i + 1), s.descripcion, String(s.cantidad),
@@ -432,15 +456,19 @@ const generateClassicPDF = (quote, company) => {
   const finalY = pdf.lastAutoTable.finalY
   pdf.setDrawColor(...accent); pdf.setLineWidth(0.3); pdf.line(130, finalY + 8, 196, finalY + 8)
   pdf.setFontSize(10); pdf.setFont(font, "bold"); pdf.setTextColor(...accent)
-  pdf.text("TOTAL:", 132, finalY + 18)
-  pdf.setFontSize(13); pdf.text(`${quote.moneda} ${quote.total.toFixed(2)}`, 196, finalY + 18, { align: "right" })
+  pdf.setFont(font, "normal"); pdf.setFontSize(9); pdf.setTextColor(...gray)
+  pdf.text(`Subtotal: ${quote.moneda} ${amounts.subtotal.toFixed(2)}`, 196, finalY + 16, { align: "right" })
+  if (amounts.taxEnabled) pdf.text(`ITBIS (${amounts.taxRate}%): ${quote.moneda} ${amounts.taxAmount.toFixed(2)}`, 196, finalY + 22, { align: "right" })
+  pdf.setFontSize(10); pdf.setFont(font, "bold"); pdf.setTextColor(...accent)
+  pdf.text("TOTAL:", 132, finalY + 34)
+  pdf.setFontSize(13); pdf.text(`${quote.moneda} ${amounts.total.toFixed(2)}`, 196, finalY + 34, { align: "right" })
 
   if (quote.nota) {
     pdf.setFillColor(...light); pdf.setDrawColor(200, 210, 240)
-    pdf.rect(14, finalY + 26, 110, 18, "FD")
-    pdf.setFontSize(8); pdf.setFont(font, "bold"); pdf.setTextColor(...accent); pdf.text("NOTA:", 18, finalY + 35)
+    pdf.rect(14, finalY + 50, 110, 18, "FD")
+    pdf.setFontSize(8); pdf.setFont(font, "bold"); pdf.setTextColor(...accent); pdf.text("NOTA:", 18, finalY + 59)
     pdf.setFont(font, "normal"); pdf.setTextColor(...gray)
-    pdf.text(pdf.splitTextToSize(quote.nota, 100), 18, finalY + 42)
+    pdf.text(pdf.splitTextToSize(quote.nota, 100), 18, finalY + 66)
   }
 
   pdf.setFillColor(...accent); pdf.rect(0, 283, 210, 14, "F")
@@ -451,10 +479,195 @@ const generateClassicPDF = (quote, company) => {
   pdf.save(`${quote.numero}-${quote.cliente}.pdf`)
 }
 
+const addLogoFit = (pdf, logoBase64, x, y, maxW, maxH) => {
+  if (!logoBase64) return false
+  try {
+    const props = pdf.getImageProperties(logoBase64)
+    const ratio = props.width / props.height
+    let w = maxW
+    let h = w / ratio
+    if (h > maxH) {
+      h = maxH
+      w = h * ratio
+    }
+    const format = logoBase64.includes("image/jpeg") || logoBase64.includes("image/jpg") ? "JPEG" : "PNG"
+    pdf.addImage(logoBase64, format, x, y, w, h)
+    return true
+  } catch {
+    return false
+  }
+}
+
+const generatePresentationPDF = (quote, company) => {
+  const pdf = new jsPDF()
+  const amounts = getQuoteAmounts(quote)
+  const ncf = quote.ncf || ""
+  const fiscalId = getClientFiscalId(quote)
+  const accent = hexToRgb(company.brandColor || "#6022EC")
+  const light = lighten(accent, 0.92)
+  const dark = [24, 24, 38]
+  const muted = [105, 105, 125]
+  const border = [224, 224, 235]
+  const font = resolvePdfFont(company.fontStyle)
+  const isFactura = quote.tipo === "factura"
+  const footer = company.footerText || "Generado con Stratega Planner"
+  const today = new Date().toLocaleDateString("es-ES")
+
+  pdf.setFillColor(248, 249, 252)
+  pdf.rect(0, 0, 210, 297, "F")
+  pdf.setFillColor(255, 255, 255)
+  pdf.roundedRect(12, 12, 186, 268, 3, 3, "F")
+  pdf.setDrawColor(...border)
+  pdf.roundedRect(12, 12, 186, 268, 3, 3, "S")
+  pdf.setFillColor(...light)
+  pdf.rect(12, 12, 186, 38, "F")
+
+  const hasLogo = addLogoFit(pdf, company.logoBase64, 20, 22, 34, 16)
+  const companyX = hasLogo ? 60 : 20
+  pdf.setFont(font, "bold")
+  pdf.setFontSize(15)
+  pdf.setTextColor(...dark)
+  pdf.text(company.nombre || "Mi Empresa", companyX, 27, { maxWidth: 78 })
+  pdf.setFont(font, "normal")
+  pdf.setFontSize(8.5)
+  pdf.setTextColor(...muted)
+  let companyY = 34
+  if (company.tagline) { pdf.text(company.tagline, companyX, companyY, { maxWidth: 78 }); companyY += 5 }
+  if (company.email) { pdf.text(company.email, companyX, companyY, { maxWidth: 78 }); companyY += 5 }
+  if (company.telefono) { pdf.text(company.telefono, companyX, companyY, { maxWidth: 78 }); companyY += 5 }
+  if (company.rnc) pdf.text(`RNC: ${company.rnc}`, companyX, companyY, { maxWidth: 78 })
+
+  pdf.setFillColor(255, 255, 255)
+  pdf.roundedRect(138, 20, 46, 27, 2, 2, "F")
+  pdf.setDrawColor(...border)
+  pdf.roundedRect(138, 20, 46, 27, 2, 2, "S")
+  pdf.setFont(font, "bold")
+  pdf.setFontSize(8)
+  pdf.setTextColor(...accent)
+  pdf.text(isFactura ? "FACTURA" : "COTIZACION", 161, 27, { align: "center" })
+  pdf.setFontSize(11)
+  pdf.text(quote.numero || quote.id?.slice(0, 6).toUpperCase() || "", 161, 35, { align: "center" })
+  pdf.setFont(font, "normal")
+  pdf.setFontSize(7.5)
+  pdf.setTextColor(...muted)
+  if (ncf) pdf.text(`NCF: ${ncf}`, 161, 41, { align: "center" })
+  if (quote.ncfType) pdf.text(`Tipo: ${quote.ncfType}`, 161, ncf ? 46 : 41, { align: "center" })
+
+  pdf.setFillColor(255, 255, 255)
+  pdf.roundedRect(20, 60, 82, 38, 2, 2, "F")
+  pdf.roundedRect(112, 60, 72, 38, 2, 2, "F")
+  pdf.setDrawColor(...border)
+  pdf.roundedRect(20, 60, 82, 38, 2, 2, "S")
+  pdf.roundedRect(112, 60, 72, 38, 2, 2, "S")
+
+  pdf.setFont(font, "bold")
+  pdf.setFontSize(8)
+  pdf.setTextColor(...accent)
+  pdf.text(isFactura ? "FACTURA PARA" : "COTIZACION PARA", 26, 69)
+  pdf.setFontSize(10.5)
+  pdf.setTextColor(...dark)
+  pdf.text(quote.fiscalName || quote.cliente || "Cliente", 26, 78, { maxWidth: 66 })
+  pdf.setFont(font, "normal")
+  pdf.setFontSize(8)
+  pdf.setTextColor(...muted)
+  let clientY = 84
+  if (quote.fiscalName && quote.fiscalName !== quote.cliente) { pdf.text(`Cliente: ${quote.cliente}`, 26, clientY, { maxWidth: 66 }); clientY += 5 }
+  if (quote.email) { pdf.text(quote.email, 26, clientY, { maxWidth: 66 }); clientY += 5 }
+  if (quote.telefono) { pdf.text(quote.telefono, 26, clientY, { maxWidth: 66 }); clientY += 5 }
+  if (fiscalId) { pdf.text(`${fiscalId.label}: ${fiscalId.value}`, 26, clientY, { maxWidth: 66 }); clientY += 5 }
+  if (quote.direccionCliente) pdf.text(quote.direccionCliente, 26, clientY, { maxWidth: 66 })
+
+  pdf.setFont(font, "bold")
+  pdf.setFontSize(8)
+  pdf.setTextColor(...accent)
+  pdf.text("DETALLES", 118, 69)
+  pdf.setFont(font, "normal")
+  pdf.setFontSize(8.5)
+  pdf.setTextColor(...muted)
+  let detailY = 78
+  pdf.text(`Fecha: ${today}`, 118, detailY); detailY += 6
+  if (ncf) { pdf.text(`NCF asignado: ${ncf}`, 118, detailY); detailY += 6 }
+  if (quote.ncfType) { pdf.text(`Tipo NCF: ${quote.ncfType}`, 118, detailY); detailY += 6 }
+  if (quote.validez) { pdf.text(`${isFactura ? "Vence" : "Valida hasta"}: ${new Date(quote.validez).toLocaleDateString("es-ES")}`, 118, detailY); detailY += 6 }
+  if (quote.metodoPago) pdf.text(`Pago: ${quote.metodoPago}`, 118, detailY)
+
+  autoTable(pdf, {
+    startY: 110,
+    margin: { left: 20, right: 20 },
+    head: [["Descripcion", "Cant.", "Precio", "Total"]],
+    body: (quote.servicios || []).map(s => [
+      s.descripcion || "",
+      String(s.cantidad || 0),
+      `${quote.moneda} ${fmt(s.precio)}`,
+      `${quote.moneda} ${fmt((parseFloat(s.precio) || 0) * (parseInt(s.cantidad) || 0))}`,
+    ]),
+    headStyles: { fillColor: accent, textColor: [255, 255, 255], font, fontStyle: "bold", fontSize: 8.5, cellPadding: 5 },
+    bodyStyles: { font, fontSize: 9, textColor: dark, cellPadding: 5 },
+    alternateRowStyles: { fillColor: [250, 250, 253] },
+    columnStyles: {
+      0: { cellWidth: 86 },
+      1: { cellWidth: 18, halign: "center" },
+      2: { cellWidth: 32, halign: "right" },
+      3: { cellWidth: 34, halign: "right", fontStyle: "bold" },
+    },
+    tableLineColor: border,
+    tableLineWidth: 0.2,
+  })
+
+  const finalY = Math.max(pdf.lastAutoTable.finalY + 10, 165)
+  pdf.setFillColor(255, 255, 255)
+  pdf.roundedRect(114, finalY, 70, amounts.taxEnabled ? 35 : 27, 2, 2, "F")
+  pdf.setDrawColor(...border)
+  pdf.roundedRect(114, finalY, 70, amounts.taxEnabled ? 35 : 27, 2, 2, "S")
+  pdf.setFont(font, "normal")
+  pdf.setFontSize(9)
+  pdf.setTextColor(...muted)
+  pdf.text("Subtotal", 120, finalY + 9)
+  pdf.text(`${quote.moneda} ${fmt(amounts.subtotal)}`, 178, finalY + 9, { align: "right" })
+  let totalY = finalY + 17
+  if (amounts.taxEnabled) {
+    pdf.text(`ITBIS (${fmt(amounts.taxRate, 0)}%)`, 120, finalY + 17)
+    pdf.text(`${quote.moneda} ${fmt(amounts.taxAmount)}`, 178, finalY + 17, { align: "right" })
+    totalY = finalY + 26
+  }
+  pdf.setFont(font, "bold")
+  pdf.setFontSize(11)
+  pdf.setTextColor(...accent)
+  pdf.text("Total", 120, totalY)
+  pdf.text(`${quote.moneda} ${fmt(amounts.total)}`, 178, totalY, { align: "right" })
+
+  if (quote.nota) {
+    pdf.setFillColor(255, 255, 255)
+    pdf.roundedRect(20, finalY, 88, 35, 2, 2, "F")
+    pdf.setDrawColor(...border)
+    pdf.roundedRect(20, finalY, 88, 35, 2, 2, "S")
+    pdf.setFont(font, "bold")
+    pdf.setFontSize(8)
+    pdf.setTextColor(...accent)
+    pdf.text("NOTAS", 26, finalY + 9)
+    pdf.setFont(font, "normal")
+    pdf.setFontSize(8)
+    pdf.setTextColor(...muted)
+    pdf.text(pdf.splitTextToSize(quote.nota, 74), 26, finalY + 17)
+  }
+
+  pdf.setDrawColor(...border)
+  pdf.line(20, 262, 184, 262)
+  pdf.setFont(font, "normal")
+  pdf.setFontSize(8)
+  pdf.setTextColor(...muted)
+  pdf.text(footer, 20, 270)
+  if (company.web) pdf.text(company.web, 184, 270, { align: "right" })
+
+  pdf.save(`${quote.numero || "documento"}-${quote.cliente || "cliente"}.pdf`)
+}
+
 const PDF_GENERATORS = {
-  minimal: generateMinimalPDF,
-  dark:    generateDarkPDF,
-  classic: generateClassicPDF,
+  minimal: generatePresentationPDF,
+  dark:    generatePresentationPDF,
+  classic: generatePresentationPDF,
+  legacyDark: generateDarkPDF,
+  legacyClassic: generateClassicPDF,
 }
 
 // ── Input component ───────────────────────────────────────────────────────
@@ -470,6 +683,85 @@ const Input = ({ label, value, onChange, placeholder, type = "text", className =
 
 const fmt = (n, decimals = 2) =>
   Number(n || 0).toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+
+const PAYMENT_METHODS = ["Transferencia", "Efectivo", "Tarjeta", "Cheque", "PayPal", "Otro"]
+
+const NCF_TYPES = [
+  { type: "B01", label: "B01 - Crédito fiscal", requiresFiscalId: true },
+  { type: "B02", label: "B02 - Consumidor final", requiresFiscalId: false },
+  { type: "B03", label: "B03 - Nota de débito", requiresFiscalId: true },
+  { type: "B04", label: "B04 - Nota de crédito", requiresFiscalId: true },
+  { type: "B11", label: "B11 - Compras", requiresFiscalId: true },
+  { type: "B13", label: "B13 - Gubernamental", requiresFiscalId: true },
+  { type: "B14", label: "B14 - Regímenes especiales", requiresFiscalId: true },
+  { type: "B15", label: "B15 - Gubernamental especial", requiresFiscalId: true },
+]
+
+const getNcfTypeInfo = (type) =>
+  NCF_TYPES.find(item => item.type === type) || NCF_TYPES[0]
+
+const getActiveNcfSequence = (sequences = [], type = "B01") =>
+  sequences.map(normalizeNcfSequence).find(seq => seq.type === type && getSequenceRuntimeStatus(seq) === "activa")
+
+const emptyNcfSequence = () => ({
+  id: typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
+  type: "B01",
+  prefix: "B01",
+  start: 1,
+  end: 99999999,
+  next: 1,
+  expiresAt: "",
+  status: "activa",
+})
+
+const normalizeNcfSequence = (seq = {}) => ({
+  id: seq.id || (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`),
+  type: String(seq.type || seq.prefix || "B01").toUpperCase(),
+  prefix: String(seq.prefix || seq.type || "B01").toUpperCase(),
+  start: parseInt(seq.start ?? seq.numeroInicial ?? 1) || 1,
+  end: parseInt(seq.end ?? seq.numeroFinal ?? 0) || 0,
+  next: parseInt(seq.next ?? seq.proximo ?? seq.start ?? seq.numeroInicial ?? 1) || 1,
+  expiresAt: seq.expiresAt || seq.fechaVencimiento || "",
+  status: seq.status || seq.estado || "activa",
+})
+
+const getSequenceRuntimeStatus = (seq) => {
+  const normalized = normalizeNcfSequence(seq)
+  const today = new Date().toISOString().split("T")[0]
+  if (normalized.status !== "activa") return normalized.status
+  if (normalized.expiresAt && normalized.expiresAt < today) return "vencida"
+  if (normalized.end && normalized.next > normalized.end) return "agotada"
+  return "activa"
+}
+
+const formatNcf = (seq, number) => {
+  const normalized = normalizeNcfSequence(seq)
+  const width = Math.max(String(normalized.end || "").length, 8)
+  return `${normalized.prefix}${String(number).padStart(width, "0")}`
+}
+
+const calcSubtotal = (items = []) =>
+  items.reduce((acc, s) => acc + (parseFloat(s.precio) || 0) * (parseInt(s.cantidad) || 0), 0)
+
+const calcTax = (subtotal, taxEnabled, taxRate) =>
+  taxEnabled ? subtotal * ((parseFloat(taxRate) || 0) / 100) : 0
+
+const getQuoteAmounts = (quote = {}) => {
+  const subtotal = Number.isFinite(Number(quote.subtotal)) ? Number(quote.subtotal) : calcSubtotal(quote.servicios || [])
+  const taxEnabled = quote.taxEnabled === true
+  const taxRate = parseFloat(quote.taxRate) || 0
+  const taxAmount = Number.isFinite(Number(quote.taxAmount)) ? Number(quote.taxAmount) : calcTax(subtotal, taxEnabled, taxRate)
+  const total = Number.isFinite(Number(quote.total)) ? Number(quote.total) : subtotal + taxAmount
+  return { subtotal, taxAmount, total, taxRate, taxEnabled }
+}
+
+const getClientFiscalId = (quote = {}) => {
+  const rnc = String(quote.clienteRnc || "").trim()
+  const cedula = String(quote.clienteId || "").trim()
+  if (rnc) return { label: "RNC fiscal", value: rnc }
+  if (cedula) return { label: "Cedula fiscal", value: cedula }
+  return null
+}
 
 // ── Main component ────────────────────────────────────────────────────────
 const Quotes = () => {
@@ -488,13 +780,16 @@ const Quotes = () => {
   const [extracting,    setExtracting]    = useState(false)
 
   const [form, setForm] = useState({
-    cliente: "", email: "", telefono: "", moneda: "USD", nota: "", validez: ""
+    cliente: "", fiscalName: "", email: "", telefono: "", clienteId: "", clienteRnc: "", direccionCliente: "",
+    moneda: "USD", nota: "", validez: "", ncf: "", ncfType: "B02", fiscalRequested: false, metodoPago: "Transferencia",
+    taxEnabled: false, taxRate: 18
   })
   const [servicios, setServicios] = useState([{ descripcion: "", cantidad: 1, precio: 0 }])
 
   const [company, setCompany] = useState({
     nombre: "", tagline: "", email: "", telefono: "", direccion: "", web: "", rnc: "",
-    logoBase64: "", brandColor: "#6022EC", brandColors: [], fontStyle: "helvetica", footerText: ""
+    logoBase64: "", brandColor: "#6022EC", brandColors: [], fontStyle: "helvetica", footerText: "",
+    defaultTaxEnabled: false, defaultTaxRate: 18, defaultPaymentMethod: "Transferencia", defaultNcfType: "B02", ncfSequences: []
   })
   const [companyDraft,  setCompanyDraft]  = useState({ ...company })
   const [logoPreview,   setLogoPreview]   = useState("")
@@ -516,7 +811,9 @@ const Quotes = () => {
     const snap = await getDoc(doc(db, "company_profiles", user.uid))
     if (snap.exists()) {
       const data = { nombre: "", tagline: "", email: "", telefono: "", direccion: "", web: "", rnc: "",
-        logoBase64: "", brandColor: "#6022EC", brandColors: [], fontStyle: "helvetica", footerText: "", ...snap.data() }
+        logoBase64: "", brandColor: "#6022EC", brandColors: [], fontStyle: "helvetica", footerText: "",
+        defaultTaxEnabled: false, defaultTaxRate: 18, defaultPaymentMethod: "Transferencia", defaultNcfType: "B02", ncfSequences: [], ...snap.data() }
+      data.ncfSequences = (data.ncfSequences || []).map(normalizeNcfSequence)
       setCompany(data); setCompanyDraft(data)
       if (data.logoBase64) setLogoPreview(data.logoBase64)
     }
@@ -549,21 +846,44 @@ const Quotes = () => {
   const handleSaveProfile = async () => {
     setSavingProfile(true)
     try {
-      await setDoc(doc(db, "company_profiles", user.uid), { ...companyDraft, uid: user.uid, updatedAt: new Date() })
-      setCompany({ ...companyDraft })
+      const normalizedDraft = {
+        ...companyDraft,
+        ncfSequences: (companyDraft.ncfSequences || []).map(seq => {
+          const normalized = normalizeNcfSequence(seq)
+          return { ...normalized, status: getSequenceRuntimeStatus(normalized) === "agotada" ? "agotada" : normalized.status }
+        }),
+      }
+      const invalidSequence = normalizedDraft.ncfSequences.find(seq =>
+        !seq.type || !seq.prefix || !seq.expiresAt || seq.start <= 0 || seq.end < seq.start || seq.next < seq.start || seq.next > seq.end + 1
+      )
+      if (invalidSequence) {
+        alert("Revisa las secuencias NCF: tipo, prefijo, rango, próximo número y vencimiento son obligatorios y deben ser válidos.")
+        setSavingProfile(false)
+        return
+      }
+      await setDoc(doc(db, "company_profiles", user.uid), { ...normalizedDraft, uid: user.uid, updatedAt: new Date() })
+      setCompany({ ...normalizedDraft })
+      setCompanyDraft({ ...normalizedDraft })
       setProfileOpen(false)
     } catch (e) { console.error(e) }
     setSavingProfile(false)
   }
 
   // ── Quote logic ────────────────────────────────────────────────────────
-  const calcTotal = items =>
-    items.reduce((acc, s) => acc + (parseFloat(s.precio) || 0) * (parseInt(s.cantidad) || 0), 0)
+  const buildFinancials = (items, source = form) => {
+    const subtotal = calcSubtotal(items)
+    const taxAmount = calcTax(subtotal, source.taxEnabled, source.taxRate)
+    return { subtotal, taxAmount, total: subtotal + taxAmount }
+  }
 
   const handleEdit = (quote) => {
     setEditingQuote(quote)
-    setForm({ cliente: quote.cliente, email: quote.email || "", telefono: quote.telefono || "",
-      moneda: quote.moneda || "USD", nota: quote.nota || "", validez: quote.validez || "" })
+    setForm({ cliente: quote.cliente, fiscalName: quote.fiscalName || quote.cliente || "", email: quote.email || "", telefono: quote.telefono || "",
+      clienteId: quote.clienteId || "", clienteRnc: quote.clienteRnc || "", direccionCliente: quote.direccionCliente || "",
+      moneda: quote.moneda || "USD", nota: quote.nota || "", validez: quote.validez || "",
+      ncf: quote.ncf || "", ncfType: quote.ncfType || company.defaultNcfType || "B02", fiscalRequested: quote.fiscalRequested === true,
+      metodoPago: quote.metodoPago || company.defaultPaymentMethod || "Transferencia",
+      taxEnabled: quote.taxEnabled === true, taxRate: quote.taxRate ?? company.defaultTaxRate ?? 18 })
     setServicios(quote.servicios || [{ descripcion: "", cantidad: 1, precio: 0 }])
     setSelectedTpl(quote.template || "minimal")
     setModalOpen(true)
@@ -571,14 +891,19 @@ const Quotes = () => {
 
   const handleSave = async () => {
     if (!form.cliente.trim()) return
+    if (getNcfTypeInfo(form.ncfType).requiresFiscalId && !form.clienteRnc && !form.clienteId) {
+      alert(`Para usar ${form.ncfType}, agrega el RNC o cédula fiscal del cliente.`)
+      return
+    }
+    const financials = buildFinancials(servicios)
     if (editingQuote) {
       await updateDoc(doc(db, "quotes", editingQuote.id), {
-        ...form, servicios, total: calcTotal(servicios), template: selectedTpl,
+        ...form, servicios, ...financials, template: selectedTpl,
       })
-      setSelectedQuote(prev => ({ ...prev, ...form, servicios, total: calcTotal(servicios), template: selectedTpl }))
+      setSelectedQuote(prev => ({ ...prev, ...form, servicios, ...financials, template: selectedTpl }))
     } else {
       await addDoc(collection(db, "quotes"), {
-        uid: user.uid, ...form, servicios, total: calcTotal(servicios),
+        uid: user.uid, ...form, servicios, ...financials,
         estado: "Borrador", template: selectedTpl, tipo: "cotizacion",
         numero: `COT-${Date.now().toString().slice(-6)}`, creadoEn: new Date()
       })
@@ -592,16 +917,76 @@ const Quotes = () => {
     setSelectedQuote(null); fetchQuotes()
   }
 
+  const reserveNcfForInvoice = async (transaction, companyRef, quoteRef, payload, ncfType) => {
+    const companySnap = await transaction.get(companyRef)
+    if (!companySnap.exists()) throw new Error("Configura primero el perfil de empresa.")
+
+    const companyData = companySnap.data()
+    const sequences = (companyData.ncfSequences || []).map(normalizeNcfSequence)
+    const index = sequences.findIndex(seq => seq.type === ncfType && getSequenceRuntimeStatus(seq) === "activa")
+    if (index === -1) throw new Error(`No hay una secuencia activa disponible para ${ncfType}.`)
+
+    const seq = sequences[index]
+    const number = seq.next
+    const ncf = formatNcf(seq, number)
+    const allocationRef = doc(db, "ncf_allocations", `${user.uid}_${ncf}`)
+    const allocationSnap = await transaction.get(allocationRef)
+    if (allocationSnap.exists()) throw new Error(`El NCF ${ncf} ya fue usado. Revisa la secuencia.`)
+
+    const nextValue = number + 1
+    sequences[index] = {
+      ...seq,
+      next: nextValue,
+      status: nextValue > seq.end ? "agotada" : seq.status,
+      updatedAt: new Date(),
+    }
+
+    transaction.set(quoteRef, { ...payload, ncf, ncfType, ncfSequenceId: seq.id, ncfNumber: number })
+    transaction.set(allocationRef, {
+      uid: user.uid,
+      ncf,
+      ncfType,
+      quoteId: quoteRef.id,
+      sequenceId: seq.id,
+      createdAt: new Date(),
+    })
+    transaction.update(companyRef, { ncfSequences: sequences, updatedAt: new Date() })
+    return ncf
+  }
+
   const handleConvertToInvoice = async (quote) => {
-    await addDoc(collection(db, "quotes"), {
-      uid: user.uid, cliente: quote.cliente, email: quote.email || "",
-      telefono: quote.telefono || "", moneda: quote.moneda || "USD",
+    const taxEnabled = quote.taxEnabled ?? company.defaultTaxEnabled ?? false
+    const taxRate = quote.taxRate ?? company.defaultTaxRate ?? 18
+    const subtotal = calcSubtotal(quote.servicios || [])
+    const taxAmount = calcTax(subtotal, taxEnabled, taxRate)
+    const ncfType = quote.ncfType || company.defaultNcfType || "B02"
+    const ncfInfo = getNcfTypeInfo(ncfType)
+    if (ncfInfo.requiresFiscalId && !quote.clienteRnc && !quote.clienteId) {
+      alert(`Para emitir ${ncfType}, agrega el RNC o cédula fiscal del cliente.`)
+      return
+    }
+    const quoteRef = doc(collection(db, "quotes"))
+    const companyRef = doc(db, "company_profiles", user.uid)
+    const payload = {
+      uid: user.uid, cliente: quote.cliente, fiscalName: quote.fiscalName || quote.cliente || "", email: quote.email || "",
+      telefono: quote.telefono || "", clienteId: quote.clienteId || "", clienteRnc: quote.clienteRnc || "",
+      direccionCliente: quote.direccionCliente || "", moneda: quote.moneda || "USD",
       nota: quote.nota || "", validez: quote.validez || "",
-      servicios: quote.servicios, total: quote.total, estado: "Borrador",
+      fiscalRequested: quote.fiscalRequested === true,
+      metodoPago: quote.metodoPago || company.defaultPaymentMethod || "Transferencia",
+      taxEnabled,
+      taxRate,
+      servicios: quote.servicios, subtotal, taxAmount, total: subtotal + taxAmount, estado: "Emitida",
       template: quote.template || "minimal", tipo: "factura",
       numero: `FAC-${Date.now().toString().slice(-6)}`,
       cotizacionRef: quote.id, creadoEn: new Date(),
-    })
+    }
+    try {
+      await runTransaction(db, transaction => reserveNcfForInvoice(transaction, companyRef, quoteRef, payload, ncfType))
+    } catch (err) {
+      alert(err.message || "No se pudo asignar el NCF.")
+      return
+    }
     fetchQuotes(); setActiveTab("facturas"); setSelectedQuote(null)
   }
 
@@ -612,7 +997,13 @@ const Quotes = () => {
   }
 
   const resetForm = () => {
-    setForm({ cliente: "", email: "", telefono: "", moneda: "USD", nota: "", validez: "" })
+    const defaultType = company.defaultNcfType || "B02"
+    setForm({
+      cliente: "", fiscalName: "", email: "", telefono: "", clienteId: "", clienteRnc: "", direccionCliente: "",
+      moneda: "USD", nota: "", validez: "", ncf: "", ncfType: defaultType, fiscalRequested: getNcfTypeInfo(defaultType).requiresFiscalId,
+      metodoPago: company.defaultPaymentMethod || "Transferencia",
+      taxEnabled: company.defaultTaxEnabled || false, taxRate: company.defaultTaxRate || 18
+    })
     setServicios([{ descripcion: "", cantidad: 1, precio: 0 }])
     setSelectedTpl("minimal")
   }
@@ -622,7 +1013,27 @@ const Quotes = () => {
     gen(quote, company)
   }
 
-  const total = calcTotal(servicios)
+  const updateNcfSequence = (id, patch) => {
+    setCompanyDraft(prev => ({
+      ...prev,
+      ncfSequences: (prev.ncfSequences || []).map(seq => {
+        if (seq.id !== id) return seq
+        const next = normalizeNcfSequence({ ...seq, ...patch })
+        if (patch.type && !patch.prefix) next.prefix = String(patch.type).toUpperCase()
+        return next
+      }),
+    }))
+  }
+
+  const addNcfSequence = () => {
+    setCompanyDraft(prev => ({ ...prev, ncfSequences: [...(prev.ncfSequences || []), emptyNcfSequence()] }))
+  }
+
+  const removeNcfSequence = (id) => {
+    setCompanyDraft(prev => ({ ...prev, ncfSequences: (prev.ncfSequences || []).filter(seq => seq.id !== id) }))
+  }
+
+  const { subtotal, taxAmount, total } = buildFinancials(servicios)
   const filteredQuotes = quotes.filter(q => {
     if (activeTab === "cotizaciones") return !q.tipo || q.tipo === "cotizacion"
     if (activeTab === "facturas") return q.tipo === "factura"
@@ -701,7 +1112,7 @@ const Quotes = () => {
                   <span className={`text-xs px-2 py-0.5 rounded-full border ${estado?.color}`}>{quote.estado}</span>
                 </div>
                 <p className="text-sm font-medium text-text-main truncate">{quote.cliente}</p>
-                <p className="text-sm font-bold text-primary-light">{quote.moneda} {fmt(quote.total)}</p>
+                <p className="text-sm font-bold text-primary-light">{quote.moneda} {fmt(getQuoteAmounts(quote).total)}</p>
               </div>
             )
           })}
@@ -739,6 +1150,14 @@ const Quotes = () => {
                   <h2 className="text-text-main font-bold text-lg">{selectedQuote.cliente}</h2>
                   {selectedQuote.email    && <p className="text-text-muted text-xs">{selectedQuote.email}</p>}
                   {selectedQuote.telefono && <p className="text-text-muted text-xs">{selectedQuote.telefono}</p>}
+                  {selectedQuote.fiscalName && selectedQuote.fiscalName !== selectedQuote.cliente && <p className="text-text-muted text-xs">Razón social: {selectedQuote.fiscalName}</p>}
+                  {(() => {
+                    const fiscalId = getClientFiscalId(selectedQuote)
+                    return fiscalId ? <p className="text-text-muted text-xs">{fiscalId.label}: {fiscalId.value}</p> : null
+                  })()}
+                  {selectedQuote.ncf && <p className="text-green-400 text-xs font-mono mt-1">NCF asignado: {selectedQuote.ncf}</p>}
+                  {selectedQuote.ncfType && <p className="text-text-muted text-xs">Tipo NCF: {selectedQuote.ncfType}</p>}
+                  {selectedQuote.metodoPago && <p className="text-text-muted text-xs">Pago: {selectedQuote.metodoPago}</p>}
                 </div>
                 <div className="flex flex-col gap-2 items-start sm:items-end flex-shrink-0">
                   <div className="flex items-center gap-1 flex-wrap justify-end">
@@ -814,9 +1233,22 @@ const Quotes = () => {
               </div>
 
               <div className="flex justify-end mb-4">
-                <div className="bg-primary/20 border border-primary/30 rounded-xl px-6 py-3">
-                  <p className="text-text-muted text-xs mb-1">Total</p>
-                  <p className="text-primary-light font-bold text-xl">{selectedQuote.moneda} {fmt(selectedQuote.total)}</p>
+                <div className="bg-primary/20 border border-primary/30 rounded-xl px-6 py-3 min-w-56">
+                  {(() => {
+                    const amounts = getQuoteAmounts(selectedQuote)
+                    return (
+                      <>
+                        <div className="space-y-1 text-sm">
+                          <div className="flex justify-between gap-8 text-text-muted"><span>Subtotal</span><span>{selectedQuote.moneda} {fmt(amounts.subtotal)}</span></div>
+                          {amounts.taxEnabled && (
+                            <div className="flex justify-between gap-8 text-text-muted"><span>ITBIS ({fmt(amounts.taxRate, 0)}%)</span><span>{selectedQuote.moneda} {fmt(amounts.taxAmount)}</span></div>
+                          )}
+                        </div>
+                        <p className="text-text-muted text-xs mt-2 mb-1">Total</p>
+                        <p className="text-primary-light font-bold text-xl">{selectedQuote.moneda} {fmt(amounts.total)}</p>
+                      </>
+                    )
+                  })()}
                 </div>
               </div>
 
@@ -878,6 +1310,129 @@ const Quotes = () => {
                 <Input label="Dirección" value={companyDraft.direccion} onChange={v => setCompanyDraft(p => ({ ...p, direccion: v }))} placeholder="Ciudad, País" className="col-span-2" />
                 <Input label="Sitio web" value={companyDraft.web} onChange={v => setCompanyDraft(p => ({ ...p, web: v }))} placeholder="www.tuempresa.com" />
                 <Input label="RNC" value={companyDraft.rnc} onChange={v => setCompanyDraft(p => ({ ...p, rnc: v }))} placeholder="1-01-12345-6" />
+              </div>
+
+              <div className="border-t border-border pt-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Receipt size={14} className="text-green-400" />
+                  <p className="text-xs text-text-muted uppercase tracking-wider">Preferencias fiscales</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="col-span-2">
+                    <label className="block text-xs text-text-muted mb-1.5">Tipo de comprobante por defecto</label>
+                    <select
+                      value={companyDraft.defaultNcfType || "B01"}
+                      onChange={e => setCompanyDraft(p => ({ ...p, defaultNcfType: e.target.value }))}
+                      className="w-full bg-bg-input border border-border text-text-main rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      {NCF_TYPES.map(item => <option key={item.type} value={item.type}>{item.label}</option>)}
+                    </select>
+                  </div>
+                  <label className="col-span-2 flex items-center justify-between gap-3 bg-bg-input border border-border rounded-xl px-4 py-3">
+                    <span>
+                      <span className="block text-sm text-text-main font-medium">Aplicar ITBIS por defecto</span>
+                      <span className="block text-[11px] text-text-muted">Puedes cambiarlo en cada cotización o factura.</span>
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={companyDraft.defaultTaxEnabled || false}
+                      onChange={e => setCompanyDraft(p => ({ ...p, defaultTaxEnabled: e.target.checked }))}
+                      className="w-4 h-4 accent-primary"
+                    />
+                  </label>
+                  <Input label="ITBIS por defecto (%)" type="number" value={companyDraft.defaultTaxRate ?? 18} onChange={v => setCompanyDraft(p => ({ ...p, defaultTaxRate: v }))} placeholder="18" />
+                  <div>
+                    <label className="block text-xs text-text-muted mb-1.5">Método de pago por defecto</label>
+                    <select
+                      value={companyDraft.defaultPaymentMethod || "Transferencia"}
+                      onChange={e => setCompanyDraft(p => ({ ...p, defaultPaymentMethod: e.target.value }))}
+                      className="w-full bg-bg-input border border-border text-text-main rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      {PAYMENT_METHODS.map(method => <option key={method} value={method}>{method}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="mt-5 space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm text-text-main font-medium">Secuencias NCF autorizadas</p>
+                      <p className="text-[11px] text-text-muted">Registra los rangos aprobados por DGII. El próximo NCF se asigna automáticamente al emitir factura.</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={addNcfSequence}
+                      className="text-xs bg-green-500/10 border border-green-500/30 text-green-400 px-3 py-2 rounded-xl hover:bg-green-500/20 transition"
+                    >
+                      + Secuencia
+                    </button>
+                  </div>
+
+                  {(companyDraft.ncfSequences || []).length === 0 ? (
+                    <div className="bg-bg-input border border-border rounded-xl px-4 py-4 text-center">
+                      <p className="text-text-muted text-xs">No hay secuencias configuradas.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {(companyDraft.ncfSequences || []).map(seq => {
+                        const normalized = normalizeNcfSequence(seq)
+                        const runtimeStatus = getSequenceRuntimeStatus(normalized)
+                        return (
+                          <div key={normalized.id} className="bg-bg-input border border-border rounded-xl p-3 space-y-3">
+                            <div className="flex items-center justify-between gap-2">
+                              <select
+                                value={normalized.type}
+                                onChange={e => updateNcfSequence(normalized.id, { type: e.target.value, prefix: e.target.value })}
+                                className="bg-bg-card border border-border text-text-main rounded-lg px-2 py-2 text-xs focus:outline-none"
+                              >
+                                {NCF_TYPES.map(item => <option key={item.type} value={item.type}>{item.label}</option>)}
+                              </select>
+                              <span className={`text-[10px] px-2 py-1 rounded-full border ${
+                                runtimeStatus === "activa"
+                                  ? "bg-green-500/10 text-green-400 border-green-500/30"
+                                  : runtimeStatus === "agotada"
+                                    ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
+                                    : "bg-red-500/10 text-red-400 border-red-500/30"
+                              }`}>
+                                {runtimeStatus}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => removeNcfSequence(normalized.id)}
+                                className="text-red-400 hover:text-red-300 p-1"
+                                aria-label="Eliminar secuencia"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                              <Input label="Prefijo" value={normalized.prefix} onChange={v => updateNcfSequence(normalized.id, { prefix: v.toUpperCase() })} placeholder="B01" />
+                              <Input label="Inicial" type="number" value={normalized.start} onChange={v => updateNcfSequence(normalized.id, { start: v })} placeholder="1" />
+                              <Input label="Final" type="number" value={normalized.end} onChange={v => updateNcfSequence(normalized.id, { end: v })} placeholder="99999999" />
+                              <Input label="Próximo" type="number" value={normalized.next} onChange={v => updateNcfSequence(normalized.id, { next: v })} placeholder="1" />
+                              <Input label="Vence" type="date" value={normalized.expiresAt} onChange={v => updateNcfSequence(normalized.id, { expiresAt: v })} />
+                              <div>
+                                <label className="block text-xs text-text-muted mb-1.5">Estado</label>
+                                <select
+                                  value={normalized.status}
+                                  onChange={e => updateNcfSequence(normalized.id, { status: e.target.value })}
+                                  className="w-full bg-bg-card border border-border text-text-main rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                                >
+                                  <option value="activa">Activa</option>
+                                  <option value="pausada">Pausada</option>
+                                  <option value="agotada">Agotada</option>
+                                </select>
+                              </div>
+                            </div>
+                            <p className="text-[11px] text-text-muted">
+                              Próximo NCF: <span className="font-mono text-text-main">{formatNcf(normalized, normalized.next)}</span>
+                            </p>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* ── Personalización de documentos ── */}
@@ -1055,11 +1610,89 @@ const Quotes = () => {
                   <Input label="Teléfono" value={form.telefono} onChange={v => setForm(p => ({ ...p, telefono: v }))} placeholder="+1 809 000 0000" />
                   <Input label="Válida hasta" value={form.validez} onChange={v => setForm(p => ({ ...p, validez: v }))} type="date" />
                 </div>
-                <div className="mt-4">
-                  <label className="block text-xs text-text-muted mb-1.5">Moneda</label>
-                  <select value={form.moneda} onChange={e => setForm(p => ({ ...p, moneda: e.target.value }))} className="w-full bg-bg-input border border-border text-text-main rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                    {MONEDAS.map(m => <option key={m} value={m}>{m}</option>)}
-                  </select>
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <label className="block text-xs text-text-muted mb-1.5">Moneda</label>
+                    <select value={form.moneda} onChange={e => setForm(p => ({ ...p, moneda: e.target.value }))} className="w-full bg-bg-input border border-border text-text-main rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                      {MONEDAS.map(m => <option key={m} value={m}>{m}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-text-muted mb-1.5">Método de pago</label>
+                    <select value={form.metodoPago} onChange={e => setForm(p => ({ ...p, metodoPago: e.target.value }))} className="w-full bg-bg-input border border-border text-text-main rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                      {PAYMENT_METHODS.map(method => <option key={method} value={method}>{method}</option>)}
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <label className="flex items-center justify-between gap-3 bg-bg-input border border-border rounded-xl px-4 py-2.5">
+                      <span className="text-xs text-text-muted">ITBIS</span>
+                      <input
+                        type="checkbox"
+                        checked={form.taxEnabled || false}
+                        onChange={e => setForm(p => ({ ...p, taxEnabled: e.target.checked }))}
+                        className="w-4 h-4 accent-primary"
+                      />
+                    </label>
+                    <Input label="%" type="number" value={form.taxRate} onChange={v => setForm(p => ({ ...p, taxRate: v }))} placeholder="18" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-green-500/5 border border-green-500/20 rounded-xl p-4">
+                <div className="flex items-center justify-between gap-3 mb-4">
+                  <div>
+                    <p className="text-xs text-green-400 uppercase tracking-wider font-semibold">Comprobante fiscal del cliente</p>
+                    <p className="text-[11px] text-text-muted mt-0.5">Selecciona el tipo autorizado y completa los datos fiscales que el cliente te entregue.</p>
+                  </div>
+                  <label className="flex items-center gap-2 text-xs text-text-muted">
+                    <input
+                      type="checkbox"
+                      checked={form.fiscalRequested}
+                      onChange={e => setForm(p => ({
+                        ...p,
+                        fiscalRequested: e.target.checked,
+                        ncfType: e.target.checked ? "B01" : "B02",
+                      }))}
+                      disabled={editingQuote?.tipo === "factura" && !!editingQuote?.ncf}
+                      className="w-4 h-4 accent-primary"
+                    />
+                    Solicita comprobante
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="col-span-2">
+                    <label className="block text-xs text-text-muted mb-1.5">Tipo de comprobante fiscal</label>
+                    <select
+                      value={form.ncfType || "B02"}
+                      onChange={e => setForm(p => ({
+                        ...p,
+                        ncfType: e.target.value,
+                        fiscalRequested: p.fiscalRequested || getNcfTypeInfo(e.target.value).requiresFiscalId,
+                      }))}
+                      disabled={editingQuote?.tipo === "factura" && !!editingQuote?.ncf}
+                      className="w-full bg-bg-input border border-border text-text-main rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-60"
+                    >
+                      {NCF_TYPES.map(item => <option key={item.type} value={item.type}>{item.label}</option>)}
+                    </select>
+                    {(() => {
+                      const seq = getActiveNcfSequence(company.ncfSequences || [], form.ncfType || "B02")
+                      return (
+                        <p className={`text-[11px] mt-1 ${seq ? "text-green-400" : "text-amber-400"}`}>
+                          {editingQuote?.ncf
+                            ? <>NCF asignado: <span className="font-mono">{editingQuote.ncf}</span></>
+                            : seq
+                              ? <>Próximo NCF disponible: <span className="font-mono">{formatNcf(seq, seq.next)}</span></>
+                              : "No hay secuencia activa para este tipo. Configúrala en Perfil de empresa."}
+                        </p>
+                      )
+                    })()}
+                  </div>
+
+                  <Input label="Razón social fiscal" value={form.fiscalName} onChange={v => setForm(p => ({ ...p, fiscalName: v }))} placeholder="Nombre legal del cliente" className="col-span-2" />
+                  <Input label="RNC fiscal del cliente" value={form.clienteRnc} onChange={v => setForm(p => ({ ...p, clienteRnc: v, clienteId: v.trim() ? "" : p.clienteId }))} placeholder="1-01-12345-6" />
+                  <Input label="Cédula fiscal del cliente" value={form.clienteId} onChange={v => setForm(p => ({ ...p, clienteId: v, clienteRnc: v.trim() ? "" : p.clienteRnc }))} placeholder="001-0000000-0" />
+                  <Input label="Dirección fiscal" value={form.direccionCliente} onChange={v => setForm(p => ({ ...p, direccionCliente: v }))} placeholder="Ciudad, País" className="col-span-2" />
                 </div>
               </div>
 
@@ -1113,8 +1746,14 @@ const Quotes = () => {
 
               {/* Total */}
               <div className="flex justify-end">
-                <div className="bg-primary/10 border border-primary/20 rounded-xl px-5 py-3">
-                  <p className="text-text-muted text-xs">Total estimado</p>
+                <div className="bg-primary/10 border border-primary/20 rounded-xl px-5 py-3 min-w-56">
+                  <div className="space-y-1 text-sm">
+                    <div className="flex justify-between gap-8 text-text-muted"><span>Subtotal</span><span>{form.moneda} {fmt(subtotal)}</span></div>
+                    {form.taxEnabled && (
+                      <div className="flex justify-between gap-8 text-text-muted"><span>ITBIS ({fmt(form.taxRate, 0)}%)</span><span>{form.moneda} {fmt(taxAmount)}</span></div>
+                    )}
+                  </div>
+                  <p className="text-text-muted text-xs mt-2">Total estimado</p>
                   <p className="text-primary-light font-bold text-lg">{form.moneda} {fmt(total)}</p>
                 </div>
               </div>

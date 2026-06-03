@@ -95,7 +95,7 @@ const faqs = [
     items: [
       {
         q: "¿Cómo cambio mi contraseña?",
-        a: "Ve a Configuración → Cuenta → Cambiar contraseña. Si iniciaste sesión con Google o Facebook, la contraseña se gestiona desde esas plataformas. También puedes usar la opción '¿Olvidaste tu contraseña?' en la pantalla de inicio de sesión.",
+        a: "Ve a Configuración → Cuenta → Cambiar contraseña. Si iniciaste sesión con Google, la contraseña se gestiona desde esas plataformas. También puedes usar la opción '¿Olvidaste tu contraseña?' en la pantalla de inicio de sesión.",
       },
       {
         q: "¿Cómo elimino mi cuenta?",

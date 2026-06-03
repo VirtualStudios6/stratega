@@ -174,9 +174,6 @@ const Settings = () => {
         try {
           if (providerId === "google.com") {
             await reauthenticateWithPopup(auth.currentUser, new GoogleAuthProvider())
-          } else if (providerId === "facebook.com") {
-            const { FacebookAuthProvider } = await import("firebase/auth")
-            await reauthenticateWithPopup(auth.currentUser, new FacebookAuthProvider())
           } else {
             const password = window.prompt("Por seguridad, confirma tu contraseña para eliminar la cuenta:")
             if (!password) { setLoading(false); return }

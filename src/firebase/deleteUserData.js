@@ -16,7 +16,7 @@ export async function deleteUserData(uid) {
     safeDelete(() => deleteDoc(doc(db, "company_profiles", uid))),
 
     // ── Firestore: multi-doc collections (filtered by uid field) ────────────
-    ...["reminders", "quotes", "feed_posts", "folders", "folder_files",
+    ...["reminders", "quotes", "ncf_allocations", "feed_posts", "folders", "folder_files",
         "accounting", "planners", "team_members"].map(col =>
       safeDelete(() => deleteCollection(col, uid))
     ),

@@ -14,6 +14,11 @@ import App from "./App.jsx"
 // los insets no se propagan correctamente (timing race en algunos OEMs).
 // En web/iOS dejamos env() puro para no añadir padding innecesario.
 if (typeof window !== "undefined") {
+  if (import.meta.env.DEV && window.location.hostname === "127.0.0.1") {
+    const { protocol, port, pathname, search, hash } = window.location
+    window.location.replace(`${protocol}//localhost${port ? `:${port}` : ""}${pathname}${search}${hash}`)
+  }
+
   const isAndroidNative = window?.Capacitor?.getPlatform?.() === "android"
   document.documentElement.style.setProperty(
     "--sat",
