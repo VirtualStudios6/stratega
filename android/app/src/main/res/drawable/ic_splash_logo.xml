@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Logo Stratega Planner — usado como ícono del splash (API 31+) -->
+<!-- Stratega Planner logo for the Android 12+ splash icon. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="288dp"
     android:height="288dp"
@@ -9,26 +9,23 @@
     <group
         android:name="logo_group"
         android:pivotX="144"
-        android:pivotY="148"
-        android:scaleX="0.2"
-        android:scaleY="0.2"
+        android:pivotY="144"
+        android:scaleX="0.88"
+        android:scaleY="0.88"
+        android:rotation="-2"
         android:alpha="0">
 
-        <!-- Triángulo exterior (dorado oscuro) -->
         <path
-            android:fillColor="#c18c35"
-            android:pathData="M144,72 L232,192 L56,192 Z"/>
+            android:fillColor="#FFC04D"
+            android:pathData="M123,61 C135,43 158,43 170,61 L218,139 L184,191 L144,126 L104,191 L70,191 Z" />
 
-        <!-- Triángulo interior (dorado claro — highlight) -->
         <path
-            android:fillColor="#e8b84b"
-            android:alpha="0.55"
-            android:pathData="M144,102 L205,185 L83,185 Z"/>
+            android:fillColor="#FF7D83"
+            android:pathData="M218,139 L253,195 C262,209 252,226 236,226 L184,226 L144,126 L184,191 Z" />
 
-        <!-- Punto central inferior (acento de marca) -->
         <path
-            android:fillColor="#080810"
-            android:pathData="M136,178 A8,8 0 1,0 152,178 A8,8 0 1,0 136,178 Z"/>
+            android:fillColor="#0869AC"
+            android:pathData="M70,191 L184,191 L236,226 L62,226 C46,226 37,209 46,196 Z" />
 
     </group>
 </vector>

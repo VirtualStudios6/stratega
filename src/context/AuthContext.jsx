@@ -63,11 +63,11 @@ export const AuthProvider = ({ children }) => {
   // que aparece cuando el splash se oculta antes de que React haya renderizado.
   if (loading) {
     return (
-      <div
-        style={{ minHeight: "100dvh", backgroundColor: "var(--bg-main)" }}
-        className="flex items-center justify-center"
-      >
-        <div className="w-7 h-7 rounded-full border-2 border-border border-t-primary animate-spin opacity-60" />
+      <div className="app-splash-shell">
+        <div className="app-splash-mark">
+          <span className="app-splash-aura" />
+          <img src="/logos/logo2d-512x512-sin-fondo.png" alt="Stratega Planner" />
+        </div>
       </div>
     )
   }

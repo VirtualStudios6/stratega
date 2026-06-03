@@ -2,34 +2,40 @@
 <set xmlns:android="http://schemas.android.com/apk/res/android"
     android:ordering="together">
 
-    <!-- Scale X: 0.2 → 1.0 con overshoot -->
-    <objectAnimator
-        android:propertyName="scaleX"
-        android:valueType="floatType"
-        android:valueFrom="0.2"
-        android:valueTo="1.0"
-        android:duration="650"
-        android:startOffset="0"
-        android:interpolator="@android:interpolator/overshoot"/>
-
-    <!-- Scale Y: 0.2 → 1.0 con overshoot -->
-    <objectAnimator
-        android:propertyName="scaleY"
-        android:valueType="floatType"
-        android:valueFrom="0.2"
-        android:valueTo="1.0"
-        android:duration="650"
-        android:startOffset="0"
-        android:interpolator="@android:interpolator/overshoot"/>
-
-    <!-- Alpha: 0 → 1 -->
     <objectAnimator
         android:propertyName="alpha"
         android:valueType="floatType"
         android:valueFrom="0"
         android:valueTo="1"
-        android:duration="350"
+        android:duration="260"
+        android:startOffset="40"
+        android:interpolator="@android:interpolator/fast_out_slow_in" />
+
+    <objectAnimator
+        android:propertyName="scaleX"
+        android:valueType="floatType"
+        android:valueFrom="0.88"
+        android:valueTo="1"
+        android:duration="620"
         android:startOffset="0"
-        android:interpolator="@android:interpolator/accelerate_decelerate"/>
+        android:interpolator="@android:interpolator/fast_out_slow_in" />
+
+    <objectAnimator
+        android:propertyName="scaleY"
+        android:valueType="floatType"
+        android:valueFrom="0.88"
+        android:valueTo="1"
+        android:duration="620"
+        android:startOffset="0"
+        android:interpolator="@android:interpolator/fast_out_slow_in" />
+
+    <objectAnimator
+        android:propertyName="rotation"
+        android:valueType="floatType"
+        android:valueFrom="-2"
+        android:valueTo="0"
+        android:duration="620"
+        android:startOffset="0"
+        android:interpolator="@android:interpolator/fast_out_slow_in" />
 
 </set>
